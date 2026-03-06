@@ -571,14 +571,14 @@ window.loginSuperAdmin = async function () {
         return;
     }
 
-    // ПИН кодът се проверява централно чрез съществуващия verifyPin, като за вход използваме имейла
-    const result = await apiCall('verifyPin', { pin: pin });
+    // ПИН кодът се проверява централно през специалния endpoint verifySuperPin
+    const result = await apiCall('verifySuperPin', { pin: pin });
 
     if (result && result.success) {
         sessionStorage.setItem("superAdminAuth", pin);
         showSuperAdminDashboard();
     } else {
-        document.getElementById("superPinError").textContent = "Грешна парола за Супер Админ.";
+        document.getElementById("superPinError").textContent = result.error || "Грешна парола за Супер Админ.";
     }
 }
 

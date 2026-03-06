@@ -234,8 +234,9 @@
             <div class="admin-icon">👑</div>
             <div class="admin-title">Супер Админ Панел</div>
             <div class="admin-subtitle">Вход за Главен Администратор</div>
-            <input type="password" id="superPinInput" class="admin-input"
-                placeholder="Супер Парола (напр. вашият имейл)" onkeydown="if(event.key==='Enter')loginSuperAdmin()">
+            <input type="text" id="superPinInput" class="admin-input"
+                placeholder="Супер Админ Имейл... (пр. tvoj@email.com)"
+                onkeydown="if(event.key==='Enter')loginSuperAdmin()">
             <div id="superPinError" class="admin-error"></div>
             <button class="admin-btn primary" onclick="loginSuperAdmin()">Вход</button>
         </div>
