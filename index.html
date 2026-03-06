@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Етажна собственост | Управление на входове</title>
+
+    <!-- Търсачки (Google) -->
+    <meta name="description"
+        content="Модерна платформа за автоматизирано управление на етажна собственост и входове. Забравете за скъпите професионални домоуправители. Прозрачно и лесно за всички съседи.">
+    <meta name="keywords"
+        content="етажна собственост, домоуправител, управление на блокове, блок, такса вход, асансьор, чипове, професионален домоуправител, id">
+    <meta name="author" content="ID">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourwebsite.com"> <!-- Заменете с реалния си домейн -->
+
+    <!-- Open Graph (За споделяне във Facebook, Viber, Messenger) -->
+    <meta property="og:title" content="Етажна собственост | ID">
+    <meta property="og:description"
+        content="Платформа за автоматизирано управление на етажна собственост без сложни Excel таблици. Влезте през своя уникален линк.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourwebsite.com">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Етажна собственост | ID">
+    <meta name="twitter:description" content="Платформа за автоматизирано управление на етажна собственост.">
+
+    <!-- Modern Typography: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+
+<body class="light-theme">
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Зареждане на данни...</div>
+    </div>
+
+    <!-- ADMIN OVERLAY -->
+    <div id="adminOverlay" class="admin-overlay" onclick="if(event.target===this)closeAdmin()">
+
+        <!-- Login Screen (PIN & Email) -->
+        <div class="admin-card" id="loginCard">
+            <button class="admin-close" onclick="closeAdmin()">✕</button>
+            <div class="admin-icon">🔐</div>
+            <div class="admin-title">Админ панел</div>
+            <div class="admin-subtitle">Въведете вашия имейл и парола</div>
+
+            <input type="email" id="adminEmailInput" class="admin-input" placeholder="Имейл адрес"
+                style="margin-bottom: 12px;">
+            <input type="password" id="pinInput" class="admin-input" placeholder="Парола (PIN)" maxlength="10"
+                onkeydown="if(event.key==='Enter')verifyPin()">
+
+            <div id="pinError" class="admin-error"></div>
+            <button class="admin-btn primary" onclick="verifyPin()">Вход</button>
+        </div>
+
+        <!-- Admin Content (hidden until login ok) -->
+        <div class="admin-card" id="adminCard" style="display:none">
+            <button class="admin-close" onclick="closeAdmin()">✕</button>
+            <div class="admin-title">⚙️ Админ панел</div>
+
+            <!-- Payment Section -->
+            <div class="admin-section">
+                <h3>💰 Добавяне на плащане</h3>
+                <label class="admin-label">Апартамент</label>
+                <select id="adminApt" class="admin-input"></select>
+                <label class="admin-label">Период (MM.YYYY)</label>
+                <input type="text" id="adminPeriod" class="admin-input" placeholder="03.2026">
+                <label class="admin-label">Сума</label>
+                <input type="number" id="adminAmount" class="admin-input" placeholder="0.00" step="0.01">
+                <button class="admin-btn primary" id="payBtn" onclick="submitPayment()">Добави плащане</button>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <!-- Charges Section -->
+            <div class="admin-section">
+                <h3>📋 Начисления (Асансьор / Абонамент / Осветление)</h3>
+                <label class="admin-label">Период (MM.YYYY)</label>
+                <input type="text" id="chargesPeriod" class="admin-input" placeholder="03.2026">
+                <label class="admin-label">Асансьор</label>
+                <input type="number" id="chargesElevator" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Абонамент</label>
+                <input type="number" id="chargesSubscription" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Осветление</label>
+                <input type="number" id="chargesLight" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Охрана</label>
+                <input type="number" id="chargesSecurity" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Почистване</label>
+                <input type="number" id="chargesCleaning" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Поддръжка</label>
+                <input type="number" id="chargesPodrajka" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <label class="admin-label">Фонд Ремонт</label>
+                <input type="number" id="chargesRemont" class="admin-input" placeholder="оставете празно ако няма"
+                    step="0.01">
+                <button class="admin-btn orange" id="chargesBtn" onclick="submitCharges()">Запиши начисления</button>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <!-- Email Section -->
+            <div class="admin-section">
+                <h3>✉️ Имейл на апартамент</h3>
+                <label class="admin-label">Апартамент</label>
+                <select id="adminEmailApt" class="admin-input" onchange="loadCurrentEmail()"></select>
+                <div id="currentEmailBox" class="admin-current" style="display:none">
+                    Текущ имейл: <span id="currentEmail">—</span>
+                </div>
+                <label class="admin-label">Нов имейл</label>
+                <input type="email" id="adminEmail" class="admin-input" placeholder="email@example.com">
+                <button class="admin-btn secondary" id="emailBtn" onclick="submitEmail()">Запази имейл</button>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <!-- MASTER Section -->
+            <div class="admin-section">
+                <h3>📊 MASTER – Настройки</h3>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px;">
+                    <button class="master-tab" onclick="switchMasterTab('logika',this)">Логика</button>
+                    <button class="master-tab" onclick="switchMasterTab('uchastie',this)">Уч. Асансьор</button>
+                    <button class="master-tab" onclick="switchMasterTab('obitatel',this)">Обитатели</button>
+                    <button class="master-tab" onclick="switchMasterTab('chipove',this)">Чипове</button>
+                    <button class="master-tab" onclick="switchMasterTab('idealni',this)">Идеални Ч.</button>
+                    <button class="master-tab" onclick="switchMasterTab('payment',this)">💳 Плащ.инфо</button>
+                </div>
+                <!-- Logic Tab Content -->
+                <div id="master-tab-logika" class="master-panel">
+                    <label class="admin-label">Логика</label>
+                    <select id="masterLogikaVal" class="admin-input">
+                        <option value="Равно">Равно</option>
+                        <option value="Обитатели">Обитатели</option>
+                        <option value="Идеални части">Идеални части</option>
+                    </select>
+                    <label class="admin-label">От период</label>
+                    <input type="text" id="masterLogikaFrom" class="admin-input" placeholder="01.2026">
+                    <label class="admin-label">До период</label>
+                    <input type="text" id="masterLogikaTo" class="admin-input" placeholder="12.2026">
+                    <button class="admin-btn primary" onclick="submitMaster('Логика')">Запиши</button>
+                </div>
+
+                <!-- Uchasite Tab Content -->
+                <div id="master-tab-uchastie" class="master-panel" style="display:none;">
+                    <label class="admin-label">Апартамент</label>
+                    <select id="masterUchApt" class="admin-input"></select>
+                    <label class="admin-label">Участва (Да/Не)</label>
+                    <select id="masterUchVal" class="admin-input">
+                        <option value="Да">Да</option>
+                        <option value="Не">Не</option>
+                    </select>
+                    <label class="admin-label">От период</label>
+                    <input type="text" id="masterUchFrom" class="admin-input" placeholder="01.2026">
+                    <label class="admin-label">До период</label>
+                    <input type="text" id="masterUchTo" class="admin-input" placeholder="12.2026">
+                    <button class="admin-btn primary" onclick="submitMaster('УЧАСТИЕ_АСАНСЬОР')">Запиши</button>
+                </div>
+
+                <!-- Obitateli Tab Content -->
+                <div id="master-tab-obitatel" class="master-panel" style="display:none;">
+                    <label class="admin-label">Апартамент</label>
+                    <select id="masterObApt" class="admin-input"></select>
+                    <label class="admin-label">Брой обитатели</label>
+                    <input type="number" id="masterObVal" class="admin-input" placeholder="Напр. 2" min="1" step="1">
+                    <label class="admin-label">От период</label>
+                    <input type="text" id="masterObFrom" class="admin-input" placeholder="01.2026">
+                    <label class="admin-label">До период</label>
+                    <input type="text" id="masterObTo" class="admin-input" placeholder="12.2026">
+                    <button class="admin-btn primary" onclick="submitMaster('ОБИТАТЕЛИ')">Запиши</button>
+                </div>
+
+                <!-- Chipove Tab Content -->
+                <div id="master-tab-chipove" class="master-panel" style="display:none;">
+                    <label class="admin-label">Апартамент</label>
+                    <select id="masterChApt" class="admin-input"></select>
+                    <label class="admin-label">Брой чипове</label>
+                    <input type="number" id="masterChVal" class="admin-input" placeholder="Напр. 3" min="0" step="1">
+                    <label class="admin-label">От период</label>
+                    <input type="text" id="masterChFrom" class="admin-input" placeholder="01.2026">
+                    <label class="admin-label">До период</label>
+                    <input type="text" id="masterChTo" class="admin-input" placeholder="12.2026">
+                    <button class="admin-btn primary" onclick="submitMaster('ЧИПОВЕ')">Запиши</button>
+                </div>
+
+                <!-- Idealni Chasti Tab Content -->
+                <div id="master-tab-idealni" class="master-panel" style="display:none;">
+                    <label class="admin-label">Апартамент</label>
+                    <select id="masterIdApt" class="admin-input"></select>
+                    <label class="admin-label">Идеални части (%)</label>
+                    <input type="number" id="masterIdVal" class="admin-input" placeholder="пр. 2.45" min="0"
+                        step="0.01">
+                    <label class="admin-label">От период</label>
+                    <input type="text" id="masterIdFrom" class="admin-input" placeholder="01.2026">
+                    <label class="admin-label">До период</label>
+                    <input type="text" id="masterIdTo" class="admin-input" placeholder="12.2026">
+                    <button class="admin-btn primary" onclick="submitMaster('ИДЕАЛНИ_ЧАСТИ')">Запиши</button>
+                </div>
+
+                <!-- Payment Info Tab Content -->
+                <div id="master-tab-payment" class="master-panel" style="display:none;">
+                    <label class="admin-label">Инструкции за плащане (Глобални)</label>
+                    <textarea id="masterPaymentText" class="admin-input" style="min-height: 120px; font-size: 14px;"
+                        placeholder="Въведете IBAN, Easypay код и друга информация за плащане..."></textarea>
+
+                    <label class="admin-label" style="margin-top: 15px;">Имейл за връзка с Домоуправителя</label>
+                    <input type="email" id="masterAdminContactEmail" class="admin-input" placeholder="primer@vhod.com">
+
+                    <button class="admin-btn primary" onclick="submitMaster('PAYMENT_INFO')">Запази глобалните
+                        данни</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPER ADMIN FULL OVERLAY -->
+    <div id="superAdminOverlay" class="admin-overlay" style="display:none; z-index:2000;">
+        <div class="admin-card" id="superAdminLoginCard">
+            <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
+            <div class="admin-icon">👑</div>
+            <div class="admin-title">Супер Админ Панел</div>
+            <div class="admin-subtitle">Вход за Главен Администратор</div>
+            <input type="password" id="superPinInput" class="admin-input"
+                placeholder="Супер Парола (напр. вашият имейл)" onkeydown="if(event.key==='Enter')loginSuperAdmin()">
+            <div id="superPinError" class="admin-error"></div>
+            <button class="admin-btn primary" onclick="loginSuperAdmin()">Вход</button>
+        </div>
+
+        <div class="admin-card" id="superAdminDashboard" style="display:none; max-width: 500px;">
+            <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
+            <div class="admin-title">👑 Създаване на нов Вход/Клиент</div>
+            <p class="subtitle" style="margin-bottom: 20px;">Генерира копия на шаблонните таблици и задава достъп
+                автоматично.</p>
+
+            <div class="form-group">
+                <label class="admin-label">Град (пр. Sofia)</label>
+                <input type="text" id="newCity" class="admin-input" placeholder="Sofia">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Блок (пр. 32)</label>
+                <input type="text" id="newBlock" class="admin-input" placeholder="32">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Вход (пр. A)</label>
+                <input type="text" id="newEntrance" class="admin-input" placeholder="A">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Имейл на домоуправителя</label>
+                <input type="email" id="newAdminEmail" class="admin-input" placeholder="admin@example.com">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Брой апартаменти</label>
+                <input type="number" id="newAptCount" class="admin-input" placeholder="Напр. 24" min="1" step="1">
+            </div>
+            <div style="margin-top:20px;">
+                <button class="admin-btn primary" id="createClientBtn" onclick="submitNewClient()">Създай Клиент &
+                    Генерирай Таблици</button>
+            </div>
+
+            <div class="admin-divider" style="margin: 30px 0;"></div>
+            <div class="admin-title">🔒 Управление на достъпа</div>
+            <p class="subtitle" style="margin-bottom: 20px;">Спрете, пуснете или дайте безсрочен достъп на даден вход.
+            </p>
+            <div style="overflow-x: auto;">
+                <table
+                    style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+                            <th style="padding: 8px;">Вход (Име)</th>
+                            <th style="padding: 8px;">ID</th>
+                            <th style="padding: 8px;">Валиден до</th>
+                            <th style="padding: 8px;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="superAdminEntrancesList">
+                        <!-- Попълва се динамично -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast" class="toast"></div>
+
+    <div class="app-container">
+
+        <!-- ============================================== -->
+        <!-- VIEW: 1. ЗАГЛАВЕН ИНТЕРФЕЙС / СЕЛЕКТОР           -->
+        <!-- ============================================== -->
+        <div id="view-selector" class="view-panel active">
+            <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
+                <!-- Demo Shortcut -->
+                <button class="btn"
+                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                    onclick="document.getElementById('access-id').value='DEMO'; enterEntrance();"
+                    title="Опитай демо версия" onmouseover="this.style.transform='translateY(-2px)';"
+                    onmouseout="this.style.transform='translateY(0)';">
+                    ▶ ДЕМО
+                </button>
+
+                <!-- Contact Shortcut -->
+                <a href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none;">
+                    <button class="btn"
+                        style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                        title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.transform='translateY(0)';">✉️ Пишете ни</button>
+                </a>
+            </div>
+
+            <div class="selector-card glass-panel" style="margin-top: 60px;">
+                <div class="brand">
+                    <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
+                        title="Вход за създатели">Е</div>
+                    <h1 class="brand-name">Етажна собственост</h1>
+                </div>
+                <!-- Requested subtitles -->
+                <p class="subtitle"
+                    style="margin-top: 8px; font-size: 15px; color: var(--text-muted-light); line-height: 1.5;">
+                    Забравете за скъпите професионални домоуправители.<br>
+                    Автоматизирайте и управлявайте сами разходите в етажната си собственост. Всичко в един поглед, един
+                    клик.
+                </p>
+
+                <div class="form-group" style="margin-top: 24px;">
+                    <label class="admin-label" style="text-align: left; font-size: 14px;">Моля, въведете вашето ID за
+                        достъп до входа си</label>
+                    <input type="text" id="access-id" class="admin-input"
+                        onkeydown="if(event.key==='Enter')enterEntrance()">
+                </div>
+
+                <button class="btn btn-primary"
+                    style="width: 100%; justify-content: center; margin-top: 20px; font-size: 16px; padding: 14px;"
+                    onclick="enterEntrance()">Вход в системата</button>
+
+                <!-- Information features below the button -->
+                <div
+                    style="margin-top: 30px; text-align: left; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
+                    <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Възможности на приложението:
+                    </h4>
+                    <ul
+                        style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light);">
+                        <li style="margin-bottom: 8px;"><b>За Потребители:</b> Лесна проверка на задължения, онлайн
+                            преглед на платени суми, получаване на прозрачни отчети и инструкции за плащане.</li>
+                        <li><b>За Домоуправители:</b> Автоматично засичане и разпределянето им по апартаменти, на нови
+                            задължения на етажната собственост, и пълен контрол
+                            върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
+                            умения.</li>
+                    </ul>
+
+                    <a href="description.txt" target="_blank" id="fullDescriptionLink"
+                        style="display: inline-block; margin-top: 15px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
+                        📘 Пълно описание на функционалностите ➔
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: 2. НАЧАЛНА СТРАНИЦА НА ИЗБРАНИЯ ВХОД     -->
+        <!-- ============================================== -->
+        <div id="view-entrance-home" class="view-panel hidden">
+            <!-- OLD APP HEADER -->
+            <div class="header-row">
+                <h1 id="entrance-title">Етажна собственост</h1>
+                <div class="header-icons">
+                    <!-- Бутон за имейл на Домоуправител (крие се ако няма въведен) -->
+                    <a id="admin-mailto-link" href="#" style="text-decoration:none; display:none;">
+                        <button class="header-icon-btn" title="Пиши на Домоуправителя">📧</button>
+                    </a>
+
+                    <button class="header-icon-btn" onclick="openAdmin()" title="Админ панел">⚙️</button>
+                </div>
+            </div>
+
+            <!-- OLD APP CONTENT -->
+            <div class="content-area">
+                <div class="top-buttons">
+                    <a href="#" target="_blank">
+                        <button class="btn blue">Ф-ри ел.</button>
+                    </a>
+                    <a href="#" target="_blank">
+                        <button class="btn blue">Абонамент</button>
+                    </a>
+                </div>
+
+                <select id="apartmentSelect" class="apartment-select">
+                    <option value="">Избери апартамент</option>
+                </select>
+
+                <!-- Payment Details Card -->
+                <div id="payment-details-box" class="glass-panel"
+                    style="padding: 20px; margin-bottom: 24px; display: none; text-align: left;">
+                    <div style="display:flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 20px;">💳</span>
+                        <h4 style="margin:0; font-weight: 600; font-size: 16px;">Инструкции за плащане</h4>
+                    </div>
+                    <div id="payment-instructions"
+                        style="font-size: 14px; white-space: pre-line; line-height: 1.6; opacity: 0.9;"></div>
+                </div>
+
+                <div class="card saldo-card" id="saldoCard">
+                    <div class="saldo">Текущо салдо: <span id="saldo">-</span></div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="old-styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Период</th>
+                                    <th>Асансьор</th>
+                                    <th>Абонамент</th>
+                                    <th>Осв.</th>
+                                    <th>Охрана</th>
+                                    <th>Почистване</th>
+                                    <th>Поддръжка</th>
+                                    <th>Фонд Рем.</th>
+                                    <th>Дължимо</th>
+                                    <th>Платено</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-divider" style="margin: 40px 0 20px;"></div>
+
+                <!-- ============================================== -->
+                <!-- GENERAL DASHBOARD INFO (Отдолу)                 -->
+                <!-- ============================================== -->
+                <div class="dashboard-section">
+                    <div class="page-header" style="margin-bottom: 20px;">
+                        <h2 style="font-family: var(--font-head); font-size: 1.5rem; color: var(--text-main-light);">
+                            Обща информация за входа</h2>
+                        <p class="subtitle" style="font-size: 0.9rem;">Обобщени данни и статуси за избрания вход.</p>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card glass-panel">
+                            <div class="metric-icon debt">
+                                <span style="font-size:24px;">⛔</span>
+                            </div>
+                            <div class="metric-info">
+                                <span class="label">Общи неплатени задължения</span>
+                                <h3 class="value" id="dash-debts">2,450 EUR</h3>
+                                <span class="trend negative">+5% от миналия месец</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass-panel highlight">
+                            <div class="metric-icon balance">
+                                <span style="font-size:24px;">🏦</span>
+                            </div>
+                            <div class="metric-info">
+                                <span class="label">Текущ Баланс на входа</span>
+                                <h3 class="value" id="dash-balance">4,500 EUR</h3>
+                                <span class="trend positive">Стабилен резерв</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="dashboard-bottom">
+                        <div class="recent-activity glass-panel table-container">
+                            <div class="panel-header">
+                                <h3 style="margin:0; font-family:var(--font-head);">Последни плащания във входа</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Апартамент</th>
+                                        <th>Сума</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>03.03.2026</td>
+                                        <td>Ап 12</td>
+                                        <td class="amount positive">+50.00 EUR</td>
+                                        <td><span class="badge success">Paid</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>28.02.2026</td>
+                                        <td>Ап 04</td>
+                                        <td class="amount positive">+15.00 EUR</td>
+                                        <td><span class="badge success">Paid</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
