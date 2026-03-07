@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUg_AcfnaAJLCu6Y7zKy7e3L_74cFuJzVkiw37o5X3osryBpj71cmyH18PpjOyd0V3_g/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX8CMuQhFHtdMGpSceY9OqxYbM58VBMbcSIp3uWubiYY2majuDRx49WzPNWHFi2_xOgw/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -136,7 +136,7 @@ window.enterEntrance = async function () {
     // Зареждаме списъка с апартаменти
     const result = await apiCall('list', { list: 'apartments' });
 
-    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
+    // 3. Зареждаме и конфигурацията за входа (Плащане и т.н.)
     const configResult = await apiCall('getEntranceInfo');
 
     if (configResult && configResult.info && configResult.info.isHardBlocked) {
@@ -146,72 +146,81 @@ window.enterEntrance = async function () {
         return; // PREVENT ENTRY
     }
 
+    // Възстановяваме бутона веднага щом приключат заявките
+    btn.textContent = originalText;
+    btn.disabled = false;
+
+    // ОБРАБОТКА НА КОНФИГУРАЦИЯТА
     if (configResult && configResult.info) {
-        // Запазваме цените в сесията, за да ги ползваме в Админ панела
-        if (configResult.info.pricePerApt !== undefined) {
-            sessionStorage.setItem("pricePerApt_" + currentRouteKey, configResult.info.pricePerApt);
-            sessionStorage.setItem("lifetimePrice_" + currentRouteKey, configResult.info.lifetimePrice);
-            sessionStorage.setItem("currency_" + currentRouteKey, configResult.info.currency);
+        const info = configResult.info;
+
+        // Запазваме цените в сесията
+        if (info.pricePerApt !== undefined) {
+            sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
+            sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
+            sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        if (configResult.info.paymentInfo) {
-            document.getElementById('payment-instructions').textContent = configResult.info.paymentInfo;
+        // Инструкции за плащане
+        if (info.paymentInfo) {
+            document.getElementById('payment-instructions').textContent = info.paymentInfo;
             document.getElementById('payment-details-box').style.display = 'block';
-            document.getElementById('masterPaymentText').value = configResult.info.paymentInfo;
+            document.getElementById('masterPaymentText').value = info.paymentInfo;
         } else {
             document.getElementById('payment-details-box').style.display = 'none';
         }
 
-        // Зареждаме имейла на домоуправителя за контакт
-        if (configResult.info.adminContactEmail) {
-            document.getElementById('admin-mailto-link').href = `mailto:${configResult.info.adminContactEmail}`;
+        // Имейл за връзка
+        if (info.adminContactEmail) {
+            document.getElementById('admin-mailto-link').href = `mailto:${info.adminContactEmail}`;
             document.getElementById('admin-mailto-link').style.display = 'inline-block';
-            document.getElementById('masterAdminContactEmail').value = configResult.info.adminContactEmail;
+            document.getElementById('masterAdminContactEmail').value = info.adminContactEmail;
         } else {
             document.getElementById('admin-mailto-link').style.display = 'none';
         }
+
+        // Външни линкове
+        if (info.linkElectric) {
+            document.getElementById('btn-electric-link').href = info.linkElectric;
+            document.getElementById('btn-electric-link').style.display = 'inline-block';
+            document.getElementById('masterLinkElectric').value = info.linkElectric;
+        } else {
+            document.getElementById('btn-electric-link').style.display = 'none';
+        }
+
+        if (info.linkSubscription) {
+            document.getElementById('btn-subscription-link').href = info.linkSubscription;
+            document.getElementById('btn-subscription-link').style.display = 'inline-block';
+            document.getElementById('masterLinkSubscription').value = info.linkSubscription;
+        } else {
+            document.getElementById('btn-subscription-link').style.display = 'none';
+        }
     } else {
+        // Скриваме всичко, ако няма инфо
+        document.getElementById('payment-details-box').style.display = 'none';
         document.getElementById('admin-mailto-link').style.display = 'none';
-    }
-
-    // Зареждаме външните линкове за фактури
-    if (configResult.info.linkElectric) {
-        document.getElementById('btn-electric-link').href = configResult.info.linkElectric;
-        document.getElementById('btn-electric-link').style.display = 'inline-block';
-        document.getElementById('masterLinkElectric').value = configResult.info.linkElectric;
-    } else {
         document.getElementById('btn-electric-link').style.display = 'none';
-    }
-
-    if (configResult.info.linkSubscription) {
-        document.getElementById('btn-subscription-link').href = configResult.info.linkSubscription;
-        document.getElementById('btn-subscription-link').style.display = 'inline-block';
-        document.getElementById('masterLinkSubscription').value = configResult.info.linkSubscription;
-    } else {
         document.getElementById('btn-subscription-link').style.display = 'none';
     }
-} else {
 
-    // Възстановяваме бутона
-    btn.textContent = originalText;
-    btn.disabled = false;
-
+    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
     if (result && !result.error && Array.isArray(result)) {
         apartmentList = result;
 
-        // Обновяваме заглавието на входа, ако е върнато от getEntranceInfo
+        // Обновяваме заглавието на входа
         if (configResult && configResult.info && configResult.info.entranceName) {
             document.getElementById('entrance-title').textContent = configResult.info.entranceName;
         } else {
             document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
         }
-        // Change View
+
+        // Превключваме екрана
         document.getElementById('view-selector').classList.remove('active');
         document.getElementById('view-selector').classList.add('hidden');
         document.getElementById('view-entrance-home').classList.remove('hidden');
         document.getElementById('view-entrance-home').classList.add('active');
 
-        // Populate dropdown
+        // Пълним падащото меню
         const select = document.getElementById("apartmentSelect");
         select.innerHTML = '<option value="">Избери апартамент</option>';
         apartmentList.forEach(a => {
@@ -220,16 +229,15 @@ window.enterEntrance = async function () {
             select.appendChild(opt);
         });
 
-        // Зареждаме данните за дашборда на входа
+        // Зареждаме дашборда
         loadDashboardData();
     } else {
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
-            showToast("Грешка при връзка (Failed to fetch). Обновете SCRIPT_URL в app.js и проверете интернет връзката си.", "error");
+            showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
         } else {
             showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
         }
-        console.error(result);
     }
 }
 
