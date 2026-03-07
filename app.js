@@ -171,9 +171,26 @@ window.enterEntrance = async function () {
             document.getElementById('admin-mailto-link').style.display = 'none';
         }
     } else {
-        document.getElementById('payment-details-box').style.display = 'none';
         document.getElementById('admin-mailto-link').style.display = 'none';
     }
+
+    // Зареждаме външните линкове за фактури
+    if (configResult.info.linkElectric) {
+        document.getElementById('btn-electric-link').href = configResult.info.linkElectric;
+        document.getElementById('btn-electric-link').style.display = 'inline-block';
+        document.getElementById('masterLinkElectric').value = configResult.info.linkElectric;
+    } else {
+        document.getElementById('btn-electric-link').style.display = 'none';
+    }
+
+    if (configResult.info.linkSubscription) {
+        document.getElementById('btn-subscription-link').href = configResult.info.linkSubscription;
+        document.getElementById('btn-subscription-link').style.display = 'inline-block';
+        document.getElementById('masterLinkSubscription').value = configResult.info.linkSubscription;
+    } else {
+        document.getElementById('btn-subscription-link').style.display = 'none';
+    }
+} else {
 
     // Възстановяваме бутона
     btn.textContent = originalText;
@@ -202,6 +219,9 @@ window.enterEntrance = async function () {
             opt.value = opt.textContent = a;
             select.appendChild(opt);
         });
+
+        // Зареждаме данните за дашборда на входа
+        loadDashboardData();
     } else {
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
@@ -229,6 +249,36 @@ document.addEventListener('DOMContentLoaded', () => {
         enterEntrance();
     }
 });
+
+async function loadDashboardData() {
+    const result = await apiCall('getDashboardData');
+    if (result && result.success && result.dashboard) {
+        const d = result.dashboard;
+        const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+
+        document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
+        document.getElementById('dash-balance').textContent = `${d.totalBalance} ${cur}`;
+
+        // Trends (просто визуални за момента)
+        document.getElementById('dash-debts-trend').textContent = d.totalDebts > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
+        document.getElementById('dash-balance-trend').textContent = d.totalBalance > 0 ? "Наличен бюджет" : "Очаква събиране";
+
+        const tbody = document.getElementById('dash-recent-payments');
+        if (d.recentPayments && d.recentPayments.length > 0) {
+            tbody.innerHTML = '';
+            d.recentPayments.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.date}</td>
+                    <td>${p.apartment}</td>
+                    <td class="amount positive">+${p.amount.toFixed(2)} ${cur}</td>
+                    <td><span class="badge success">Платено</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+}
 
 // ==============================================
 // APARTMENT DATA
@@ -542,8 +592,10 @@ window.submitMaster = async function (sheetName) {
     if (sheetName === 'PAYMENT_INFO') {
         const pText = document.getElementById('masterPaymentText').value.trim();
         const aEmail = document.getElementById('masterAdminContactEmail').value.trim();
+        const lElectric = document.getElementById('masterLinkElectric').value.trim();
+        const lSub = document.getElementById('masterLinkSubscription').value.trim();
 
-        if (!pText && !aEmail) {
+        if (!pText && !aEmail && !lElectric && !lSub) {
             showToast("Моля, попълнете поне едно поле!", "error");
             return;
         }
@@ -551,7 +603,9 @@ window.submitMaster = async function (sheetName) {
         // Пращаме го като обект, бекендът ще го разпознае
         val = JSON.stringify({
             paymentInfo: pText,
-            adminContactEmail: aEmail
+            adminContactEmail: aEmail,
+            linkElectric: lElectric,
+            linkSubscription: lSub
         });
 
         fromP = "01.2000";

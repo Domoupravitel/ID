@@ -220,8 +220,24 @@
                     <label class="admin-label" style="margin-top: 15px;">Имейл за връзка с Домоуправителя</label>
                     <input type="email" id="masterAdminContactEmail" class="admin-input" placeholder="primer@vhod.com">
 
-                    <button class="admin-btn primary" onclick="submitMaster('PAYMENT_INFO')">Запази глобалните
-                        данни</button>
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                        <label class="admin-label" style="color: var(--primary);">📂 Външни документи (Линкове)</label>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+                            Поставете линкове към Google Drive папка или друго хранилище, за да могат живущите да виждат
+                            фактурите.
+                        </p>
+
+                        <label class="admin-label" style="font-size: 12px;">Линк за "Ф-ри ел."</label>
+                        <input type="url" id="masterLinkElectric" class="admin-input"
+                            placeholder="https://drive.google.com/...">
+
+                        <label class="admin-label" style="font-size: 12px; margin-top: 8px;">Линк за "Абонамент"</label>
+                        <input type="url" id="masterLinkSubscription" class="admin-input"
+                            placeholder="https://drive.google.com/...">
+                    </div>
+
+                    <button class="admin-btn primary" style="margin-top: 15px;"
+                        onclick="submitMaster('PAYMENT_INFO')">Запази глобалните данни</button>
                 </div>
 
             </div>
@@ -452,10 +468,10 @@
             <!-- OLD APP CONTENT -->
             <div class="content-area">
                 <div class="top-buttons">
-                    <a href="#" target="_blank">
+                    <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
                         <button class="btn blue">Ф-ри ел.</button>
                     </a>
-                    <a href="#" target="_blank">
+                    <a id="btn-subscription-link" href="#" target="_blank" style="display: none;">
                         <button class="btn blue">Абонамент</button>
                     </a>
                 </div>
@@ -522,8 +538,8 @@
                             </div>
                             <div class="metric-info">
                                 <span class="label">Общи неплатени задължения</span>
-                                <h3 class="value" id="dash-debts">2,450 EUR</h3>
-                                <span class="trend negative">+5% от миналия месец</span>
+                                <h3 class="value" id="dash-debts">0.00 EUR</h3>
+                                <span class="trend" id="dash-debts-trend">Очаква данни</span>
                             </div>
                         </div>
 
@@ -533,8 +549,8 @@
                             </div>
                             <div class="metric-info">
                                 <span class="label">Текущ Баланс на входа</span>
-                                <h3 class="value" id="dash-balance">4,500 EUR</h3>
-                                <span class="trend positive">Стабилен резерв</span>
+                                <h3 class="value" id="dash-balance">0.00 EUR</h3>
+                                <span class="trend" id="dash-balance-trend">Очаква данни</span>
                             </div>
                         </div>
                     </div>
@@ -555,18 +571,10 @@
                                         <th>Статус</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="dash-recent-payments">
                                     <tr>
-                                        <td>03.03.2026</td>
-                                        <td>Ап 12</td>
-                                        <td class="amount positive">+50.00 EUR</td>
-                                        <td><span class="badge success">Paid</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>28.02.2026</td>
-                                        <td>Ап 04</td>
-                                        <td class="amount positive">+15.00 EUR</td>
-                                        <td><span class="badge success">Paid</span></td>
+                                        <td colspan="4" style="text-align:center; padding: 20px; color: #999;">Все още
+                                            няма регистрирани плащания.</td>
                                     </tr>
                                 </tbody>
                             </table>
