@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdVCArTTKxTJ-_Kgrk8TmDocMTV5tKDT2ELDhSu78XLuVndrBP8dxtlTl06BkoOrMOvw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUg_AcfnaAJLCu6Y7zKy7e3L_74cFuJzVkiw37o5X3osryBpj71cmyH18PpjOyd0V3_g/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
