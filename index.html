@@ -236,6 +236,24 @@
                     За да удължите автоматично вашия абонамент за тази система, направете банков/ePay превод към Супер
                     Админа. Системата ще отчете плащането ви автоматично, стига да посочите точния код за вашия вход:
                 </p>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                    <div
+                        style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
+                        <p
+                            style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
+                            Месечна Такса <br><span style="font-size: 9px; opacity: 0.7">(за целия вход)</span></p>
+                        <div id="subMonthlyPrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
+                    </div>
+                    <div
+                        style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
+                        <p
+                            style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
+                            Безсрочно <br><span style="font-size: 9px; opacity: 0.7">(Lifetime Оферта)</span></p>
+                        <div id="subLifetimePrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
+                    </div>
+                </div>
+
                 <div
                     style="background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed var(--primary); text-align: center;">
                     <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0;">
@@ -294,6 +312,34 @@
             </div>
 
             <div class="admin-divider" style="margin: 30px 0;"></div>
+            <div class="admin-title">⚙️ Настройки на Абонаментите</div>
+            <p class="subtitle" style="margin-bottom: 20px;">Задайте цени за абонамент и инструкции за плащане. Те се
+                показват в имейлите към домоуправителите.</p>
+
+            <div class="form-group">
+                <label class="admin-label">Инструкции за плащане на абонамент (изпращат се по имейл към
+                    домоуправители)</label>
+                <textarea id="superPaymentOptions" class="admin-input" style="min-height: 80px;"
+                    placeholder="Въведете IBAN, Revolut или ePay номер..."></textarea>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Цена Месечно - Големи градове: София, Пловдив, Варна (в лв)</label>
+                <input type="number" id="priceBigCities" class="admin-input" placeholder="Напр. 15">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Цена Месечно - Всички останали градове (в лв)</label>
+                <input type="number" id="priceOtherCities" class="admin-input" placeholder="Напр. 10">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label class="admin-label">Цена за Безсрочен / Lifetime абонамент (0 = няма оферта)</label>
+                <input type="number" id="priceLifetime" class="admin-input" placeholder="Напр. 150">
+            </div>
+            <div style="margin-top:20px;">
+                <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
+                    настройките</button>
+            </div>
+
+            <div class="admin-divider" style="margin: 30px 0;"></div>
             <div class="admin-title">🔒 Управление на достъпа</div>
             <p class="subtitle" style="margin-bottom: 20px;">Спрете, пуснете или дайте безсрочен достъп на даден вход.
             </p>
@@ -326,14 +372,7 @@
         <!-- ============================================== -->
         <div id="view-selector" class="view-panel active">
             <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
-                <!-- Demo Shortcut -->
-                <button class="btn"
-                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                    onclick="document.getElementById('access-id').value='DEMO'; enterEntrance();"
-                    title="Опитай демо версия" onmouseover="this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.transform='translateY(0)';">
-                    ▶ ДЕМО
-                </button>
+
 
                 <!-- Contact Shortcut -->
                 <a href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none;">

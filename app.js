@@ -37,6 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("pinInput").addEventListener('keydown', (e) => {
         if (e.key === 'Enter') verifyPin();
     });
+
+    // Автоматично влизане, ако в URL-а има ?id=XXXXXX
+    const urlParams = new URLSearchParams(window.location.search);
+    const idParam = urlParams.get('id');
+    if (idParam) {
+        document.getElementById('access-id').value = idParam;
+        enterEntrance();
+    }
 });
 
 // ==============================================
@@ -131,14 +139,21 @@ window.enterEntrance = async function () {
     // Зареждаме и конфигурацията за входа (Плащане и т.н.)
     const configResult = await apiCall('getEntranceInfo');
 
-    if (configResult && configResult.info && configResult.info.isBlocked) {
-        showToast(`⚠️ Достъпът е блокиран. Абонаментът е изтекъл. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+    if (configResult && configResult.info && configResult.info.isHardBlocked) {
+        showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
         btn.textContent = originalText;
         btn.disabled = false;
         return; // PREVENT ENTRY
     }
 
     if (configResult && configResult.info) {
+        // Запазваме цените в сесията, за да ги ползваме в Админ панела
+        if (configResult.info.pricePerApt !== undefined) {
+            sessionStorage.setItem("pricePerApt_" + currentRouteKey, configResult.info.pricePerApt);
+            sessionStorage.setItem("lifetimePrice_" + currentRouteKey, configResult.info.lifetimePrice);
+            sessionStorage.setItem("currency_" + currentRouteKey, configResult.info.currency);
+        }
+
         if (configResult.info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = configResult.info.paymentInfo;
             document.getElementById('payment-details-box').style.display = 'block';
@@ -188,14 +203,14 @@ window.enterEntrance = async function () {
             select.appendChild(opt);
         });
     } else {
-        showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
+        const errStr = result && result.error ? result.error.toString() : "";
+        if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
+            showToast("Грешка при връзка (Failed to fetch). Обновете SCRIPT_URL в app.js и проверете интернет връзката си.", "error");
+        } else {
+            showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
+        }
         console.error(result);
     }
-}
-
-window.loadDemo = function () {
-    document.getElementById('access-id').value = 'Sofia_32_A';
-    enterEntrance();
 }
 
 // Check URL params on load
@@ -222,6 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadApartmentData(apartment) {
     resetApartmentData();
     const result = await apiCall('apartment', { apartment: apartment });
+
+    if (result && result.error && result.showMessage) {
+        document.getElementById("saldo").textContent = "Скрит";
+        showToast("Информацията за салдото Ви, не се показва поради неплатен абонамент", "error");
+        return;
+    }
 
     if (result && !result.error) {
         const saldoVal = Number(result.saldo || 0);
@@ -306,6 +327,28 @@ window.verifyPin = async function () {
 function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
+
+    const subCodeEl = document.getElementById("subscriptionCodeDisplay");
+    if (subCodeEl) {
+        subCodeEl.textContent = currentRouteKey;
+    }
+
+    // Попълваме цените, ако ги имаме запазени
+    const p1 = sessionStorage.getItem("pricePerApt_" + currentRouteKey);
+    const p2 = sessionStorage.getItem("lifetimePrice_" + currentRouteKey);
+    const curr = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+
+    if (p1 && p2) {
+        const aptCount = apartmentList ? apartmentList.length : 0;
+        const totalMonthly = (parseFloat(p1) * aptCount).toFixed(2);
+
+        const mPriceEl = document.getElementById("subMonthlyPrice");
+        const lPriceEl = document.getElementById("subLifetimePrice");
+
+        if (mPriceEl) mPriceEl.textContent = `${totalMonthly} ${curr}`;
+        if (lPriceEl) lPriceEl.textContent = `${p2} ${curr}`;
+    }
+
     populateAdminDropdowns();
     autoFillCurrentPeriod();
 }
@@ -585,7 +628,46 @@ window.loginSuperAdmin = async function () {
 function showSuperAdminDashboard() {
     document.getElementById("superAdminLoginCard").style.display = "none";
     document.getElementById("superAdminDashboard").style.display = "block";
+
+    // Fetch settings and populate fields
+    apiCall('getSuperSettings').then(res => {
+        if (res && res.success) {
+            document.getElementById("superPaymentOptions").value = res.paymentOptions || "";
+            document.getElementById("priceBigCities").value = res.priceBigCities || "";
+            document.getElementById("priceOtherCities").value = res.priceOtherCities || "";
+            document.getElementById("priceLifetime").value = res.priceLifetime || "";
+        }
+    });
+
     loadSuperAdminEntrances();
+}
+
+window.saveSuperSettings = async function () {
+    const btn = document.getElementById("saveSuperSettingsBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "Запазване...";
+    btn.disabled = true;
+
+    const reqData = {
+        paymentOptions: document.getElementById("superPaymentOptions").value.trim(),
+        priceBigCities: document.getElementById("priceBigCities").value.trim(),
+        priceOtherCities: document.getElementById("priceOtherCities").value.trim(),
+        priceLifetime: document.getElementById("priceLifetime").value.trim()
+    };
+
+    const result = await apiCall('updateSuperSettings', {
+        pin: sessionStorage.getItem("superAdminAuth"),
+        settings: JSON.stringify(reqData)
+    });
+
+    if (result && result.success) {
+        showToast("Настройките са запазени успешно!", "success");
+    } else {
+        showToast(result.error || "Грешка при запазване", "error");
+    }
+
+    btn.textContent = originalText;
+    btn.disabled = false;
 }
 
 async function loadSuperAdminEntrances() {
