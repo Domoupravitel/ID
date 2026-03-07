@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX8CMuQhFHtdMGpSceY9OqxYbM58VBMbcSIp3uWubiYY2majuDRx49WzPNWHFi2_xOgw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziLmYlWgTkR3SqfyN25yvjKx_Q3DBcfAmcMqAy58L6qLnTGDgwVR0FR4LLYgMmtfIKqA/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -575,16 +575,11 @@ window.submitMaster = async function (sheetName) {
         fromP = document.getElementById('masterLogikaFrom').value.trim();
         toP = document.getElementById('masterLogikaTo').value.trim();
         apt = "";
-    } else if (sheetName === 'УЧАСТИЕ') {
+    } else if (sheetName === 'УЧАСТИЕ' || sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
         fromP = document.getElementById('masterUchFrom').value.trim();
         toP = document.getElementById('masterUchTo').value.trim();
-    } else if (sheetName === 'ОСВЕТЛЕНИЕ_УЧАСТИЕ') {
-        apt = document.getElementById('masterOsvApt').value;
-        val = document.getElementById('masterOsvVal').value;
-        fromP = document.getElementById('masterOsvFrom').value.trim();
-        toP = document.getElementById('masterOsvTo').value.trim();
     } else if (sheetName === 'ОБИТАТЕЛИ') {
         apt = document.getElementById('masterObApt').value;
         val = document.getElementById('masterObVal').value;
@@ -595,6 +590,11 @@ window.submitMaster = async function (sheetName) {
         val = document.getElementById('masterChVal').value;
         fromP = document.getElementById('masterChFrom').value.trim();
         toP = document.getElementById('masterChTo').value.trim();
+    } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
+        apt = document.getElementById('masterIdApt').value;
+        val = document.getElementById('masterIdVal').value;
+        fromP = document.getElementById('masterIdFrom').value.trim();
+        toP = document.getElementById('masterIdTo').value.trim();
     }
 
     if (sheetName === 'PAYMENT_INFO') {
