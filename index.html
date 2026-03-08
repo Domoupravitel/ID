@@ -142,6 +142,9 @@
                     <button class="master-tab" onclick="switchMasterTab('chipove',this)">Чипове</button>
                     <button class="master-tab" onclick="switchMasterTab('idealni',this)">Идеални Ч.</button>
                     <button class="master-tab" onclick="switchMasterTab('payment',this)">💳 Плащ.инфо</button>
+                    <button class="master-tab" onclick="switchMasterTab('zues',this)"
+                        style="background: var(--primary); color: white; border-color: var(--primary);">⚖️ ЗУЕС
+                        Мениджър</button>
                 </div>
                 <!-- Logic Tab Content -->
                 <div id="master-tab-logika" class="master-panel">
@@ -214,6 +217,114 @@
                     <button class="admin-btn primary" onclick="submitMaster('ИДЕАЛНИ_ЧАСТИ')">Запиши</button>
                 </div>
 
+                <!-- ⚖️ ЗУЕС Мениджър Section -->
+                <div id="master-tab-zues" class="master-panel" style="display: none;">
+                    <div
+                        style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
+                            onclick="switchZuesSubTab('z-book')">📖 Книга на ЕС</button>
+                        <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
+                            onclick="switchZuesSubTab('z-meeting')">🤝 Общо събрание</button>
+                        <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
+                            onclick="switchZuesSubTab('z-docs')">📄 Декларации</button>
+                    </div>
+
+                    <!-- Sub-Tab: Book -->
+                    <div id="zub-z-book" class="zues-sub-panel">
+                        <h4 class="admin-subtitle">Книга на етажната собственост (Чл. 7)</h4>
+                        <div
+                            style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+                            <label class="admin-label">Изберете Апартамент</label>
+                            <select id="masterBookApt" class="admin-input" onchange="loadBookData()"></select>
+
+                            <div id="book-fields-container" style="margin-top: 15px;">
+                                <label class="admin-label">Собственик</label>
+                                <input type="text" id="book-Owner" class="admin-input">
+                                <label class="admin-label">ЕИК/БУЛСТАТ</label>
+                                <input type="text" id="book-EIK" class="admin-input">
+                                <label class="admin-label">Имейл</label>
+                                <input type="email" id="book-Email" class="admin-input">
+                                <label class="admin-label">Обитатели</label>
+                                <textarea id="book-Occupants" class="admin-input"></textarea>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <div>
+                                        <label class="admin-label">Дата вписване</label>
+                                        <input type="date" id="book-EntryDate" class="admin-input">
+                                    </div>
+                                    <div>
+                                        <label class="admin-label">Предназначение</label>
+                                        <select id="book-Purpose" class="admin-input">
+                                            <option value="Жилищно">Жилищно</option>
+                                            <option value="Офис">Офис</option>
+                                            <option value="Търговско">Търговско</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <label class="admin-label">Домашни любимци</label>
+                                <input type="text" id="book-Pets" class="admin-input">
+                            </div>
+                            <button class="admin-btn primary" style="width:100%; margin-top:20px;"
+                                onclick="submitBookData()">Запиши Промените</button>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Tab: Meeting -->
+                    <div id="zub-z-meeting" class="zues-sub-panel" style="display:none;">
+                        <h4 class="admin-subtitle">🤝 Общо събрание</h4>
+                        <div style="background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 8px;">
+                            <label class="admin-label">Дневен ред (кратко)</label>
+                            <textarea id="meetingAgenda" class="admin-input"
+                                placeholder="1. Приемане на отчет; 2. Избор на домоуправител..."></textarea>
+
+                            <div id="quorum-box"
+                                style="margin-top:10px; padding:10px; background: #eefbff; border-radius:6px; border: 1px solid #bdeaff;">
+                                <div
+                                    style="display:flex; justify-content: space-between; font-weight: 600; font-size: 13px;">
+                                    <span>Представени ид.части:</span>
+                                    <span id="quorum-percent">0.00%</span>
+                                </div>
+                                <p id="quorum-status" style="font-size: 11px; margin: 4px 0 0; color: #666;">Необходими
+                                    67% (или 51% след 1 час)</p>
+                            </div>
+
+                            <div
+                                style="margin-top:15px; max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
+                                <table style="width:100%; font-size: 12px; border-collapse: collapse;">
+                                    <thead style="background:#f5f5f5; position:sticky; top:0;">
+                                        <tr>
+                                            <th style="padding:6px; text-align:left;">Апт.</th>
+                                            <th style="padding:6px; text-align:center;">Присъства</th>
+                                            <th style="padding:6px; text-align:right;">Ид.ч. %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="meeting-attendance-list">
+                                        <!-- Попълва се динамично -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                                <button class="admin-btn secondary" onclick="printAttendanceList()"
+                                    style="font-size: 11px;">🖨️ Списък за подписи</button>
+                                <button class="admin-btn primary" onclick="generateMeetingMinutes()"
+                                    style="font-size: 11px;">📋 Чернова на Протокол</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Tab: Declarations -->
+                    <div id="zub-z-docs" class="zues-sub-panel" style="display:none;">
+                        <h4 class="admin-subtitle">📄 Генериране на документи</h4>
+                        <div style="padding:10px; background: rgba(0,0,0,0.02); border-radius:8px;">
+                            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Изберете апартамент за
+                                декларация за вписване (Чл. 47).</p>
+                            <select id="docAptSelect" class="admin-input"></select>
+                            <button class="admin-btn blue" style="width:100%; margin-top:10px;"
+                                onclick="printOwnerDeclaration()">🖨️ Генерирай Декларация</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Payment Info Tab Content -->
                 <div id="master-tab-payment" class="master-panel" style="display:none;">
                     <label class="admin-label">Инструкции за плащане (Глобални)</label>
@@ -224,9 +335,11 @@
                     <input type="email" id="masterAdminContactEmail" class="admin-input" placeholder="primer@vhod.com">
 
                     <div style="margin-top: 15px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 8px;">
-                        <label class="admin-label" style="color: var(--primary);">📂 Външни документи (Линкове)</label>
+                        <label class="admin-label" style="color: var(--primary);">📂 Външни документи
+                            (Линкове)</label>
                         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                            Поставете линкове към Google Drive папка или друго хранилище, за да могат живущите да виждат
+                            Поставете линкове към Google Drive папка или друго хранилище, за да могат живущите да
+                            виждат
                             фактурите.
                         </p>
 
@@ -234,7 +347,8 @@
                         <input type="url" id="masterLinkElectric" class="admin-input"
                             placeholder="https://drive.google.com/...">
 
-                        <label class="admin-label" style="font-size: 12px; margin-top: 8px;">Линк за "Абонамент"</label>
+                        <label class="admin-label" style="font-size: 12px; margin-top: 8px;">Линк за
+                            "Абонамент"</label>
                         <input type="url" id="masterLinkSubscription" class="admin-input"
                             placeholder="https://drive.google.com/...">
                     </div>
@@ -243,369 +357,468 @@
                         onclick="submitMaster('PAYMENT_INFO')">Запази глобалните данни</button>
                 </div>
 
-            </div>
+                <div class="admin-divider" style="margin-top: 20px;"></div>
 
-            <div class="admin-divider" style="margin-top: 20px;"></div>
+                <!-- Platform Subscription Section for Domoupraviteli -->
+                <div class="admin-section"
+                    style="background: rgba(0, 122, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,122,255,0.2); margin-top: 15px;">
+                    <h3 style="color: var(--primary); margin-bottom: 8px;">⭐ Абонамент към Платформата</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                        За да удължите автоматично вашия абонамент за тази система, направете банков/ePay превод към
+                        Супер
+                        Админа. Системата ще отчете плащането ви автоматично, стига да посочите точния код за вашия
+                        вход:
+                    </p>
 
-            <!-- Platform Subscription Section for Domoupraviteli -->
-            <div class="admin-section"
-                style="background: rgba(0, 122, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,122,255,0.2); margin-top: 15px;">
-                <h3 style="color: var(--primary); margin-bottom: 8px;">⭐ Абонамент към Платформата</h3>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
-                    За да удължите автоматично вашия абонамент за тази система, направете банков/ePay превод към Супер
-                    Админа. Системата ще отчете плащането ви автоматично, стига да посочите точния код за вашия вход:
-                </p>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                    <div
-                        style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
-                        <p
-                            style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
-                            Месечна Такса <br><span style="font-size: 9px; opacity: 0.7">(за целия вход)</span></p>
-                        <div id="subMonthlyPrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
-                    </div>
-                    <div
-                        style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
-                        <p
-                            style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
-                            Безсрочно <br><span style="font-size: 9px; opacity: 0.7">(Lifetime Оферта)</span></p>
-                        <div id="subLifetimePrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
-                    </div>
-                </div>
-
-                <div
-                    style="background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed var(--primary); text-align: center;">
-                    <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0;">
-                        Основание за превод (Вашият ID код):</p>
-                    <div id="subscriptionCodeDisplay"
-                        style="font-size: 18px; font-weight: 700; color: var(--primary); font-family: monospace;">
-                        Зарежда се...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SUPER ADMIN FULL OVERLAY -->
-    <div id="superAdminOverlay" class="admin-overlay" style="display:none; z-index:2000;">
-        <div class="admin-card" id="superAdminLoginCard">
-            <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
-            <div class="admin-icon">👑</div>
-            <div class="admin-title">Супер Админ Панел</div>
-            <div class="admin-subtitle">Вход за Главен Администратор</div>
-            <input type="text" id="superPinInput" class="admin-input" placeholder="Имейл или PIN... (0000 за демо)"
-                onkeydown="if(event.key==='Enter')loginSuperAdmin()">
-            <div id="superPinError" class="admin-error"></div>
-            <button class="admin-btn primary" onclick="loginSuperAdmin()">Вход</button>
-        </div>
-
-        <div class="admin-card" id="superAdminDashboard" style="display:none; max-width: 500px;">
-            <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
-
-            <!-- Section 1: Create Client -->
-            <div class="admin-section">
-                <h3>👑 Създаване на нов Вход/Клиент</h3>
-                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Генерира копия на шаблонните таблици и
-                    задава достъп автоматично.</p>
-
-                <div class="form-group">
-                    <label class="admin-label">Град (пр. Sofia)</label>
-                    <input type="text" id="newCity" class="admin-input" placeholder="Sofia">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Блок (пр. 32)</label>
-                    <input type="text" id="newBlock" class="admin-input" placeholder="32">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Вход (пр. A)</label>
-                    <input type="text" id="newEntrance" class="admin-input" placeholder="A">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Имейл на домоуправителя</label>
-                    <input type="email" id="newAdminEmail" class="admin-input" placeholder="admin@example.com">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Брой апартаменти</label>
-                    <input type="number" id="newAptCount" class="admin-input" placeholder="Напр. 24" min="1" step="1">
-                </div>
-                <button class="admin-btn primary" id="createClientBtn" onclick="submitNewClient()">Създай
-                    Клиент</button>
-            </div>
-
-            <!-- Section 2: Pricing -->
-            <div class="admin-section">
-                <h3>⚙️ Настройки на Абонаментите</h3>
-                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Инструкции и цени за абонамент.</p>
-
-                <div class="form-group">
-                    <label class="admin-label">Инструкции за плащане на абонамент</label>
-                    <textarea id="superPaymentOptions" class="admin-input" style="min-height: 80px;"
-                        placeholder="Въведете IBAN, Revolut или ePay номер..."></textarea>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Цена Месечно - Големи градове (лв)</label>
-                    <input type="number" id="priceBigCities" class="admin-input" placeholder="Напр. 15">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Цена Месечно - Останали градове (лв)</label>
-                    <input type="number" id="priceOtherCities" class="admin-input" placeholder="Напр. 10">
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="admin-label">Цена за Безсрочен / Lifetime (лв)</label>
-                    <input type="number" id="priceLifetime" class="admin-input" placeholder="Напр. 150">
-                </div>
-                <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
-                    настройките</button>
-            </div>
-
-            <!-- Section 3: Access Control -->
-            <div class="admin-section">
-                <h3>🔒 Управление на достъпа</h3>
-                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Спрете, пуснете или дайте безсрочен
-                    достъп.</p>
-                <div style="overflow-x: auto;">
-                    <table
-                        style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.1);">
-                                <th style="padding: 8px;">Вход</th>
-                                <th style="padding: 8px;">Валиден</th>
-                                <th style="padding: 8px;">Действие</th>
-                            </tr>
-                        </thead>
-                        <tbody id="superAdminEntrancesList">
-                            <!-- Попълва се динамично -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Section 4: Backup & Security -->
-            <div class="admin-section"
-                style="background: rgba(0,0,0,0.02); border-top: 2px solid #eee; margin-top: 30px;">
-                <h3>🛡️ Архив на Системата</h3>
-                <p class="subtitle" style="margin-bottom: 15px; font-size: 12px;">Циклично архивиране на всички данни.
-                </p>
-                <button class="admin-btn secondary" id="runBackupBtn" onclick="runSystemBackup()">📦 Създай Ръчен Архив
-                    Сега</button>
-                <div id="backupStatus" style="margin-top: 10px; font-size: 12px; display:none;"></div>
-                <div style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 6px;">
-                    <p style="font-size: 11px; margin: 0 0 5px 0; font-weight: 600;">📁 Папка с всички архиви:</p>
-                    <a id="backupFolderLink" href="https://drive.google.com/" target="_blank"
-                        style="font-size: 12px; color: var(--primary); text-decoration: none;">Отвори Google Drive
-                        Архиви ➔</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toast" class="toast"></div>
-
-    <div class="app-container">
-
-        <!-- ============================================== -->
-        <!-- VIEW: 1. ЗАГЛАВЕН ИНТЕРФЕЙС / СЕЛЕКТОР           -->
-        <!-- ============================================== -->
-        <div id="view-selector" class="view-panel active">
-            <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
-
-
-                <!-- Contact Shortcut -->
-                <a href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none;">
-                    <button class="btn"
-                        style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                        title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
-                        onmouseout="this.style.transform='translateY(0)';">✉️ Попитай ни / Регистрирай се</button>
-                </a>
-            </div>
-
-            <div class="selector-card glass-panel" style="margin-top: 60px;">
-                <div class="brand">
-                    <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
-                        title="Вход за създатели">Е</div>
-                    <h1 class="brand-name">Етажна собственост</h1>
-                </div>
-                <!-- Requested subtitles -->
-                <p class="subtitle"
-                    style="margin-top: 8px; font-size: 15px; color: var(--text-muted-light); line-height: 1.5;">
-                    Забравете за скъпите професионални домоуправители.<br>
-                    Автоматизирайте и управлявайте сами разходите в етажната си собственост. Всичко в един поглед, един
-                    клик.
-                </p>
-
-                <div class="form-group" style="margin-top: 24px;">
-                    <label class="admin-label" style="text-align: left; font-size: 14px;">Моля, въведете вашето ID за
-                        достъп до входа си</label>
-                    <input type="text" id="access-id" class="admin-input"
-                        onkeydown="if(event.key==='Enter')enterEntrance()">
-                </div>
-
-                <button class="btn btn-primary"
-                    style="width: 100%; justify-content: center; margin-top: 20px; font-size: 16px; padding: 14px;"
-                    onclick="enterEntrance()">Вход в системата</button>
-
-                <!-- Information features below the button -->
-                <div
-                    style="margin-top: 30px; text-align: left; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
-                    <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Възможности на приложението:
-                    </h4>
-                    <ul
-                        style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light);">
-                        <li style="margin-bottom: 8px;"><b>За Потребители:</b> Лесна проверка на задължения, онлайн
-                            преглед на платени суми, получаване на прозрачни отчети и инструкции за плащане.</li>
-                        <li><b>За Домоуправители:</b> Автоматично засичане и разпределянето им по апартаменти, на нови
-                            задължения на етажната собственост, и пълен контрол
-                            върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
-                            умения.</li>
-                    </ul>
-
-                    <a href="description.html" target="_blank" id="fullDescriptionLink"
-                        style="display: inline-block; margin-top: 15px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
-                        📘 Пълно описание на функционалностите ➔
-                    </a>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- VIEW: 2. НАЧАЛНА СТРАНИЦА НА ИЗБРАНИЯ ВХОД     -->
-        <!-- ============================================== -->
-        <div id="view-entrance-home" class="view-panel hidden">
-            <!-- OLD APP HEADER -->
-            <div class="header-row">
-                <h1 id="entrance-title">Етажна собственост</h1>
-                <div class="header-icons">
-                    <!-- Бутон за имейл на Домоуправител (крие се ако няма въведен) -->
-                    <a id="admin-mailto-link" href="#" style="text-decoration:none; display:none;">
-                        <button class="header-icon-btn" title="Пиши на Домоуправителя">📧</button>
-                    </a>
-
-                    <button class="header-icon-btn" onclick="openAdmin()" title="Админ панел">⚙️</button>
-                </div>
-            </div>
-
-            <!-- OLD APP CONTENT -->
-            <div class="content-area">
-                <div class="top-buttons">
-                    <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
-                        <button class="btn blue">Ф-ри ел.</button>
-                    </a>
-                    <a id="btn-subscription-link" href="#" target="_blank" style="display: none;">
-                        <button class="btn blue">Абонамент</button>
-                    </a>
-                </div>
-
-                <select id="apartmentSelect" class="apartment-select">
-                    <option value="">Избери апартамент</option>
-                </select>
-
-                <!-- Payment Details Card -->
-                <div id="payment-details-box" class="glass-panel"
-                    style="padding: 20px; margin-bottom: 24px; display: none; text-align: left;">
-                    <div style="display:flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                        <span style="font-size: 20px;">💳</span>
-                        <h4 style="margin:0; font-weight: 600; font-size: 16px;">Инструкции за плащане</h4>
-                    </div>
-                    <div id="payment-instructions"
-                        style="font-size: 14px; white-space: pre-line; line-height: 1.6; opacity: 0.9;"></div>
-
-                    <div id="payment-reference-box"
-                        style="margin-top: 15px; padding: 12px; background: #fff8f0; border-left: 4px solid #f6ad55; border-radius: 4px; display: none;">
-                        <span
-                            style="font-size: 12px; color: #c05621; font-weight: 600; display: block; margin-bottom: 4px;">📌
-                            Основание за автоматично плащане:</span>
-                        <div id="payment-reference-value"
-                            style="font-family: monospace; font-size: 16px; font-weight: 700; color: #d32f2f; letter-spacing: 0.5px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <div
+                            style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
+                            <p
+                                style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
+                                Месечна Такса <br><span style="font-size: 9px; opacity: 0.7">(за целия вход)</span></p>
+                            <div id="subMonthlyPrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
                         </div>
-                        <span
-                            style="font-size: 11px; color: #a0522d; margin-top: 4px; display: block; opacity: 0.8;">Цитирайте
-                            този код точно както е изписан в основанието на Ваш превод.</span>
+                        <div
+                            style="flex:1; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.1); text-align: center;">
+                            <p
+                                style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0; color: #555;">
+                                Безсрочно <br><span style="font-size: 9px; opacity: 0.7">(Lifetime Оферта)</span></p>
+                            <div id="subLifetimePrice" style="font-size: 16px; font-weight: 700; color: #333;">...</div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed var(--primary); text-align: center;">
+                        <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; margin: 0 0 5px 0;">
+                            Основание за превод (Вашият ID код):</p>
+                        <div id="subscriptionCodeDisplay"
+                            style="font-size: 18px; font-weight: 700; color: var(--primary); font-family: monospace;">
+                            Зарежда се...</div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="card saldo-card" id="saldoCard">
-                    <div class="saldo">Текущо салдо: <span id="saldo">-</span></div>
+        <!-- SUPER ADMIN FULL OVERLAY -->
+        <div id="superAdminOverlay" class="admin-overlay" style="display:none; z-index:2000;">
+            <div class="admin-card" id="superAdminLoginCard">
+                <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
+                <div class="admin-icon">👑</div>
+                <div class="admin-title">Супер Админ Панел</div>
+                <div class="admin-subtitle">Вход за Главен Администратор</div>
+                <input type="text" id="superPinInput" class="admin-input" placeholder="Имейл или PIN... (0000 за демо)"
+                    onkeydown="if(event.key==='Enter')loginSuperAdmin()">
+                <div id="superPinError" class="admin-error"></div>
+                <button class="admin-btn primary" onclick="loginSuperAdmin()">Вход</button>
+            </div>
+
+            <div class="admin-card" id="superAdminDashboard" style="display:none; max-width: 500px;">
+                <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
+
+                <!-- Section 1: Create Client -->
+                <div class="admin-section">
+                    <h3>👑 Създаване на нов Вход/Клиент</h3>
+                    <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Генерира копия на шаблонните
+                        таблици и
+                        задава достъп автоматично.</p>
+
+                    <div class="form-group">
+                        <label class="admin-label">Град (пр. Sofia)</label>
+                        <input type="text" id="newCity" class="admin-input" placeholder="Sofia">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Блок (пр. 32)</label>
+                        <input type="text" id="newBlock" class="admin-input" placeholder="32">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Вход (пр. A)</label>
+                        <input type="text" id="newEntrance" class="admin-input" placeholder="A">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Имейл на домоуправителя</label>
+                        <input type="email" id="newAdminEmail" class="admin-input" placeholder="admin@example.com">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Брой апартаменти</label>
+                        <input type="number" id="newAptCount" class="admin-input" placeholder="Напр. 24" min="1"
+                            step="1">
+                    </div>
+                    <button class="admin-btn primary" id="createClientBtn" onclick="submitNewClient()">Създай
+                        Клиент</button>
                 </div>
 
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="old-styled-table">
+                <!-- Section 2: Pricing -->
+                <div class="admin-section">
+                    <h3>⚙️ Настройки на Абонаментите</h3>
+                    <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Инструкции и цени за абонамент.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="admin-label">Инструкции за плащане на абонамент</label>
+                        <textarea id="superPaymentOptions" class="admin-input" style="min-height: 80px;"
+                            placeholder="Въведете IBAN, Revolut или ePay номер..."></textarea>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Цена Месечно - Големи градове (лв)</label>
+                        <input type="number" id="priceBigCities" class="admin-input" placeholder="Напр. 15">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Цена Месечно - Останали градове (лв)</label>
+                        <input type="number" id="priceOtherCities" class="admin-input" placeholder="Напр. 10">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="admin-label">Цена за Безсрочен / Lifetime (лв)</label>
+                        <input type="number" id="priceLifetime" class="admin-input" placeholder="Напр. 150">
+                    </div>
+                    <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
+                        настройките</button>
+                </div>
+
+                <!-- Section 3: Access Control -->
+                <div class="admin-section">
+                    <h3>🔒 Управление на достъпа</h3>
+                    <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Спрете, пуснете или дайте
+                        безсрочен
+                        достъп.</p>
+                    <div style="overflow-x: auto;">
+                        <table
+                            style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
                             <thead>
-                                <tr>
-                                    <th>Период</th>
-                                    <th>Асансьор</th>
-                                    <th>Абонамент</th>
-                                    <th>Осв.</th>
-                                    <th>Охрана</th>
-                                    <th>Почистване</th>
-                                    <th>Поддръжка</th>
-                                    <th>Фонд Рем.</th>
-                                    <th>Дължимо</th>
-                                    <th>Платено</th>
+                                <tr style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+                                    <th style="padding: 8px;">Вход</th>
+                                    <th style="padding: 8px;">Валиден</th>
+                                    <th style="padding: 8px;">Действие</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody">
-                                <!-- Populated dynamically -->
+                            <tbody id="superAdminEntrancesList">
+                                <!-- Попълва се динамично -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="admin-divider" style="margin: 40px 0 20px;"></div>
+                <!-- Section 4: Backup & Security -->
+                <div class="admin-section"
+                    style="background: rgba(0,0,0,0.02); border-top: 2px solid #eee; margin-top: 30px;">
+                    <h3>🛡️ Архив на Системата</h3>
+                    <p class="subtitle" style="margin-bottom: 15px; font-size: 12px;">Циклично архивиране на всички
+                        данни.
+                    </p>
+                    <button class="admin-btn secondary" id="runBackupBtn" onclick="runSystemBackup()">📦 Създай Ръчен
+                        Архив
+                        Сега</button>
+                    <div id="backupStatus" style="margin-top: 10px; font-size: 12px; display:none;"></div>
+                    <div style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 6px;">
+                        <p style="font-size: 11px; margin: 0 0 5px 0; font-weight: 600;">📁 Папка с всички архиви:</p>
+                        <a id="backupFolderLink" href="https://drive.google.com/" target="_blank"
+                            style="font-size: 12px; color: var(--primary); text-decoration: none;">Отвори Google Drive
+                            Архиви ➔</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <!-- ============================================== -->
-                <!-- GENERAL DASHBOARD INFO (Отдолу)                 -->
-                <!-- ============================================== -->
-                <div class="dashboard-section">
-                    <div class="page-header" style="margin-bottom: 20px;">
-                        <h2 style="font-family: var(--font-head); font-size: 1.5rem; color: var(--text-main-light);">
-                            Обща информация за входа</h2>
-                        <p class="subtitle" style="font-size: 0.9rem;">Обобщени данни и статуси за избрания вход.</p>
+        <!-- TOAST NOTIFICATIONS -->
+        <div id="toast" class="toast"></div>
+
+        <div class="app-container">
+
+            <!-- ============================================== -->
+            <!-- VIEW: 1. ЗАГЛАВЕН ИНТЕРФЕЙС / СЕЛЕКТОР           -->
+            <!-- ============================================== -->
+            <div id="view-selector" class="view-panel active">
+                <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
+
+
+                    <!-- Contact Shortcut -->
+                    <a href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none;">
+                        <button class="btn"
+                            style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                            title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
+                            onmouseout="this.style.transform='translateY(0)';">✉️ Попитай ни / Регистрирай се</button>
+                    </a>
+                </div>
+
+                <div class="selector-card glass-panel" style="margin-top: 60px;">
+                    <div class="brand">
+                        <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
+                            title="Вход за създатели">Е</div>
+                        <h1 class="brand-name">Етажна собственост</h1>
+                    </div>
+                    <!-- Requested subtitles -->
+                    <p class="subtitle"
+                        style="margin-top: 8px; font-size: 15px; color: var(--text-muted-light); line-height: 1.5;">
+                        Забравете за скъпите професионални домоуправители.<br>
+                        Автоматизирайте и управлявайте сами разходите в етажната си собственост. Всичко в един поглед,
+                        един
+                        клик.
+                    </p>
+
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label class="admin-label" style="text-align: left; font-size: 14px;">Моля, въведете вашето ID
+                            за
+                            достъп до входа си</label>
+                        <input type="text" id="access-id" class="admin-input"
+                            onkeydown="if(event.key==='Enter')enterEntrance()">
                     </div>
 
-                    <div class="metrics-grid">
-                        <div class="metric-card glass-panel">
-                            <div class="metric-icon debt">
-                                <span style="font-size:24px;">⛔</span>
-                            </div>
-                            <div class="metric-info">
-                                <span class="label">Общи неплатени задължения</span>
-                                <h3 class="value" id="dash-debts">0.00 EUR</h3>
-                                <span class="trend" id="dash-debts-trend">Очаква данни</span>
-                            </div>
-                        </div>
+                    <button class="btn btn-primary"
+                        style="width: 100%; justify-content: center; margin-top: 20px; font-size: 16px; padding: 14px;"
+                        onclick="enterEntrance()">Вход в системата</button>
 
-                        <div class="metric-card glass-panel highlight">
-                            <div class="metric-icon balance">
-                                <span style="font-size:24px;">🏦</span>
-                            </div>
-                            <div class="metric-info">
-                                <span class="label">Фонд ремонт</span>
-                                <h3 class="value" id="dash-balance">0.00 EUR</h3>
-                                <span class="trend" id="dash-balance-trend">Очаква данни</span>
-                            </div>
-                        </div>
+                    <!-- Information features below the button -->
+                    <div
+                        style="margin-top: 30px; text-align: left; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
+                        <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Възможности на приложението:
+                        </h4>
+                        <ul
+                            style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light);">
+                            <li style="margin-bottom: 8px;"><b>За Потребители:</b> Лесна проверка на задължения, онлайн
+                                преглед на платени суми, получаване на прозрачни отчети и инструкции за плащане.</li>
+                            <li><b>За Домоуправители:</b> Автоматично засичане и разпределянето им по апартаменти, на
+                                нови
+                                задължения на етажната собственост, и пълен контрол
+                                върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
+                                умения.</li>
+                        </ul>
+
+                        <a href="description.html" target="_blank" id="fullDescriptionLink"
+                            style="display: inline-block; margin-top: 15px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
+                            📘 Пълно описание на функционалностите ➔
+                        </a>
                     </div>
 
+                </div>
+            </div>
 
+            <!-- ============================================== -->
+            <!-- VIEW: 2. НАЧАЛНА СТРАНИЦА НА ИЗБРАНИЯ ВХОД     -->
+            <!-- ============================================== -->
+            <div id="view-entrance-home" class="view-panel hidden">
+                <!-- OLD APP HEADER -->
+                <div class="header-row">
+                    <h1 id="entrance-title">Етажна собственост</h1>
+                    <div class="header-icons">
+                        <!-- Бутон за имейл на Домоуправител (крие се ако няма въведен) -->
+                        <a id="admin-mailto-link" href="#" style="text-decoration:none; display:none;">
+                            <button class="header-icon-btn" title="Пиши на Домоуправителя">📧</button>
+                        </a>
 
-                    <div class="dashboard-bottom">
-                        <div class="recent-activity glass-panel" style="padding: 20px;">
-                            <div class="panel-header" style="margin-bottom: 20px;">
-                                <h3 style="margin:0; font-family:var(--font-head);">Тенденции на разходите (12 мес.)
-                                </h3>
-                            </div>
-                            <div style="width: 100%; height: 300px; position: relative;">
-                                <canvas id="trendChart"></canvas>
-                            </div>
-                        </div>
+                        <button class="header-icon-btn" onclick="openMonthlyReport()" title="Месечен отчет">📄</button>
+                        <button class="header-icon-btn" onclick="openAdmin()" title="Админ панел">⚙️</button>
                     </div>
                 </div>
 
+                <!-- OLD APP CONTENT -->
+                <div class="content-area">
+                    <div class="top-buttons">
+                        <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
+                            <button class="btn blue">Ф-ри ел.</button>
+                        </a>
+                        <a id="btn-subscription-link" href="#" target="_blank" style="display: none;">
+                            <button class="btn blue">Абонамент</button>
+                        </a>
+                    </div>
+
+                    <select id="apartmentSelect" class="apartment-select">
+                        <option value="">Избери апартамент</option>
+                    </select>
+
+                    <!-- Payment Details Card -->
+                    <div id="payment-details-box" class="glass-panel"
+                        style="padding: 20px; margin-bottom: 24px; display: none; text-align: left;">
+                        <div style="display:flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <span style="font-size: 20px;">💳</span>
+                            <h4 style="margin:0; font-weight: 600; font-size: 16px;">Инструкции за плащане</h4>
+                        </div>
+                        <div id="payment-instructions"
+                            style="font-size: 14px; white-space: pre-line; line-height: 1.6; opacity: 0.9;"></div>
+
+                        <div id="payment-reference-box"
+                            style="margin-top: 15px; padding: 12px; background: #fff8f0; border-left: 4px solid #f6ad55; border-radius: 4px; display: none;">
+                            <span
+                                style="font-size: 12px; color: #c05621; font-weight: 600; display: block; margin-bottom: 4px;">📌
+                                Основание за автоматично плащане:</span>
+                            <div id="payment-reference-value"
+                                style="font-family: monospace; font-size: 16px; font-weight: 700; color: #d32f2f; letter-spacing: 0.5px;">
+                            </div>
+                            <span
+                                style="font-size: 11px; color: #a0522d; margin-top: 4px; display: block; opacity: 0.8;">Цитирайте
+                                този код точно както е изписан в основанието на Ваш превод.</span>
+                        </div>
+                    </div>
+
+                    <div class="card saldo-card" id="saldoCard">
+                        <div class="saldo">Текущо салдо: <span id="saldo">-</span></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="old-styled-table">
+                                <thead>
+                                    <tr>
+                                        <th>Период</th>
+                                        <th>Асансьор</th>
+                                        <th>Абонамент</th>
+                                        <th>Осв.</th>
+                                        <th>Охрана</th>
+                                        <th>Почистване</th>
+                                        <th>Поддръжка</th>
+                                        <th>Фонд Рем.</th>
+                                        <th>Дължимо</th>
+                                        <th>Платено</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="admin-divider" style="margin: 40px 0 20px;"></div>
+
+                    <!-- ============================================== -->
+                    <!-- GENERAL DASHBOARD INFO (Отдолу)                 -->
+                    <!-- ============================================== -->
+                    <div class="dashboard-section">
+                        <div class="page-header" style="margin-bottom: 20px;">
+                            <h2
+                                style="font-family: var(--font-head); font-size: 1.5rem; color: var(--text-main-light);">
+                                Обща информация за входа</h2>
+                            <p class="subtitle" style="font-size: 0.9rem;">Обобщени данни и статуси за избрания вход.
+                            </p>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card glass-panel">
+                                <div class="metric-icon debt">
+                                    <span style="font-size:24px;">⛔</span>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="label">Общи неплатени задължения</span>
+                                    <h3 class="value" id="dash-debts">0.00 EUR</h3>
+                                    <span class="trend" id="dash-debts-trend">Очаква данни</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card glass-panel highlight">
+                                <div class="metric-icon balance">
+                                    <span style="font-size:24px;">🏦</span>
+                                </div>
+                                <div class="metric-info">
+                                    <span class="label">Фонд ремонт</span>
+                                    <h3 class="value" id="dash-balance">0.00 EUR</h3>
+                                    <span class="trend" id="dash-balance-trend">Очаква данни</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="dashboard-bottom">
+                            <div class="recent-activity glass-panel" style="padding: 20px;">
+                                <div class="panel-header" style="margin-bottom: 20px;">
+                                    <h3 style="margin:0; font-family:var(--font-head);">Тенденции на разходите (12 мес.)
+                                    </h3>
+                                </div>
+                                <div style="width: 100%; height: 300px; position: relative;">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VIEW: 3. МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)   -->
+            <!-- ============================================== -->
+            <div id="view-monthly-report" class="view-panel hidden">
+                <div class="header-row">
+                    <button class="header-icon-btn" onclick="switchPage('entrance-home')"
+                        style="background: none; box-shadow: none;">←</button>
+                    <h1 style="font-size: 18px; margin: 0; flex-grow: 1; text-align: center;">Месечен финансов отчет
+                    </h1>
+                    <div style="width: 40px;"></div>
+                </div>
+
+                <div class="content-area">
+                    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
+                        <label class="admin-label">Изберете период (ММ.ГГГГ):</label>
+                        <div style="display:flex; gap:10px; margin-bottom: 20px; margin-top: 8px;">
+                            <input type="text" id="reportPeriodInput" class="admin-input" placeholder="03.2026"
+                                style="margin:0;">
+                            <button class="btn btn-primary" onclick="generateReport()"
+                                style="padding: 0 20px; white-space: nowrap;">Покажи</button>
+                        </div>
+
+                        <div id="report-content" style="display:none;">
+                            <div id="report-print-area"
+                                style="background: white; color: black; padding: 25px; border-radius: 8px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #ddd;">
+                                <div
+                                    style="text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px;">
+                                    <h2 style="margin:0; font-size: 18px; text-transform: uppercase; color: #000;">
+                                        Месечен
+                                        отчет за приходите и разходите</h2>
+                                    <h3 id="report-title-period"
+                                        style="margin:5px 0; font-size: 15px; font-weight: 500;">за
+                                        месец ...</h3>
+                                    <p style="font-size: 11px; margin:0; font-style: italic; color: #555;">съгласно
+                                        изискванията на чл. 23, ал. 1, т. 3а от ЗУЕС</p>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <h4
+                                        style="border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 14px; text-transform: uppercase;">
+                                        I. Начислени разходи (Задължения към входа)</h4>
+                                    <table
+                                        style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                                        <tbody id="report-invoiced-rows">
+                                            <!-- Данните ще се попълват от JS -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="font-weight: bold; border-top: 1px solid #333;">
+                                                <td style="padding: 10px 0;">ОБЩО НАЧИСЛЕНИ РАЗХОДИ:</td>
+                                                <td id="report-total-invoiced"
+                                                    style="text-align: right; padding: 10px 0;">
+                                                    0.00 лв.</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <h4
+                                        style="border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 14px; text-transform: uppercase;">
+                                        II. Приходи (Събрани суми)</h4>
+                                    <div
+                                        style="display:flex; justify-content: space-between; padding: 10px 0; font-size: 13px;">
+                                        <span>Всички постъпили плащания за периода:</span>
+                                        <span id="report-total-collected" style="font-weight: bold;">0.00 лв.</span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="margin-top: 50px; font-size: 12px; display: flex; justify-content: space-between;">
+                                    <span>Дата на генериране: <span id="report-gen-date"></span></span>
+                                    <div style="text-align: right;">
+                                        <p style="margin: 0;">Домоуправител: ..............................</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 10px;">(подпис и печат)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn blue" style="width:100%; margin-top:20px; gap: 8px;"
+                                onclick="printReport()">
+                                <span>🖨️</span> Принтирай Отчета
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
 </body>
 

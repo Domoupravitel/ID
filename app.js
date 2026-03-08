@@ -548,13 +548,24 @@ function autoFillCurrentPeriod() {
 }
 
 function populateAdminDropdowns() {
-    ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt"].forEach(id => {
+    ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect"].forEach(id => {
         const sel = document.getElementById(id);
         if (sel && sel.options.length <= 1) {
             sel.innerHTML = '<option value="">Избери апартамент</option>';
             apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
         }
     });
+
+    // ЗУЕС Валидация в реално време за обитатели
+    const obInput = document.getElementById("masterObVal");
+    if (obInput) {
+        obInput.addEventListener("change", (e) => {
+            if (e.target.value !== "" && parseInt(e.target.value) < 1) {
+                showToast("⚠️ Минималният брой е 1. „За самостоятелен обект, в който се пребивава не повече от 30 дни в годината, разходите за управление и поддръжка се заплащат в размера, определен за един обитател.“ (Чл. 51, ал. 1 от ЗУЕС)", "error");
+                e.target.value = 1;
+            }
+        });
+    }
 }
 
 const getStoredPin = () => sessionStorage.getItem("adminAuth_" + currentRouteKey);
@@ -586,6 +597,83 @@ window.submitPayment = async function () {
         document.getElementById("adminAmount").value = "";
     } else {
         showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.loadBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) return;
+
+    // Clear fields first
+    const fields = ["Owner", "EIK", "Email", "Occupants", "EntryDate", "Pets", "Purpose"];
+    fields.forEach(f => {
+        const el = document.getElementById("book-" + f);
+        if (el) el.value = "";
+    });
+
+    try {
+        const result = await apiCall('getBookData', { apartment: apt });
+        if (result && result.success && result.data) {
+            const d = result.data;
+            if (d["Собственик"]) document.getElementById("book-Owner").value = d["Собственик"];
+            if (d["ЕИК/БУЛСТАТ"]) document.getElementById("book-EIK").value = d["ЕИК/БУЛСТАТ"];
+            if (d["Имейл"]) document.getElementById("book-Email").value = d["Имейл"];
+            if (d["Обитатели"]) document.getElementById("book-Occupants").value = d["Обитатели"];
+            if (d["Домашни любимци"]) document.getElementById("book-Pets").value = d["Домашни любимци"];
+            if (d["Предназначение"]) document.getElementById("book-Purpose").value = d["Предназначение"];
+
+            if (d["Дата вписване"]) {
+                try {
+                    const date = new Date(d["Дата вписване"]);
+                    if (!isNaN(date.getTime())) {
+                        document.getElementById("book-EntryDate").value = date.toISOString().split('T')[0];
+                    }
+                } catch (e) { }
+            }
+        }
+    } catch (e) {
+        showToast("Грешка при зареждане на данните", "error");
+    }
+}
+
+window.submitBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) {
+        showToast("Моля, изберете апартамент!", "error");
+        return;
+    }
+
+    const mapping = [
+        { id: "book-Owner", key: "Собственик" },
+        { id: "book-EIK", key: "ЕИК/БУЛСТАТ" },
+        { id: "book-Email", key: "Имейл" },
+        { id: "book-Occupants", key: "Обитатели" },
+        { id: "book-EntryDate", key: "Дата вписване" },
+        { id: "book-Pets", key: "Домашни любимци" },
+        { id: "book-Purpose", key: "Предназначение" }
+    ];
+
+    const btn = document.querySelector("#master-tab-book button.primary");
+    const originalText = btn.textContent;
+    btn.textContent = "Записване...";
+
+    try {
+        for (const item of mapping) {
+            const val = document.getElementById(item.id).value;
+            // Само ако има стойност или за да изпразним полето
+            await apiCall('updateBookData', {
+                pin: getStoredPin(),
+                apartment: apt,
+                key: item.key,
+                value: val
+            });
+        }
+        showToast("Книгата на ЕС е успешно обновена за " + apt, "success");
+    } catch (e) {
+        console.error(e);
+        showToast("Възникна грешка при записа", "error");
+    } finally {
+        btn.textContent = originalText;
     }
 }
 
@@ -682,8 +770,13 @@ window.submitEmail = async function () {
 window.switchMasterTab = function (tab, btn) {
     document.querySelectorAll(".master-panel").forEach(p => p.style.display = "none");
     document.querySelectorAll(".master-tab").forEach(b => b.classList.remove("active"));
-    document.getElementById("master-tab-" + tab).style.display = "block";
+    const pane = document.getElementById("master-tab-" + tab);
+    if (pane) pane.style.display = "block";
     btn.classList.add("active");
+
+    if (tab === 'zues') {
+        switchZuesSubTab('z-book'); // Начален под-таб
+    }
 }
 
 window.submitMaster = async function (sheetName) {
@@ -705,6 +798,12 @@ window.submitMaster = async function (sheetName) {
         val = document.getElementById('masterObVal').value;
         fromP = document.getElementById('masterObFrom').value.trim();
         toP = document.getElementById('masterObTo').value.trim();
+
+        // Валидация според ЗУЕС Чл. 51
+        if (val !== "" && parseInt(val) < 1) {
+            showToast("⚠️ Минималният брой е 1. „За самостоятелен обект, в който се пребивава не повече от 30 дни в годината, разходите за управление и поддръжка се заплащат в размера, определен за един обитател.“ (Чл. 51, ал. 1 от ЗУЕС)", "error");
+            return;
+        }
     } else if (sheetName === 'ЧИПОВЕ') {
         apt = document.getElementById('masterChApt').value;
         val = document.getElementById('masterChVal').value;
@@ -969,3 +1068,278 @@ window.runSystemBackup = async function () {
         statusDiv.style.color = "red";
     }
 }
+
+// ==============================================
+// ⚖️ ЗУЕС МЕНИДЖЪР ЛОГИКА
+// ==============================================
+
+window.switchZuesSubTab = function (subId) {
+    document.querySelectorAll(".zues-sub-panel").forEach(p => p.style.display = "none");
+    const target = document.getElementById("zub-" + subId);
+    if (target) target.style.display = "block";
+
+    // Ако е таб за събрание, генерираме списъка
+    if (subId === 'z-meeting') {
+        populateAttendanceTable();
+    }
+}
+
+function populateAttendanceTable() {
+    const list = document.getElementById("meeting-attendance-list");
+    if (!list) return;
+    list.innerHTML = "";
+
+    apartmentList.forEach(apt => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #eee";
+
+        // Намираме идеалните части (ако ги има в данни, тук ще ползваме фейк или ще ги заредим)
+        // В реално приложение бихме заредили процентите от MASTER листа
+        const percent = 2.0; // Примерна стойност
+
+        tr.innerHTML = `
+            <td style="padding:6px;">${apt}</td>
+            <td style="padding:6px; text-align:center;">
+                <input type="checkbox" class="quorum-check" data-apt="${apt}" data-percent="${percent}" onchange="calculateQuorum()">
+            </td>
+            <td style="padding:6px; text-align:right;">${percent}%</td>
+        `;
+        list.appendChild(tr);
+    });
+}
+
+window.calculateQuorum = function () {
+    let total = 0;
+    document.querySelectorAll(".quorum-check:checked").forEach(chk => {
+        total += parseFloat(chk.dataset.percent);
+    });
+
+    const p = document.getElementById("quorum-percent");
+    const s = document.getElementById("quorum-status");
+    if (p) p.innerText = total.toFixed(2) + "%";
+
+    if (s) {
+        if (total >= 67) {
+            s.innerText = "✅ Има кворум (над 67%)";
+            s.style.color = "green";
+        } else if (total >= 51) {
+            s.innerText = "🔶 Кворум за отложено събрание (над 51%)";
+            s.style.color = "orange";
+        } else {
+            s.innerText = "❌ Няма кворум (необходими 67%)";
+            s.style.color = "red";
+        }
+    }
+}
+
+window.printAttendanceList = function () {
+    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const now = new Date();
+
+    let html = `
+        <div style="font-family: Arial, sans-serif; padding: 40px; line-height: 1.6;">
+            <h2 style="text-align:center;">ПРИСЪСТВЕН СПИСЪК</h2>
+            <p style="text-align:center;">на собствениците/обитателите в етажна собственост</p>
+            <p><strong>Дата:</strong> ${now.toLocaleDateString('bg-BG')} г.</p>
+            <p><strong>Дневен ред:</strong> ${agenda}</p>
+            <table border="1" style="width:100%; border-collapse: collapse; margin-top:20px;">
+                <thead>
+                    <tr style="background:#eee;">
+                        <th style="padding:8px;">Апт.</th>
+                        <th style="padding:8px;">Представени Ид.части %</th>
+                        <th style="padding:8px;">Име на присъстващия / Пълномощник</th>
+                        <th style="padding:8px;">Подпис</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    apartmentList.forEach(apt => {
+        html += `
+            <tr>
+                <td style="padding:10px;">${apt}</td>
+                <td style="padding:10px; text-align:center;">2.0%</td>
+                <td style="padding:10px;"></td>
+                <td style="padding:10px; height: 30px;"></td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+            <div style="margin-top:30px;">
+                <p>Председател на събранието: ____________________</p>
+                <p>Протоколчик: ____________________</p>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.print();
+}
+
+window.generateMeetingMinutes = function () {
+    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const quorum = document.getElementById("quorum-percent").innerText;
+    const now = new Date();
+
+    let html = `
+        <div style="font-family: Times New Roman, serif; padding: 50px; line-height: 1.5; color: #000;">
+            <h2 style="text-align:center; text-decoration: underline;">ПРОТОКОЛ №____</h2>
+            <h3 style="text-align:center;">от Общо събрание на собствениците</h3>
+            <p>Днес, ${now.toLocaleDateString('bg-BG')} г., се проведе общо събрание на етажната собственост.</p>
+            <p><strong>Представени идеални части:</strong> ${quorum}</p>
+            <p><strong>Дневен ред:</strong></p>
+            <p>${agenda}</p>
+            <hr>
+            <p><strong>ХОД НА СЪБРАНИЕТО И ПРИЕТИ РЕШЕНИЯ:</strong></p>
+            <div style="min-height: 300px; border: 1px dashed #ccc; padding: 10px;">
+                <em>[Тук опишете дискусиите и гласуванията за всяка точка...]</em>
+            </div>
+            <p style="margin-top:40px;">Протоколът е съставен съгласно Чл. 16 от ЗУЕС.</p>
+            <div style="display:flex; justify-content: space-between; margin-top:50px;">
+                <div>Председател: ......................</div>
+                <div>Протоколчик: ......................</div>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+window.printOwnerDeclaration = async function () {
+    const apt = document.getElementById("docAptSelect").value;
+    if (!apt) {
+        showToast("Моля, изберете апартамент", "warning");
+        return;
+    }
+
+    // Зареждаме данните от Книгата (ако са налични)
+    const result = await apiCall('getBookData', { apartment: apt });
+    const data = result?.data || {};
+
+    let html = `
+        <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6;">
+            <h2 style="text-align:center;">ДЕКЛАРАЦИЯ</h2>
+            <p style="text-align:center;">по Чл. 47, ал. 2 от Закона за управление на етажната собственост</p>
+            <br>
+            <p>До Управителния съвет / Управителя на ЕС</p>
+            <p><strong>ОТНОСНО:</strong> Вписване на данни в Книгата на етажната собственост</p>
+            <br>
+            <p>Долуподписаният/ата: <strong>${data.Owner || '..........................................................'}</strong></p>
+            <p>В качеството ми на собственик/ползвател на самостоятелен обект <strong>№ ${apt}</strong></p>
+            <br>
+            <p><strong>ДЕКЛАРИРАМ СЛЕДНИТЕ ОБСТОЯТЕЛСТВА:</strong></p>
+            <p>1. Членове на моето домакинство / Обитатели: <br><em>${data.Occupants || '..........................................................'}</em></p>
+            <p>2. Притежавани домашни любимци: <em>${data.Pets || 'Няма'}</em></p>
+            <p>3. Използвам обекта за: <em>${data.Purpose || 'Жилищни нужди'}</em></p>
+            <br>
+            <p>Известно ми е, че за декларирани неверни данни нося наказателна отговорност по чл. 313 от Наказателния кодекс.</p>
+            <br><br>
+            <div style="display:flex; justify-content: space-between;">
+                <div>Дата: ......................</div>
+                <div>Декларатор: ......................</div>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.print();
+}
+
+// ==============================================
+// МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)
+// ==============================================
+
+window.openMonthlyReport = function () {
+    switchPage('monthly-report');
+    const d = new Date();
+    // По подразбиране предходния месец (защото отчетите се правят за завършен период)
+    const lastMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const periodStr = String(lastMonth.getMonth() + 1).padStart(2, '0') + "." + lastMonth.getFullYear();
+    document.getElementById("reportPeriodInput").value = periodStr;
+    document.getElementById("report-content").style.display = "none";
+}
+
+window.generateReport = async function () {
+    const period = document.getElementById("reportPeriodInput").value.trim();
+    if (!period) {
+        showToast("Моля, въведете период!", "error");
+        return;
+    }
+
+    const btn = document.querySelector("#view-monthly-report .btn-primary");
+    btn.textContent = "Зареждане...";
+    btn.disabled = true;
+
+    try {
+        const result = await apiCall('getMonthlyReport', { period: period });
+        if (result && result.success && result.data) {
+            const d = result.data;
+            document.getElementById("report-title-period").textContent = `за месец ${period} г.`;
+            document.getElementById("report-gen-date").textContent = new Date().toLocaleDateString('bg-BG');
+
+            const tableBody = document.getElementById("report-invoiced-rows");
+            tableBody.innerHTML = "";
+
+            const labels = {
+                elevator: "Разходи за асансьор",
+                subscription: "Други абонаменти",
+                light: "Електрическа енергия - общи части",
+                security: "Охрана / Консиерж",
+                cleaning: "Хигиена и почистване",
+                podrajka: "Поддръжка на общи части",
+                remont: "Фонд „Ремонт и обновяване“"
+            };
+
+            for (let key in labels) {
+                const val = d.invoiced[key] || 0;
+                if (val > 0) {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">${labels[key]}</td>
+                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${val.toFixed(2)} лв.</td>
+                    `;
+                    tableBody.appendChild(tr);
+                }
+            }
+
+            document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " лв.";
+            document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " лв.";
+
+            document.getElementById("report-content").style.display = "block";
+        } else {
+            showToast(result?.error || "Няма данни за този период.", "error");
+            document.getElementById("report-content").style.display = "none";
+        }
+    } catch (e) {
+        showToast("Грешка при генериране на отчета", "error");
+    } finally {
+        btn.textContent = "Покажи";
+        btn.disabled = false;
+    }
+}
+
+window.printReport = function () {
+    const printContents = document.getElementById('report-print-area').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    // Временна смяна на тялото за принтиране (или по-добре чрез CSS media print)
+    // Тъй като това е SPA, print() ще хване всичко. Използваме прост метод:
+    const printWindow = window.open('', '', 'height=800,width=800');
+    printWindow.document.write('<html><head><title>Месечен отчет - ' + document.getElementById("reportPeriodInput").value + '</title>');
+    printWindow.document.write('<style>body{font-family: Arial, sans-serif; padding: 40px;} table{width:100%; border-collapse:collapse;} td{padding:10px 0;} tr.total{font-weight:bold; border-top:2px solid black;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printContents);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
