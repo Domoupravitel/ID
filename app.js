@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzL-UrJ12FjI2nWI644W1rJxk0ziTe0WtD-qQgTcykrkqMwmuy0I7hBiLLifK7iO3yG/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUwlT8h-MQVbLzCu_enlswKsJMHp2nsnl6rB8f7ofVT6cRpfijE8HRGDyNjkorkfQShQ/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -260,21 +260,46 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadDashboardData() {
-    const result = await apiCall('getDashboardData');
-    if (result && result.success && result.dashboard) {
-        const d = result.dashboard;
-        const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+    try {
+        const result = await apiCall('getDashboardData');
+        if (result && result.success && result.dashboard) {
+            const d = result.dashboard;
+            const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
 
-        document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
-        document.getElementById('dash-balance').textContent = `${d.totalBalance} ${cur}`;
+            document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
+            document.getElementById('dash-balance').textContent = `${d.totalBalance} ${cur}`;
 
-        // Trends (просто визуални за момента)
-        document.getElementById('dash-debts-trend').textContent = d.totalDebts > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
-        document.getElementById('dash-balance-trend').textContent = d.totalBalance > 0 ? "Наличен фонд" : "Очаква събиране";
+            // Trends status text update
+            const debtsTrendEl = document.getElementById('dash-debts-trend');
+            const balanceTrendEl = document.getElementById('dash-balance-trend');
 
-        if (d.trendData && d.trendData.length > 0) {
-            initChart(d.trendData);
+            if (debtsTrendEl) {
+                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
+            }
+            if (balanceTrendEl) {
+                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Наличен фонд" : "Очаква събиране";
+            }
+
+            if (d.trendData && d.trendData.length > 0) {
+                // Ensure Chart.js is loaded before calling initChart
+                if (typeof Chart !== 'undefined') {
+                    initChart(d.trendData);
+                } else {
+                    console.warn("Chart.js is not loaded yet.");
+                    setTimeout(() => { if (typeof Chart !== 'undefined') initChart(d.trendData); }, 1000);
+                }
+            } else {
+                console.log("No trend data available for dashboard chart.");
+            }
+        } else {
+            const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
+            console.error("Dashboard data load failed:", errMsg);
+            // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
+            document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
+            document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
         }
+    } catch (err) {
+        console.error("Critical error in loadDashboardData:", err);
     }
 }
 
