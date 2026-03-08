@@ -299,7 +299,9 @@ function initChart(data) {
                     borderColor: '#3b6edc',
                     backgroundColor: 'rgba(59, 110, 220, 0.1)',
                     tension: 0.3,
-                    fill: false
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Абонамент',
@@ -307,7 +309,9 @@ function initChart(data) {
                     borderColor: '#ff9500',
                     backgroundColor: 'rgba(255, 149, 0, 0.1)',
                     tension: 0.3,
-                    fill: false
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Осветление',
@@ -315,7 +319,9 @@ function initChart(data) {
                     borderColor: '#34c759',
                     backgroundColor: 'rgba(52, 199, 89, 0.1)',
                     tension: 0.3,
-                    fill: false
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Почистване',
@@ -323,7 +329,9 @@ function initChart(data) {
                     borderColor: '#5856d6',
                     backgroundColor: 'rgba(88, 86, 214, 0.1)',
                     tension: 0.3,
-                    fill: false
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Поддръжка',
@@ -331,7 +339,9 @@ function initChart(data) {
                     borderColor: '#ff2d55',
                     backgroundColor: 'rgba(255, 45, 85, 0.1)',
                     tension: 0.3,
-                    fill: false
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }
             ]
         },
@@ -900,5 +910,37 @@ window.submitNewClient = async function () {
         setTimeout(() => location.reload(), 3000);
     } else {
         showToast(result?.error || "Грешка при създаване", "error");
+    }
+}
+
+window.runSystemBackup = async function () {
+    const btn = document.getElementById("runBackupBtn");
+    const statusDiv = document.getElementById("backupStatus");
+    const linkA = document.getElementById("backupFolderLink");
+
+    btn.disabled = true;
+    btn.textContent = "Архивиране (Моля, изчакайте)...";
+    statusDiv.style.display = "block";
+    statusDiv.innerHTML = "⏳ Обикаляне на всички входове и копиране на таблици...";
+    statusDiv.style.color = "#666";
+
+    const result = await apiCall('runBackup', {
+        superPin: sessionStorage.getItem("superAdminAuth")
+    });
+
+    btn.disabled = false;
+    btn.textContent = "📦 Създай Ръчен Архив Сега";
+
+    if (result && result.success) {
+        statusDiv.innerHTML = "✅ " + result.message;
+        statusDiv.style.color = "green";
+        if (result.folderUrl) {
+            linkA.href = result.folderUrl;
+            // Показваме и временен линк директно в статуса за удобство
+            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Виж новия архив тук ➔</a>`;
+        }
+    } else {
+        statusDiv.innerHTML = "❌ Грешка: " + (result?.error || "Проблем при архивиране");
+        statusDiv.style.color = "red";
     }
 }

@@ -379,6 +379,23 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Section 4: Backup & Security -->
+            <div class="admin-section"
+                style="background: rgba(0,0,0,0.02); border-top: 2px solid #eee; margin-top: 30px;">
+                <h3>🛡️ Архив на Системата</h3>
+                <p class="subtitle" style="margin-bottom: 15px; font-size: 12px;">Циклично архивиране на всички данни.
+                </p>
+                <button class="admin-btn secondary" id="runBackupBtn" onclick="runSystemBackup()">📦 Създай Ръчен Архив
+                    Сега</button>
+                <div id="backupStatus" style="margin-top: 10px; font-size: 12px; display:none;"></div>
+                <div style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 6px;">
+                    <p style="font-size: 11px; margin: 0 0 5px 0; font-weight: 600;">📁 Папка с всички архиви:</p>
+                    <a id="backupFolderLink" href="https://drive.google.com/" target="_blank"
+                        style="font-size: 12px; color: var(--primary); text-decoration: none;">Отвори Google Drive
+                        Архиви ➔</a>
+                </div>
+            </div>
         </div>
     </div>
 
