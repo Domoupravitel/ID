@@ -159,6 +159,29 @@
             font-size: 0.9em;
         }
 
+        .video-container {
+            margin: 25px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background: #000;
+            line-height: 0;
+        }
+
+        .video-container video {
+            width: 100%;
+            display: block;
+        }
+
+        .video-caption {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            margin-bottom: 30px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 30px 20px;
@@ -199,23 +222,25 @@
                 <li><span class="highlight">Инструкции за плащане</span>: Бърз достъп до банковата сметка на входа или
                     други методи за плащане.</li>
             </ul>
-        </div>
 
-        <!-- Section 2: За Домоуправители -->
-        <div class="section">
-            <h2>⚙️ За домоуправители (Администратори)</h2>
-            <ul class="feature-list">
-                <li><span class="highlight">Автоматизиран MASTER Админ панел</span>: Управлявате начисленията без сложни
-                    Excel таблици.</li>
-                <li><span class="highlight">Гъвкава логика</span>: Изчисляване на такси според брой обитатели, идеални
-                    части или по равно.</li>
-                <li><span class="highlight">Email известия</span>: Автоматично информиране на съседите за нови
-                    задължения.</li>
-                <li><span class="highlight">Управление на чипове и ремонти</span>: Вградени инструменти за специфични
-                    разходи.</li>
-                <li><span class="highlight">Контрол на достъпа</span>: Пълен мониторинг на платеното и дължимото за
-                    всяко жилище.</li>
+            <div class="video-container">
+                <video controls>
+                    <source src="potrebite_interface.mp4" type="video/mp4">
+                    Вашият браузър не поддържа видео тага.
+                </video>
+            </div>
+            <p class="video-caption">Демонстрация на потребителския интерфейс</p>
+            <li><span class="highlight">Контрол на достъпа</span>: Пълен мониторинг на платеното и дължимото за
+                всяко жилище.</li>
             </ul>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="admin_interface.mp4" type="video/mp4">
+                    Вашият браузър не поддържа видео тага.
+                </video>
+            </div>
+            <p class="video-caption">Демонстрация на администраторския панел</p>
         </div>
 
         <!-- Section 3: Автоматизация (IMPORTANT BLOCK) -->
