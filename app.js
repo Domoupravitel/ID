@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUwlT8h-MQVbLzCu_enlswKsJMHp2nsnl6rB8f7ofVT6cRpfijE8HRGDyNjkorkfQShQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3ndxYUE9C9Envpz80_dMzS5YFIU2zNWhtWaCttAp38hg-JwNrsh2qShWgBX4eFfTJmA/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -85,10 +85,17 @@ async function apiCall(action, params = {}) {
 // ==============================================
 
 window.showLoading = function () {
-    document.getElementById("loadingOverlay").classList.add("active");
+    const loader = document.getElementById("loadingOverlay");
+    if (loader) loader.classList.add("active");
+
+    // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
+    clearTimeout(window.loaderSafetyTimeout);
+    window.loaderSafetyTimeout = setTimeout(hideLoading, 15000);
 }
 window.hideLoading = function () {
-    document.getElementById("loadingOverlay").classList.remove("active");
+    const loader = document.getElementById("loadingOverlay");
+    if (loader) loader.classList.remove("active");
+    clearTimeout(window.loaderSafetyTimeout);
 }
 
 function resetApartmentData() {
@@ -141,6 +148,7 @@ window.enterEntrance = async function () {
     const configResult = await apiCall('getEntranceInfo');
 
     if (configResult && configResult.info && configResult.info.isHardBlocked) {
+        hideLoading(); // За всеки случай
         showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
         btn.textContent = originalText;
         btn.disabled = false;
@@ -1341,5 +1349,24 @@ window.printReport = function () {
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.print();
+}
+
+// Помощна функция за смяна на страниците
+window.switchPage = function (pageId) {
+    // Всички панели
+    const panels = ['view-selector', 'view-entrance-home', 'view-monthly-report'];
+    panels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('active');
+            el.classList.add('hidden');
+        }
+    });
+
+    const activePanel = document.getElementById('view-' + pageId) || document.getElementById(pageId);
+    if (activePanel) {
+        activePanel.classList.remove('hidden');
+        activePanel.classList.add('active');
+    }
 }
 

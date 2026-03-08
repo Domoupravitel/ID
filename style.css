@@ -70,6 +70,10 @@ body {
   flex: 1;
 }
 
+.hidden {
+  display: none !important;
+}
+
 #view-selector {
   justify-content: center;
   align-items: center;
