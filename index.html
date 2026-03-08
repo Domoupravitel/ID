@@ -72,6 +72,8 @@
             <!-- Payment Section -->
             <div class="admin-section">
                 <h3>💰 Добавяне на плащане</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от
+                    апартамент за избран период.</p>
                 <label class="admin-label">Апартамент</label>
                 <select id="adminApt" class="admin-input"></select>
                 <label class="admin-label">Период (MM.YYYY)</label>
@@ -81,11 +83,11 @@
                 <button class="admin-btn primary" id="payBtn" onclick="submitPayment()">Добави плащане</button>
             </div>
 
-            <div class="admin-divider"></div>
-
             <!-- Charges Section -->
             <div class="admin-section">
-                <h3>📋 Начисления (Асансьор / Абонамент / Осветление)</h3>
+                <h3>📋 Начисления</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте общите разходи на входа за
+                    месеца.</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
                 <input type="text" id="chargesPeriod" class="admin-input" placeholder="03.2026">
                 <label class="admin-label">Асансьор</label>
@@ -112,11 +114,11 @@
                 <button class="admin-btn orange" id="chargesBtn" onclick="submitCharges()">Запиши начисления</button>
             </div>
 
-            <div class="admin-divider"></div>
-
             <!-- Email Section -->
             <div class="admin-section">
                 <h3>✉️ Имейл на апартамент</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте имейл за получаване на
+                    автоматични месечни отчети.</p>
                 <label class="admin-label">Апартамент</label>
                 <select id="adminEmailApt" class="admin-input" onchange="loadCurrentEmail()"></select>
                 <div id="currentEmailBox" class="admin-current" style="display:none">
@@ -127,11 +129,11 @@
                 <button class="admin-btn secondary" id="emailBtn" onclick="submitEmail()">Запази имейл</button>
             </div>
 
-            <div class="admin-divider"></div>
-
             <!-- MASTER Section -->
             <div class="admin-section">
                 <h3>📊 MASTER – Настройки</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Управлявайте статусите (Логика,
+                    Обитатели, Чипове) за дълги периоди.</p>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px;">
                     <button class="master-tab" onclick="switchMasterTab('logika',this)">Логика</button>
                     <button class="master-tab" onclick="switchMasterTab('uchastie',this)">Уч. Асансьор</button>
@@ -298,82 +300,83 @@
 
         <div class="admin-card" id="superAdminDashboard" style="display:none; max-width: 500px;">
             <button class="admin-close" onclick="closeSuperAdmin()">✕</button>
-            <div class="admin-title">👑 Създаване на нов Вход/Клиент</div>
-            <p class="subtitle" style="margin-bottom: 20px;">Генерира копия на шаблонните таблици и задава достъп
-                автоматично.</p>
 
-            <div class="form-group">
-                <label class="admin-label">Град (пр. Sofia)</label>
-                <input type="text" id="newCity" class="admin-input" placeholder="Sofia">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Блок (пр. 32)</label>
-                <input type="text" id="newBlock" class="admin-input" placeholder="32">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Вход (пр. A)</label>
-                <input type="text" id="newEntrance" class="admin-input" placeholder="A">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Имейл на домоуправителя</label>
-                <input type="email" id="newAdminEmail" class="admin-input" placeholder="admin@example.com">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Брой апартаменти</label>
-                <input type="number" id="newAptCount" class="admin-input" placeholder="Напр. 24" min="1" step="1">
-            </div>
-            <div style="margin-top:20px;">
-                <button class="admin-btn primary" id="createClientBtn" onclick="submitNewClient()">Създай Клиент &
-                    Генерирай Таблици</button>
+            <!-- Section 1: Create Client -->
+            <div class="admin-section">
+                <h3>👑 Създаване на нов Вход/Клиент</h3>
+                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Генерира копия на шаблонните таблици и
+                    задава достъп автоматично.</p>
+
+                <div class="form-group">
+                    <label class="admin-label">Град (пр. Sofia)</label>
+                    <input type="text" id="newCity" class="admin-input" placeholder="Sofia">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Блок (пр. 32)</label>
+                    <input type="text" id="newBlock" class="admin-input" placeholder="32">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Вход (пр. A)</label>
+                    <input type="text" id="newEntrance" class="admin-input" placeholder="A">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Имейл на домоуправителя</label>
+                    <input type="email" id="newAdminEmail" class="admin-input" placeholder="admin@example.com">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Брой апартаменти</label>
+                    <input type="number" id="newAptCount" class="admin-input" placeholder="Напр. 24" min="1" step="1">
+                </div>
+                <button class="admin-btn primary" id="createClientBtn" onclick="submitNewClient()">Създай
+                    Клиент</button>
             </div>
 
-            <div class="admin-divider" style="margin: 30px 0;"></div>
-            <div class="admin-title">⚙️ Настройки на Абонаментите</div>
-            <p class="subtitle" style="margin-bottom: 20px;">Задайте цени за абонамент и инструкции за плащане. Те се
-                показват в имейлите към домоуправителите.</p>
+            <!-- Section 2: Pricing -->
+            <div class="admin-section">
+                <h3>⚙️ Настройки на Абонаментите</h3>
+                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Инструкции и цени за абонамент.</p>
 
-            <div class="form-group">
-                <label class="admin-label">Инструкции за плащане на абонамент (изпращат се по имейл към
-                    домоуправители)</label>
-                <textarea id="superPaymentOptions" class="admin-input" style="min-height: 80px;"
-                    placeholder="Въведете IBAN, Revolut или ePay номер..."></textarea>
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Цена Месечно - Големи градове: София, Пловдив, Варна (в лв)</label>
-                <input type="number" id="priceBigCities" class="admin-input" placeholder="Напр. 15">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Цена Месечно - Всички останали градове (в лв)</label>
-                <input type="number" id="priceOtherCities" class="admin-input" placeholder="Напр. 10">
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label class="admin-label">Цена за Безсрочен / Lifetime абонамент (0 = няма оферта)</label>
-                <input type="number" id="priceLifetime" class="admin-input" placeholder="Напр. 150">
-            </div>
-            <div style="margin-top:20px;">
+                <div class="form-group">
+                    <label class="admin-label">Инструкции за плащане на абонамент</label>
+                    <textarea id="superPaymentOptions" class="admin-input" style="min-height: 80px;"
+                        placeholder="Въведете IBAN, Revolut или ePay номер..."></textarea>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Цена Месечно - Големи градове (лв)</label>
+                    <input type="number" id="priceBigCities" class="admin-input" placeholder="Напр. 15">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Цена Месечно - Останали градове (лв)</label>
+                    <input type="number" id="priceOtherCities" class="admin-input" placeholder="Напр. 10">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="admin-label">Цена за Безсрочен / Lifetime (лв)</label>
+                    <input type="number" id="priceLifetime" class="admin-input" placeholder="Напр. 150">
+                </div>
                 <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
                     настройките</button>
             </div>
 
-            <div class="admin-divider" style="margin: 30px 0;"></div>
-            <div class="admin-title">🔒 Управление на достъпа</div>
-            <p class="subtitle" style="margin-bottom: 20px;">Спрете, пуснете или дайте безсрочен достъп на даден вход.
-            </p>
-            <div style="overflow-x: auto;">
-                <table
-                    style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.1);">
-                            <th style="padding: 8px;">Вход (Име)</th>
-                            <th style="padding: 8px;">ID</th>
-                            <th style="padding: 8px;">Валиден до</th>
-                            <th style="padding: 8px;">Действие</th>
-                        </tr>
-                    </thead>
-                    <tbody id="superAdminEntrancesList">
-                        <!-- Попълва се динамично -->
-                    </tbody>
-                </table>
+            <!-- Section 3: Access Control -->
+            <div class="admin-section">
+                <h3>🔒 Управление на достъпа</h3>
+                <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Спрете, пуснете или дайте безсрочен
+                    достъп.</p>
+                <div style="overflow-x: auto;">
+                    <table
+                        style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+                                <th style="padding: 8px;">Вход</th>
+                                <th style="padding: 8px;">Валиден</th>
+                                <th style="padding: 8px;">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="superAdminEntrancesList">
+                            <!-- Попълва се динамично -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
