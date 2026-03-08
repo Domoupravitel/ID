@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziLmYlWgTkR3SqfyN25yvjKx_Q3DBcfAmcMqAy58L6qLnTGDgwVR0FR4LLYgMmtfIKqA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPA9F4EYwITziX4O1_M8uxhj9ZfS3FO_2mmiSpDy-RDE-TM5LIOJd92VnyFc9_Ea0ByQ/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -96,6 +96,7 @@ function resetApartmentData() {
     sc.className = "card saldo-card saldo-zero";
     document.getElementById("saldo").textContent = "-";
     document.getElementById("tableBody").innerHTML = "";
+    document.getElementById("payment-reference-box").style.display = "none";
 }
 
 // --- TOAST ---
@@ -269,23 +270,102 @@ async function loadDashboardData() {
 
         // Trends (просто визуални за момента)
         document.getElementById('dash-debts-trend').textContent = d.totalDebts > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
-        document.getElementById('dash-balance-trend').textContent = d.totalBalance > 0 ? "Наличен бюджет" : "Очаква събиране";
+        document.getElementById('dash-balance-trend').textContent = d.totalBalance > 0 ? "Наличен фонд" : "Очаква събиране";
 
-        const tbody = document.getElementById('dash-recent-payments');
-        if (d.recentPayments && d.recentPayments.length > 0) {
-            tbody.innerHTML = '';
-            d.recentPayments.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${p.date}</td>
-                    <td>${p.apartment}</td>
-                    <td class="amount positive">+${p.amount.toFixed(2)} ${cur}</td>
-                    <td><span class="badge success">Платено</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
+        if (d.trendData && d.trendData.length > 0) {
+            initChart(d.trendData);
         }
     }
+}
+
+let myChart = null;
+function initChart(data) {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+
+    if (myChart) {
+        myChart.destroy();
+    }
+
+    const labels = data.map(i => i.period);
+
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Асансьор',
+                    data: data.map(i => i.elevator),
+                    borderColor: '#3b6edc',
+                    backgroundColor: 'rgba(59, 110, 220, 0.1)',
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: 'Абонамент',
+                    data: data.map(i => i.subscription),
+                    borderColor: '#ff9500',
+                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: 'Осветление',
+                    data: data.map(i => i.light),
+                    borderColor: '#34c759',
+                    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: 'Почистване',
+                    data: data.map(i => i.cleaning),
+                    borderColor: '#5856d6',
+                    backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: 'Поддръжка',
+                    data: data.map(i => i.podrajka),
+                    borderColor: '#ff2d55',
+                    backgroundColor: 'rgba(255, 45, 85, 0.1)',
+                    tension: 0.3,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: { size: 11 }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 }
 
 // ==============================================
@@ -294,6 +374,11 @@ async function loadDashboardData() {
 
 async function loadApartmentData(apartment) {
     resetApartmentData();
+
+    // Показваме кода за плащане веднага
+    document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
+    document.getElementById("payment-reference-box").style.display = "block";
+
     const result = await apiCall('apartment', { apartment: apartment });
 
     if (result && result.error && result.showMessage) {
