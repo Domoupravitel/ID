@@ -496,13 +496,17 @@
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px;">
                     <div>
-                        <label class="admin-label">Цена Месечно (лв)</label>
+                        <label class="admin-label">София-Варна-Пловдив (лв)</label>
                         <input type="number" id="priceBigCities" class="admin-input" placeholder="пр. 15">
                     </div>
                     <div>
-                        <label class="admin-label">Цена Безсрочен (лв)</label>
-                        <input type="number" id="priceLifetime" class="admin-input" placeholder="пр. 150">
+                        <label class="admin-label">Всички останали (лв)</label>
+                        <input type="number" id="priceOtherCities" class="admin-input" placeholder="пр. 10">
                     </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label class="admin-label">Цена Безсрочен (лв)</label>
+                    <input type="number" id="priceLifetime" class="admin-input" placeholder="пр. 150">
                 </div>
                 <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
                     цените</button>

@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3ndxYUE9C9Envpz80_dMzS5YFIU2zNWhtWaCttAp38hg-JwNrsh2qShWgBX4eFfTJmA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLcmc7cDQLVy2fbrfYCzAR2l9kR_wcBLZvNmOXmUyAM4yDhZgFm4cIcLu47QdJDHzLbA/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -1080,6 +1080,7 @@ async function showSuperAdminDashboard() {
         if (res && res.success) {
             document.getElementById("superPaymentOptions").value = res.paymentOptions || "";
             document.getElementById("priceBigCities").value = res.priceBigCities || "";
+            document.getElementById("priceOtherCities").value = res.priceOtherCities || "";
             document.getElementById("priceLifetime").value = res.priceLifetime || "";
             document.getElementById("superGlobalMessage").value = res.globalMessage || "";
         }
@@ -1100,6 +1101,7 @@ window.saveSuperSettings = async function () {
     const reqData = {
         paymentOptions: document.getElementById("superPaymentOptions").value.trim(),
         priceBigCities: document.getElementById("priceBigCities").value.trim(),
+        priceOtherCities: document.getElementById("priceOtherCities").value.trim(),
         priceLifetime: document.getElementById("priceLifetime").value.trim()
     };
 
@@ -1703,7 +1705,7 @@ window.sendAIMessage = async function () {
         if (result && result.success) {
             botDiv.innerHTML = result.response.replace(/\n/g, '<br>');
         } else {
-            botDiv.innerHTML = "Извинете, възникна технически проблем. Моля, опитайте пак.";
+            botDiv.innerHTML = result?.error || "Извинете, възникна технически проблем. Моля, опитайте пак.";
         }
     } catch (e) {
         botDiv.innerHTML = "Грешка при връзка с изкуствения интелект.";
