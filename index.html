@@ -38,7 +38,8 @@
     <script src="app.js" defer></script>
 </head>
 
-<body class="light-theme">
+<body class="light-theme" onload="initApp()">
+    <div class="version-tag">v0.1.2</div>
 
     <!-- LOADING OVERLAY -->
     <div id="loadingOverlay">
@@ -597,6 +598,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <!-- TOAST NOTIFICATIONS -->
     <div id="toast" class="toast"></div>
@@ -635,8 +637,11 @@
 
             <div class="selector-card glass-panel" style="margin-top: 60px;">
                 <div class="brand">
-                    <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
-                        title="Вход за създатели">Е</div>
+                    <div style="display: flex; align-items: flex-start; justify-content: center; gap: 4px;">
+                        <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
+                            title="Вход за създатели">Е</div>
+                        <span class="version-tag">v0.1.2</span>
+                    </div>
                     <h1 class="brand-name">Етажна собственост</h1>
                 </div>
                 <!-- Requested subtitles -->

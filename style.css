@@ -625,6 +625,15 @@ body {
   background-color: #f9f9f9;
 }
 
+.version-tag {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.2);
+  margin-left: 5px;
+  vertical-align: top;
+  pointer-events: none;
+  font-weight: 500;
+}
+
 /* AI ASSISTANT STYLES */
 .ai-chat-btn {
   position: fixed;
