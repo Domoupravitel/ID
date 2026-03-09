@@ -624,3 +624,145 @@ body {
 #meeting-attendance-list tr:hover {
   background-color: #f9f9f9;
 }
+
+/* AI ASSISTANT STYLES */
+.ai-chat-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 55px;
+  height: 55px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ai-chat-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.ai-window {
+  position: fixed;
+  bottom: 90px;
+  right: 25px;
+  width: 350px;
+  height: 480px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-header {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-header-title {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f9fbfd;
+}
+
+.ai-msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.ai-msg.user {
+  align-self: flex-end;
+  background: #3b6edc;
+  color: white;
+  border-bottom-right-radius: 2px;
+}
+
+.ai-msg.bot {
+  align-self: flex-start;
+  background: #fff;
+  color: #333;
+  border: 1px solid #eef0f5;
+  border-bottom-left-radius: 2px;
+}
+
+.ai-input-area {
+  padding: 12px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+}
+
+.ai-input {
+  flex: 1;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.ai-send-btn {
+  background: #10b981;
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .ai-window {
+    width: 90%;
+    right: 5%;
+    bottom: 80px;
+    height: 70vh;
+  }
+}
