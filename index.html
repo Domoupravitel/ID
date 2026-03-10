@@ -144,14 +144,15 @@
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Управлявайте статусите (Логика,
                     Обитатели, Чипове) за дълги периоди.</p>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px;">
-                    <button class="master-tab active" onclick="switchMasterTab('logika',this)">Логика</button>
-                    <button class="master-tab" onclick="switchMasterTab('uchastie',this)">Уч. Асансьор</button>
-                    <button class="master-tab" onclick="switchMasterTab('obitatel',this)">Обитатели</button>
-                    <button class="master-tab" onclick="switchMasterTab('chipove',this)">Чипове</button>
-                    <button class="master-tab" onclick="switchMasterTab('idealni',this)">Идеални Ч.</button>
-                    <button class="master-tab" onclick="switchMasterTab('info',this)">Инфо апарт.</button>
+                    <button class="master-tab active" onclick="switchMasterTab('logika',this)">📐 Логика</button>
+                    <button class="master-tab" onclick="switchMasterTab('uchastie',this)">🛗 Уч. Асансьор</button>
+                    <button class="master-tab" onclick="switchMasterTab('obitatel',this)">👥 Обитатели</button>
+                    <button class="master-tab" onclick="switchMasterTab('chipove',this)">🔑 Чипове</button>
+                    <button class="master-tab" onclick="switchMasterTab('idealni',this)">📊 Идеални Ч.</button>
+                    <button class="master-tab" onclick="switchMasterTab('info',this)">🏠 Инфо апарт.</button>
                     <button class="master-tab" onclick="switchMasterTab('payment',this)">💳 Плащ.инфо</button>
                     <button class="master-tab" onclick="switchMasterTab('notice',this)">📢 Съобщения</button>
+                    <button class="master-tab" onclick="switchMasterTab('imeil',this)">✉️ Имейл до апт.</button>
                     <button class="master-tab" onclick="switchMasterTab('zues',this)">⚖️ ЗУЕС Мениджър</button>
                 </div>
                 <!-- Logic Tab Content -->
@@ -237,7 +238,8 @@
                 <div id="master-tab-notice" class="master-panel" style="display:none;">
                     <h3 class="admin-subtitle">📢 Съобщение до живущите</h3>
                     <p class="subtitle" style="margin-bottom: 20px; font-size: 13px;">Това съобщение ще се вижда от
-                        всички апартаменти при влизане в платформата.</p>
+                        всички апартаменти при влизане в платформата <strong>и ще се изпрати по имейл</strong> до всички
+                        с регистриран имейл адрес.</p>
 
                     <div class="form-group">
                         <label class="admin-label">Текст на съобщението</label>
@@ -245,12 +247,39 @@
                             placeholder="Пример: Общо събрание на 15.03 от 19:00ч. пред входа..."></textarea>
                     </div>
 
-                    <button class="admin-btn primary" onclick="submitMasterNotice()">Запази и покажи на всички</button>
+                    <button class="admin-btn primary" onclick="submitMasterNotice()">Запази и изпрати до всички</button>
 
                     <div
                         style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 8px; font-size: 12px; color: #666;">
                         ℹ️ Можете да използвате това за важни съобщения, ремонти или обяви. За да го премахнете, просто
                         изтрийте текста и запазете.
+                    </div>
+                </div>
+
+                <!-- Individual Apartment Email Tab -->
+                <div id="master-tab-imeil" class="master-panel" style="display:none;">
+                    <h3 class="admin-subtitle">✉️ Индивидуален имейл до апартамент</h3>
+                    <p class="subtitle" style="margin-bottom: 15px; font-size: 13px;">Изпратете персонализирано
+                        съобщение по имейл до конкретен апартамент (само ако е регистриран имейл).</p>
+
+                    <label class="admin-label">Апартамент</label>
+                    <select id="emailAptTarget" class="admin-input"></select>
+
+                    <label class="admin-label" style="margin-top: 12px;">Тема на имейла</label>
+                    <input type="text" id="emailAptSubject" class="admin-input"
+                        placeholder="пр. Важна информация за Вашия апартамент...">
+
+                    <label class="admin-label" style="margin-top: 12px;">Текст на съобщението</label>
+                    <textarea id="emailAptBody" class="admin-input" style="min-height: 120px;"
+                        placeholder="Въведете текста на вашето съобщение тук..."></textarea>
+
+                    <button class="admin-btn primary" style="margin-top: 12px;" onclick="sendAptEmail()">📤 Изпрати
+                        имейл</button>
+
+                    <div
+                        style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 8px; font-size: 12px; color: #666;">
+                        ℹ️ Имейлът ще бъде изпратен само ако апартаментът има регистриран имейл адрес. Можете да
+                        проверите и регистрирате имейли в секцията "✉️ Имейл на апартамент".
                     </div>
                 </div>
 
@@ -260,6 +289,8 @@
                         style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                         <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
                             onclick="switchZuesSubTab('z-book')">📖 Книга на ЕС</button>
+                        <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
+                            onclick="switchZuesSubTab('z-fullbook')">📋 Цяла книга</button>
                         <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
                             onclick="switchZuesSubTab('z-meeting')">🤝 Общо събрание</button>
                         <button class="admin-btn secondary small" style="padding: 6px 10px; font-size: 11px;"
@@ -275,14 +306,16 @@
                             <select id="masterBookApt" class="admin-input" onchange="loadBookData()"></select>
 
                             <div id="book-fields-container" style="margin-top: 15px;">
-                                <label class="admin-label">Собственик</label>
-                                <input type="text" id="book-Owner" class="admin-input">
-                                <label class="admin-label">ЕИК/БУЛСТАТ</label>
-                                <input type="text" id="book-EIK" class="admin-input">
+                                <label class="admin-label">Собственик / Собственици</label>
+                                <textarea id="book-Owner" class="admin-input" style="min-height:60px;"
+                                    placeholder="Един: Иван Иванов Иванов&#10;Няколко: Иван Иванов, Мария Иванова"></textarea>
+                                <p style="font-size:11px; color:#888; margin:-6px 0 10px; padding-left:2px;">ℹ️ При
+                                    няколко собственици — въведете имената разделени с запетая.</p>
                                 <label class="admin-label">Имейл</label>
                                 <input type="email" id="book-Email" class="admin-input">
                                 <label class="admin-label">Обитатели</label>
-                                <textarea id="book-Occupants" class="admin-input"></textarea>
+                                <textarea id="book-Occupants" class="admin-input"
+                                    placeholder="Имена на всички обитатели, разделени с запетая"></textarea>
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                                     <div>
                                         <label class="admin-label">Дата вписване</label>
@@ -298,11 +331,73 @@
                                     </div>
                                 </div>
                                 <label class="admin-label">Домашни любимци</label>
-                                <input type="text" id="book-Pets" class="admin-input">
+                                <input type="text" id="book-Pets" class="admin-input" placeholder="пр. куче, котка...">
                             </div>
-                            <button class="admin-btn primary" style="width:100%; margin-top:20px;"
+                            <button id="book-save-btn" class="admin-btn primary" style="width:100%; margin-top:20px;"
                                 onclick="submitBookData()">Запиши Промените</button>
                         </div>
+                    </div>
+
+                    <!-- Sub-Tab: Full Book View -->
+                    <div id="zub-z-fullbook" class="zues-sub-panel" style="display:none;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                            <h4 class="admin-subtitle" style="margin:0;">📋 Домова книга — всички апартаменти</h4>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <input type="text" id="bookSearchInput" class="admin-input"
+                                    style="max-width:180px; padding:7px 12px; font-size:13px;" placeholder="🔍 Търси..."
+                                    oninput="filterBookTable()">
+                                <button class="admin-btn small"
+                                    style="background:#3b6edc; color:white; padding:7px 12px; font-size:12px; margin-top:0;"
+                                    onclick="loadFullBook()">↺ Обнови</button>
+                                <button class="admin-btn small"
+                                    style="background:#2e9e4f; color:white; padding:7px 12px; font-size:12px; margin-top:0;"
+                                    onclick="printFullBook()">🖨️ Печат</button>
+                            </div>
+                        </div>
+
+                        <div id="fullBookStatus" style="font-size:13px; color:#888; margin-bottom:8px;"></div>
+
+                        <div style="overflow-x:auto; border-radius:8px; border:1px solid #eee;">
+                            <table id="fullBookTable"
+                                style="width:100%; border-collapse:collapse; font-size:13px; min-width:700px;">
+                                <thead>
+                                    <tr style="background:#f4f5f9; text-align:left;">
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Апт.</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Собственик/ци</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Имейл</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Обитатели</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Предназн.</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Дата вписв.</th>
+                                        <th
+                                            style="padding:10px 12px; font-weight:700; color:#444; border-bottom:2px solid #e0e4ec;">
+                                            Домашни</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fullBookBody">
+                                    <tr>
+                                        <td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Натиснете
+                                            „↺ Обнови" за зареждане</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p style="font-size:11px; color:#aaa; margin-top:10px; text-align:right;">
+                            Данните отразяват текущото състояние на лист „КНИГА_ОБИТАТЕЛИ" в MASTER таблицата.
+                        </p>
                     </div>
 
                     <!-- Sub-Tab: Meeting -->
@@ -497,16 +592,16 @@
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px;">
                     <div>
-                        <label class="admin-label">София-Варна-Пловдив (лв)</label>
-                        <input type="number" id="priceBigCities" class="admin-input" placeholder="пр. 15">
+                        <label class="admin-label">София-Варна-Пловдив (EUR/апт.)</label>
+                        <input type="number" id="priceBigCities" class="admin-input" placeholder="пр. 0.75">
                     </div>
                     <div>
-                        <label class="admin-label">Всички останали (лв)</label>
-                        <input type="number" id="priceOtherCities" class="admin-input" placeholder="пр. 10">
+                        <label class="admin-label">Всички останали (EUR/апт.)</label>
+                        <input type="number" id="priceOtherCities" class="admin-input" placeholder="пр. 0.50">
                     </div>
                 </div>
                 <div style="margin-top: 10px;">
-                    <label class="admin-label">Цена Безсрочен (лв)</label>
+                    <label class="admin-label">Цена Безсрочен (EUR)</label>
                     <input type="number" id="priceLifetime" class="admin-input" placeholder="пр. 150">
                 </div>
                 <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
@@ -640,7 +735,7 @@
                     <div style="display: flex; align-items: flex-start; justify-content: center; gap: 4px;">
                         <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
                             title="Вход за създатели">Е</div>
-                        <span class="version-tag">v0.1.4</span>
+                        <span class="version-tag">v0.1.5</span>
                     </div>
                     <h1 class="brand-name">Етажна собственост</h1>
                 </div>
@@ -943,25 +1038,6 @@
         </div>
     </div>
 
-    <!-- AI ASSISTANT -->
-    <div id="aiChatBtn" class="ai-chat-btn" onclick="toggleAIChat()" title="ID Помощник (AI)">🤖</div>
-
-    <div id="aiWindow" class="ai-window">
-        <div class="ai-header">
-            <div class="ai-header-title">🤖 ID Помощник</div>
-            <button onclick="toggleAIChat()"
-                style="background:none; border:none; color:white; cursor:pointer; font-size:18px;">✕</button>
-        </div>
-        <div id="aiMessages" class="ai-messages">
-            <div class="ai-msg bot">Здравейте! Аз съм вашият ID Помощник. Мога да ви консултирам по ЗУЕС или да ви
-                помогна с функциите на платформата. С какво мога да предложа съдействие?</div>
-        </div>
-        <div class="ai-input-area">
-            <input type="text" id="aiInput" class="ai-input" placeholder="Задайте въпрос..."
-                onkeydown="if(event.key==='Enter')sendAIMessage()">
-            <button class="ai-send-btn" onclick="sendAIMessage()">➤</button>
-        </div>
-    </div>
 
 </body>
 

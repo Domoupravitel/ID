@@ -109,6 +109,8 @@ function resetApartmentData() {
     document.getElementById("saldo").textContent = "-";
     document.getElementById("tableBody").innerHTML = "";
     document.getElementById("payment-reference-box").style.display = "none";
+    document.getElementById("payment-details-box").style.display = "none";
+    document.getElementById("individualAptNotice").style.display = "none";
 }
 
 // --- TOAST ---
@@ -120,6 +122,24 @@ window.showToast = function (msg, type) {
     clearTimeout(toastTimeout);
     requestAnimationFrame(() => { t.classList.add("show"); });
     toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
+}
+
+// --- SAVING STATE (Задача 8: визуална индикация при запис) ---
+window.showSaving = function (btn, text = "⏳ Записване...") {
+    if (!btn) return;
+    btn._originalText = btn.innerHTML;
+    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;">
+        <span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+        ${text}
+    </span>`;
+    btn.disabled = true;
+    btn.style.opacity = "0.8";
+}
+window.hideSaving = function (btn, originalText) {
+    if (!btn) return;
+    btn.innerHTML = originalText || btn._originalText || "Запази";
+    btn.disabled = false;
+    btn.style.opacity = "";
 }
 
 // ==============================================
@@ -175,14 +195,17 @@ window.enterEntrance = async function () {
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        // Инструкции за плащане
+        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
         if (info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = info.paymentInfo;
-            document.getElementById('payment-details-box').style.display = 'block';
             document.getElementById('masterPaymentText').value = info.paymentInfo;
+            // Съхраняваме в session за използване при избор на апартамент
+            sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
-            document.getElementById('payment-details-box').style.display = 'none';
+            sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
         }
+        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
+        document.getElementById('payment-details-box').style.display = 'none';
 
         // Имейл за връзка
         if (info.adminContactEmail) {
@@ -233,8 +256,8 @@ window.enterEntrance = async function () {
         const subLifetimeEl = document.getElementById("subLifetimePrice");
         const subCodeEl = document.getElementById("subscriptionCodeDisplay");
 
-        if (subMonthlyEl) subMonthlyEl.textContent = `${totalMonthly.toFixed(2)} лв.`;
-        if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} лв.`;
+        if (subMonthlyEl) subMonthlyEl.textContent = `${totalMonthly.toFixed(2)} EUR`;
+        if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} EUR`;
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
         if (totalMonthly === 0 && aptCount > 0) {
@@ -487,6 +510,9 @@ function initChart(data) {
 async function loadApartmentData(apartment) {
     resetApartmentData();
 
+    // Скриваме инструкциите за плащане докато не знаем дали има дълг
+    document.getElementById('payment-details-box').style.display = 'none';
+
     // Показваме кода за плащане веднага
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
     document.getElementById("payment-reference-box").style.display = "block";
@@ -510,6 +536,18 @@ async function loadApartmentData(apartment) {
         if (saldoVal > 0) sCard.classList.add("saldo-positive");
         else if (saldoVal < 0) sCard.classList.add("saldo-negative");
         else sCard.classList.add("saldo-zero");
+
+        // --- ИНСТРУКЦИИ ЗА ПЛАЩАНЕ — показват се само при дълг ---
+        const payBox = document.getElementById('payment-details-box');
+        if (saldoVal > 0) {
+            const storedPayInfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
+            if (storedPayInfo) {
+                document.getElementById('payment-instructions').textContent = storedPayInfo;
+                payBox.style.display = 'block';
+            }
+        } else {
+            payBox.style.display = 'none';
+        }
 
         const tBody = document.getElementById("tableBody");
         if (result.periods && Array.isArray(result.periods)) {
@@ -635,7 +673,7 @@ function autoFillCurrentPeriod() {
 }
 
 function populateAdminDropdowns() {
-    ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt"].forEach(id => {
+    ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt", "emailAptTarget"].forEach(id => {
         const sel = document.getElementById(id);
         if (sel && sel.options.length <= 1) {
             sel.innerHTML = '<option value="">Избери апартамент</option>';
@@ -668,7 +706,7 @@ window.submitPayment = async function () {
     }
 
     const btn = document.getElementById("payBtn");
-    btn.textContent = "Записване...";
+    showSaving(btn, "Записване...");
 
     const result = await apiCall('addPayment', {
         pin: getStoredPin(),
@@ -677,10 +715,10 @@ window.submitPayment = async function () {
         amount: amount
     });
 
-    btn.textContent = "Добави плащане";
+    hideSaving(btn, "Добави плащане");
 
     if (result && result.success) {
-        showToast("Успешно добавено плащане.", "success");
+        showToast("✅ Успешно добавено плащане.", "success");
         document.getElementById("adminAmount").value = "";
     } else {
         showToast(result?.error || "Възникна грешка", "error");
@@ -692,7 +730,7 @@ window.loadBookData = async function () {
     if (!apt) return;
 
     // Clear fields first
-    const fields = ["Owner", "EIK", "Email", "Occupants", "EntryDate", "Pets", "Purpose"];
+    const fields = ["Owner", "Email", "Occupants", "EntryDate", "Pets", "Purpose"];
     fields.forEach(f => {
         const el = document.getElementById("book-" + f);
         if (el) el.value = "";
@@ -703,7 +741,6 @@ window.loadBookData = async function () {
         if (result && result.success && result.data) {
             const d = result.data;
             if (d["Собственик"]) document.getElementById("book-Owner").value = d["Собственик"];
-            if (d["ЕИК/БУЛСТАТ"]) document.getElementById("book-EIK").value = d["ЕИК/БУЛСТАТ"];
             if (d["Имейл"]) document.getElementById("book-Email").value = d["Имейл"];
             if (d["Обитатели"]) document.getElementById("book-Occupants").value = d["Обитатели"];
             if (d["Домашни любимци"]) document.getElementById("book-Pets").value = d["Домашни любимци"];
@@ -732,7 +769,6 @@ window.submitBookData = async function () {
 
     const mapping = [
         { id: "book-Owner", key: "Собственик" },
-        { id: "book-EIK", key: "ЕИК/БУЛСТАТ" },
         { id: "book-Email", key: "Имейл" },
         { id: "book-Occupants", key: "Обитатели" },
         { id: "book-EntryDate", key: "Дата вписване" },
@@ -740,14 +776,14 @@ window.submitBookData = async function () {
         { id: "book-Purpose", key: "Предназначение" }
     ];
 
-    const btn = document.querySelector("#master-tab-book button.primary");
-    const originalText = btn.textContent;
-    btn.textContent = "Записване...";
+    const btn = document.getElementById('book-save-btn');
+    showSaving(btn, "Записване...");
 
     try {
         for (const item of mapping) {
-            const val = document.getElementById(item.id).value;
-            // Само ако има стойност или за да изпразним полето
+            const el = document.getElementById(item.id);
+            if (!el) continue;
+            const val = el.value;
             await apiCall('updateBookData', {
                 pin: getStoredPin(),
                 apartment: apt,
@@ -755,12 +791,12 @@ window.submitBookData = async function () {
                 value: val
             });
         }
-        showToast("Книгата на ЕС е успешно обновена за " + apt, "success");
+        showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
     } catch (e) {
         console.error(e);
         showToast("Възникна грешка при записа", "error");
     } finally {
-        btn.textContent = originalText;
+        hideSaving(btn, "Запиши Промените");
     }
 }
 
@@ -780,7 +816,7 @@ window.submitCharges = async function () {
     }
 
     const btn = document.getElementById("chargesBtn");
-    btn.textContent = "Записване...";
+    showSaving(btn, "Записване...");
 
     const result = await apiCall('addCharges', {
         pin: getStoredPin(),
@@ -794,10 +830,10 @@ window.submitCharges = async function () {
         remont: remont
     });
 
-    btn.textContent = "Запиши начисления";
+    hideSaving(btn, "Запиши начисления");
 
     if (result && result.success) {
-        showToast("Успешно записани начисления.", "success");
+        showToast("✅ Успешно записани начисления.", "success");
         document.getElementById("chargesElevator").value = "";
         document.getElementById("chargesSubscription").value = "";
         document.getElementById("chargesLight").value = "";
@@ -975,7 +1011,7 @@ window.loadApartmentMasterSummary = async function () {
     container.innerHTML = "⌛ Зареждане на информация...";
 
     try {
-        const res = await apiCall('getApartmentMasterSummary', { apartment: apt });
+        const res = await apiCall('getApartmentMasterSummary', { apartment: apt, pin: getStoredPin() });
         if (res && res.success) {
             const d = res.data;
             container.innerHTML = `
@@ -1094,9 +1130,7 @@ async function showSuperAdminDashboard() {
 
 window.saveSuperSettings = async function () {
     const btn = document.getElementById("saveSuperSettingsBtn");
-    const originalText = btn.textContent;
-    btn.textContent = "Запазване...";
-    btn.disabled = true;
+    showSaving(btn, "Запазване...");
 
     const reqData = {
         paymentOptions: document.getElementById("superPaymentOptions").value.trim(),
@@ -1111,13 +1145,12 @@ window.saveSuperSettings = async function () {
     });
 
     if (result && result.success) {
-        showToast("Настройките са запазени успешно!", "success");
+        showToast("✅ Настройките са запазени успешно!", "success");
     } else {
         showToast(result.error || "Грешка при запазване", "error");
     }
 
-    btn.textContent = originalText;
-    btn.disabled = false;
+    hideSaving(btn, "Запази цените");
 }
 
 window.submitMasterNotice = async function () {
@@ -1148,6 +1181,17 @@ window.submitMasterNotice = async function () {
                 const t = document.getElementById(tId);
                 if (t) t.innerHTML = formatted;
             });
+
+            // Изпращаме имейл до всички живущи с регистриран имейл
+            if (notice !== "") {
+                apiCall('sendNoticeEmail', { pin: getStoredPin(), notice: notice })
+                    .then(emailResult => {
+                        if (emailResult && emailResult.success) {
+                            showToast(`📧 Имейлът е изпратен до ${emailResult.sent || 0} апартамента.`, "success");
+                        }
+                    })
+                    .catch(() => { });
+            }
         } else {
             banners.forEach(bId => {
                 const b = document.getElementById(bId);
@@ -1156,6 +1200,34 @@ window.submitMasterNotice = async function () {
         }
     } else {
         showToast(result?.error || "Грешка при запис", "error");
+    }
+}
+
+// Изпращане на индивидуален имейл до конкретен апартамент
+window.sendAptEmail = async function () {
+    const apt = document.getElementById("emailAptTarget").value;
+    const subject = document.getElementById("emailAptSubject").value.trim();
+    const body = document.getElementById("emailAptBody").value.trim();
+
+    if (!apt) { showToast("Изберете апартамент!", "error"); return; }
+    if (!subject) { showToast("Попълнете тема на имейла!", "error"); return; }
+    if (!body) { showToast("Попълнете текст на имейла!", "error"); return; }
+
+    showLoading();
+    const result = await apiCall('sendAptEmail', {
+        pin: getStoredPin(),
+        apartment: apt,
+        subject: subject,
+        body: body
+    });
+    hideLoading();
+
+    if (result && result.success) {
+        showToast("✅ Имейлът е изпратен успешно!", "success");
+        document.getElementById("emailAptSubject").value = "";
+        document.getElementById("emailAptBody").value = "";
+    } else {
+        showToast(result?.error || "Грешка при изпращане", "error");
     }
 }
 
@@ -1374,11 +1446,129 @@ window.switchZuesSubTab = function (subId) {
     const target = document.getElementById("zub-" + subId);
     if (target) target.style.display = "block";
 
-    // Ако е таб за събрание, генерираме списъка
     if (subId === 'z-meeting') {
         populateAttendanceTable();
     }
+    if (subId === 'z-fullbook') {
+        loadFullBook();
+    }
 }
+
+// ==============================================
+// 📋 ЦЯЛА ДОМОВА КНИГА
+// ==============================================
+
+let _fullBookData = []; // кеш за търсене
+
+window.loadFullBook = async function () {
+    const tbody = document.getElementById("fullBookBody");
+    const status = document.getElementById("fullBookStatus");
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">⏳ Зареждане...</td></tr>';
+    if (status) status.textContent = "";
+
+    const result = await apiCall('getFullBook', { pin: getStoredPin() });
+
+    if (!result || !result.success) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">❌ Грешка при зареждане</td></tr>';
+        return;
+    }
+
+    _fullBookData = result.rows || [];
+    renderBookTable(_fullBookData);
+
+    if (status) {
+        const filled = _fullBookData.filter(r => r["Собственик"] && r["Собственик"].trim() !== "").length;
+        status.textContent = `Общо: ${_fullBookData.length} апартамента | Попълнени: ${filled} | Непопълнени: ${_fullBookData.length - filled}`;
+    }
+}
+
+function renderBookTable(rows) {
+    const tbody = document.getElementById("fullBookBody");
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Няма данни в книгата.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = rows.map((r, idx) => {
+        const hasMissing = !r["Собственик"] || r["Собственик"].trim() === "";
+        const bg = hasMissing ? "background:#fffbf0;" : (idx % 2 === 0 ? "" : "background:#fafbfd;");
+        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">⚠️</span>' : '';
+
+        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["Апартамент"] || ""}'; loadBookData();">
+            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["Апартамент"] || "—"}${missingMark}</td>
+            <td style="padding:9px 12px;">${r["Собственик"] || '<span style="color:#ccc;">непопълнено</span>'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Имейл"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Обитатели"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Предназначение"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Дата вписване"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Домашни любимци"] || '—'}</td>
+        </tr>`;
+    }).join('');
+}
+
+window.filterBookTable = function () {
+    const q = (document.getElementById("bookSearchInput").value || "").toLowerCase();
+    if (!q) {
+        renderBookTable(_fullBookData);
+        return;
+    }
+    const filtered = _fullBookData.filter(r =>
+        Object.values(r).some(v => String(v).toLowerCase().includes(q))
+    );
+    renderBookTable(filtered);
+    const status = document.getElementById("fullBookStatus");
+    if (status) status.textContent = `Намерени: ${filtered.length} от ${_fullBookData.length} апартамента`;
+}
+
+window.printFullBook = function () {
+    if (!_fullBookData || _fullBookData.length === 0) {
+        showToast("Заредете книгата преди печат!", "error");
+        return;
+    }
+
+    const rows = _fullBookData.map((r, idx) => `
+        <tr style="${idx % 2 === 0 ? '' : 'background:#f9f9f9;'}">
+            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["Апартамент"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Собственик"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["Имейл"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Обитатели"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Предназначение"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Дата вписване"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Домашни любимци"] || "—"}</td>
+        </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>Домова книга — Чл. 7 от ЗУЕС</title>
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 13px; padding: 30px; color: #222; }
+            h2 { text-align: center; margin-bottom: 4px; }
+            p.subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th { background: #1a1a2e; color: white; padding: 8px; border: 1px solid #333; font-size: 12px; }
+            @media print { button { display: none; } }
+        </style>
+    </head><body>
+        <h2>📋 ДОМОВА КНИГА — Книга на етажната собственост (Чл. 7 от ЗУЕС)</h2>
+        <p class="subtitle">Дата на извличане: ${new Date().toLocaleDateString('bg-BG')} г. | Общо апартаменти: ${_fullBookData.length}</p>
+        <table>
+            <thead><tr>
+                <th>Апт.</th><th>Собственик/ци</th><th>Имейл</th>
+                <th>Обитатели</th><th>Предназн.</th><th>Дата вписване</th><th>Домашни</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div style="margin-top:30px; font-size:11px; color:#888; text-align:right;">
+            Управлявано от системата за управление на ЕС
+        </div>
+        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">🖨️ Печат</button>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
 
 function populateAttendanceTable() {
     const list = document.getElementById("meeting-attendance-list");
@@ -1658,58 +1848,4 @@ window.switchPage = function (pageId) {
     }
 }
 
-// ==============================================
-// 🤖 AI ASSISTANT LOGIC
-// ==============================================
-
-window.toggleAIChat = function () {
-    const win = document.getElementById("aiWindow");
-    if (win.style.display === "flex") {
-        win.style.display = "none";
-    } else {
-        win.style.display = "flex";
-        document.getElementById("aiInput").focus();
-    }
-}
-
-window.sendAIMessage = async function () {
-    const input = document.getElementById("aiInput");
-    const container = document.getElementById("aiMessages");
-    const text = input.value.trim();
-    if (!text) return;
-
-    // Add User Message
-    const userDiv = document.createElement("div");
-    userDiv.className = "ai-msg user";
-    userDiv.textContent = text;
-    container.appendChild(userDiv);
-    input.value = "";
-    container.scrollTop = container.scrollHeight;
-
-    // Add Loading for Bot
-    const botDiv = document.createElement("div");
-    botDiv.className = "ai-msg bot";
-    botDiv.innerHTML = "<em>Мисли...</em>";
-    container.appendChild(botDiv);
-    container.scrollTop = container.scrollHeight;
-
-    try {
-        const result = await apiCall('askAI', {
-            message: text,
-            context: JSON.stringify({
-                currentEntrance: currentRouteKey,
-                userName: localStorage.getItem("savedAdminEmail") || "Домоуправител"
-            })
-        });
-
-        if (result && result.success) {
-            botDiv.innerHTML = result.response.replace(/\n/g, '<br>');
-        } else {
-            botDiv.innerHTML = result?.error || "Извинете, възникна технически проблем. Моля, опитайте пак.";
-        }
-    } catch (e) {
-        botDiv.innerHTML = "Грешка при връзка с изкуствения интелект.";
-    }
-    container.scrollTop = container.scrollHeight;
-}
 
