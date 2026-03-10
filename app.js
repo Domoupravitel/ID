@@ -776,22 +776,27 @@ window.submitBookData = async function () {
         { id: "book-Purpose", key: "Предназначение" }
     ];
 
+    const updates = {};
+    mapping.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) updates[item.key] = el.value;
+    });
+
     const btn = document.getElementById('book-save-btn');
     showSaving(btn, "Записване...");
 
     try {
-        for (const item of mapping) {
-            const el = document.getElementById(item.id);
-            if (!el) continue;
-            const val = el.value;
-            await apiCall('updateBookData', {
-                pin: getStoredPin(),
-                apartment: apt,
-                key: item.key,
-                value: val
-            });
+        const result = await apiCall('updateBookData', {
+            pin: getStoredPin(),
+            apartment: apt,
+            updates: JSON.stringify(updates)
+        });
+
+        if (result && result.success) {
+            showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
+        } else {
+            showToast(result?.error || "Грешка при запис", "error");
         }
-        showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
     } catch (e) {
         console.error(e);
         showToast("Възникна грешка при записа", "error");
@@ -978,25 +983,42 @@ window.submitMaster = async function (sheetName) {
 
     // Изчистваме и намираме активния бутон, за да му сложим Loading State
     const activeTabObj = document.querySelector(`.master-panel[style*="display: block"] button`);
-    if (activeTabObj) activeTabObj.textContent = "Записване...";
+    const originalText = activeTabObj ? activeTabObj.textContent : "Запиши";
+    if (activeTabObj) {
+        activeTabObj.disabled = true;
+        activeTabObj.textContent = "Записване...";
+    }
 
-    const result = await apiCall('updateMaster', {
-        pin: getStoredPin(),
-        sheet: sheetName,
-        value: val,
-        apartment: apt,
-        fromPeriod: fromP,
-        toPeriod: toP
-    });
+    try {
+        const result = await apiCall('updateMaster', {
+            pin: getStoredPin(),
+            sheet: sheetName,
+            value: val,
+            apartment: apt,
+            fromPeriod: fromP,
+            toPeriod: toP
+        });
 
-    if (activeTabObj) activeTabObj.textContent = "Запиши";
-
-    if (result && result.success) {
-        showToast(`Успешно обновен регистър: ${sheetName}`, "success");
-        if (sheetName === 'ОБИТАТЕЛИ') document.getElementById('masterObVal').value = "";
-        if (sheetName === 'ЧИПОВЕ') document.getElementById('masterChVal').value = "";
-    } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        if (result && result.success) {
+            showToast(`Успешно обновен регистър: ${sheetName}`, "success");
+            if (sheetName === 'ОБИТАТЕЛИ') {
+                const valInput = document.getElementById('masterObVal');
+                if (valInput) valInput.value = "";
+            }
+            if (sheetName === 'ЧИПОВЕ') {
+                const valInput = document.getElementById('masterChVal');
+                if (valInput) valInput.value = "";
+            }
+        } else {
+            showToast(result?.error || "Възникна грешка", "error");
+        }
+    } catch (e) {
+        showToast("Сървърна грешка при запис", "error");
+    } finally {
+        if (activeTabObj) {
+            activeTabObj.disabled = false;
+            activeTabObj.textContent = originalText;
+        }
     }
 }
 
