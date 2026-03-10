@@ -197,6 +197,47 @@
                 font-size: 1.8rem;
             }
         }
+
+        /* Lightbox Style */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox.active img {
+            transform: scale(1);
+        }
+
+        .zoomable {
+            cursor: zoom-in;
+            transition: opacity 0.2s;
+        }
+
+        .zoomable:hover {
+            opacity: 0.85;
+        }
     </style>
 </head>
 
@@ -225,13 +266,55 @@
                     обяви и лични бележки в таблото.</li>
             </ul>
 
-            <div style="margin: 20px 0;">
-                <a href="https://drive.google.com/file/d/1237ytR5OMAAvBe-HilZyIzJklxbZaxN_/view?usp=drivesdk"
-                    target="_blank"
-                    style="display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--primary); color: var(--primary); padding: 15px; border-radius: var(--radius-md); text-decoration: none; font-weight: 600; transition: all 0.2s;">
-                    <span>🎬 Вижте видео демонстрация на потребителския интерфейс ➔</span>
-                </a>
+            <div class="video-container">
+                <iframe src="https://drive.google.com/file/d/1tUeZoIP5_HNOl91DZGsRat88yZmU9f_Y/preview" width="100%"
+                    height="480" allow="autoplay"></iframe>
             </div>
+            <div class="video-caption">🎬 Видео демонстрация на потребителския интерфейс</div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <img src="media/главна_стр_на_приложението.png" alt="Начална страница" class="zoomable"
+                        onclick="openLightbox(this.src)" style="max-width: 100%; height: auto;">
+                    <div class="video-caption">Начална страница на платформата</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <img src="media/страница_на_вход.png" alt="Информация за входа" class="zoomable"
+                        onclick="openLightbox(this.src)" style="max-width: 100%; height: auto;">
+                    <div class="video-caption">Обща информация за входа</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <img src="media/потребителска_справка.png" alt="Справка апартамент" class="zoomable"
+                        onclick="openLightbox(this.src)" style="max-width: 100%; height: auto;">
+                    <div class="video-caption">Детайлна справка за апартамент</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <img src="media/мес._фин._отчет.png" alt="Финансов отчет" class="zoomable"
+                        onclick="openLightbox(this.src)" style="max-width: 100%; height: auto;">
+                    <div class="video-caption">Месечен Финансов Отчет (публичен)</div>
+                </div>
+            </div>
+
+            <!-- Lightbox Overlay -->
+            <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+                <img id="lightbox-img" src="" alt="Zoomed view">
+            </div>
+
+            <script>
+                function openLightbox(src) {
+                    const lb = document.getElementById('lightbox');
+                    const img = document.getElementById('lightbox-img');
+                    img.src = src;
+                    lb.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeLightbox() {
+                    const lb = document.getElementById('lightbox');
+                    lb.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            </script>
 
             <h2>⚙️ За Домоуправители</h2>
             <ul class="feature-list">
@@ -262,6 +345,7 @@
                             <li>Интелигентен калкулатор за кворум на база идеални части.</li>
                             <li>Автоматично генериране на Присъствен списък за подписи.</li>
                             <li>Чернова на Протокол от ОС с попълнени законови реквизити.</li>
+                            <li><strong>Месечен финансов отчет</strong>: Директен преглед на приходите и разходите.</li>
                         </ul>
                     </li>
                     <li><strong>Декларации (Чл. 47)</strong>: Генериране на попълнена Декларация за вписване само с един
@@ -269,14 +353,11 @@
                 </ul>
             </div>
 
-
-            <div style="margin: 20px 0;">
-                <a href="https://drive.google.com/file/d/12Gqff7EFqQBaes7DwhDA-Yqn4-zfQm37/view?usp=drivesdk"
-                    target="_blank"
-                    style="display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--primary); color: var(--primary); padding: 15px; border-radius: var(--radius-md); text-decoration: none; font-weight: 600; transition: all 0.2s;">
-                    <span>🎬 Вижте видео демонстрация на администраторския панел ➔</span>
-                </a>
+            <div class="video-container">
+                <iframe src="https://drive.google.com/file/d/1MGj0NVYYMvw_7duiDImdba_lvOfi4anK/preview" width="100%"
+                    height="480" allow="autoplay"></iframe>
             </div>
+            <div class="video-caption">🎬 Видео демонстрация на административния панел</div>
 
             <div class="important-box" style="background: #f0f7ff; border-left-color: var(--primary);">
                 <h4 style="color: var(--primary);">💳 Стандартизирано плащане (ID-Apt)</h4>
