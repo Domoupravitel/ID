@@ -69,7 +69,11 @@
         <!-- Admin Content (hidden until login ok) -->
         <div class="admin-card" id="adminCard" style="display:none">
             <button class="admin-close" onclick="closeAdmin()">✕</button>
-            <div class="admin-title">⚙️ Админ панел</div>
+            <div class="admin-title">⚙️ Админ панел
+                <a href="admin_guide.html" target="_blank"
+                    style="font-size: 13px; font-weight: normal; color: var(--primary); text-decoration: none; margin-left: 15px; background: #eefbff; padding: 4px 10px; border-radius: 6px; border: 1px solid #bdeaff;">📘
+                    Ръководство</a>
+            </div>
 
             <!-- Global News Banner -->
             <div id="adminGlobalNews"
@@ -616,8 +620,9 @@
                     домоуправители при влизане в панела им.</p>
                 <textarea id="superGlobalMessage" class="admin-input" style="min-height: 80px; border-color: #fab005;"
                     placeholder="Въведете съобщение..."></textarea>
-                <button class="admin-btn primary" style="background: #e67700; margin-top: 10px;"
-                    onclick="saveGlobalMessage()">Изпрати съобщение</button>
+                <button id="saveGlobalMessageBtn" class="admin-btn primary"
+                    style="background: #e67700; margin-top: 10px;" onclick="saveGlobalMessage()">Изпрати
+                    съобщение</button>
             </div>
 
             <!-- Section 4: Access Control -->
@@ -763,10 +768,14 @@
                 <!-- Information features below the button -->
                 <div
                     style="margin-top: 30px; text-align: left; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
-                    <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Възможности на приложението:
+                    <h4 style="margin-bottom: 2px; font-size: 15px; font-weight: 600;">
+                        <a href="description.html" target="_blank" id="fullDescriptionLink"
+                            style="display: inline-block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
+                            Пълни възможности на приложението ➔
+                        </a>
                     </h4>
                     <ul
-                        style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light);">
+                        style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light); margin-top: 10px;">
                         <li style="margin-bottom: 8px;"><b>За Потребители:</b> Лесна проверка на задължения, онлайн
                             преглед на платени суми, получаване на прозрачни отчети и инструкции за плащане.</li>
                         <li><b>За Домоуправители:</b> Автоматично засичане и разпределянето им по апартаменти, на
@@ -775,11 +784,6 @@
                             върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
                             умения.</li>
                     </ul>
-
-                    <a href="description.html" target="_blank" id="fullDescriptionLink"
-                        style="display: inline-block; margin-top: 15px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
-                        📘 Пълно описание на функционалностите ➔
-                    </a>
                 </div>
 
             </div>

@@ -7,6 +7,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxY01cPQI6NPYSZXrijn
 
 let currentRouteKey = "";
 let apartmentList = [];
+let _currentIdealParts = {};
 
 // ==============================================
 // INITIALIZATION
@@ -1254,16 +1255,26 @@ window.sendAptEmail = async function () {
 }
 
 window.saveGlobalMessage = async function () {
+    const btn = document.getElementById("saveGlobalMessageBtn");
     const msg = document.getElementById("superGlobalMessage").value.trim();
-    const result = await apiCall('updateGlobalMessage', {
-        pin: sessionStorage.getItem("superAdminAuth"),
-        message: msg
-    });
 
-    if (result && result.success) {
-        showToast("Съобщението е запазено и изпратено!", "success");
-    } else {
-        showToast("Грешка при запазване на съобщението", "error");
+    showSaving(btn, "Изпращане...");
+
+    try {
+        const result = await apiCall('updateGlobalMessage', {
+            pin: sessionStorage.getItem("superAdminAuth"),
+            message: msg
+        });
+
+        if (result && result.success) {
+            showToast("✅ Съобщението е изпратено до всички!", "success");
+        } else {
+            showToast(result.error || "Грешка при изпращане", "error");
+        }
+    } catch (e) {
+        showToast("Проблем при комуникация със сървъра", "error");
+    } finally {
+        hideSaving(btn, "Изпрати съобщение");
     }
 }
 
@@ -1592,28 +1603,36 @@ window.printFullBook = function () {
 }
 
 
-function populateAttendanceTable() {
+window.populateAttendanceTable = async function () {
     const list = document.getElementById("meeting-attendance-list");
     if (!list) return;
-    list.innerHTML = "";
+    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">⏳ Зареждане на данни...</td></tr>';
 
-    apartmentList.forEach(apt => {
-        const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid #eee";
+    try {
+        const result = await apiCall('getBuildingIdealParts');
+        _currentIdealParts = (result && result.success) ? result.parts : {};
 
-        // Намираме идеалните части (ако ги има в данни, тук ще ползваме фейк или ще ги заредим)
-        // В реално приложение бихме заредили процентите от MASTER листа
-        const percent = 2.0; // Примерна стойност
+        list.innerHTML = "";
+        apartmentList.forEach(apt => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #eee";
 
-        tr.innerHTML = `
-            <td style="padding:6px;">${apt}</td>
-            <td style="padding:6px; text-align:center;">
-                <input type="checkbox" class="quorum-check" data-apt="${apt}" data-percent="${percent}" onchange="calculateQuorum()">
-            </td>
-            <td style="padding:6px; text-align:right;">${percent}%</td>
-        `;
-        list.appendChild(tr);
-    });
+            const normApt = normalizeAptName(apt);
+            const percent = _currentIdealParts[normApt] !== undefined ? parseFloat(_currentIdealParts[normApt]) : 0;
+
+            tr.innerHTML = `
+                <td style="padding:6px;">${apt}</td>
+                <td style="padding:6px; text-align:center;">
+                    <input type="checkbox" class="quorum-check" data-apt="${apt}" data-percent="${percent}" onchange="calculateQuorum()">
+                </td>
+                <td style="padding:6px; text-align:right;">${percent.toFixed(2)}%</td>
+            `;
+            list.appendChild(tr);
+        });
+        calculateQuorum();
+    } catch (e) {
+        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Грешка при зареждане на идеалните части.</td></tr>';
+    }
 }
 
 window.calculateQuorum = function () {
@@ -1663,10 +1682,13 @@ window.printAttendanceList = function () {
     `;
 
     apartmentList.forEach(apt => {
+        const normApt = normalizeAptName(apt);
+        const percent = _currentIdealParts[normApt] !== undefined ? parseFloat(_currentIdealParts[normApt]) : 0;
+
         html += `
             <tr>
                 <td style="padding:10px;">${apt}</td>
-                <td style="padding:10px; text-align:center;">2.0%</td>
+                <td style="padding:10px; text-align:center;">${percent.toFixed(2)}%</td>
                 <td style="padding:10px;"></td>
                 <td style="padding:10px; height: 30px;"></td>
             </tr>
