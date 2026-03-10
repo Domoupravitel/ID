@@ -3,7 +3,7 @@
 // ==============================================
 
 // Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9-oLgm1LRmN90lX87WYt-OvxL8gFam5SuzUuV35KYKh28c4kOhXT8u9xm6cIHv7wQDQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxY01cPQI6NPYSZXrijnEpzVGfcYekwqhfOrwhpE1OSScJP8GzGtzBkPA9To9DYxGJ2aw/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
@@ -1383,7 +1383,7 @@ async function loadSuperExceptions() {
             tr.innerHTML = `
                 <td style="padding:6px;">${ex.targetId}</td>
                 <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Всички' : ex.apartment}</td>
-                <td style="padding:6px;">${ex.price} лв.</td>
+                <td style="padding:6px;">${ex.price} EUR</td>
                 <td style="padding:6px;">${ex.validUntil}</td>
                 <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">✕</button></td>
             `;
@@ -1762,8 +1762,7 @@ window.generateReport = async function () {
     }
 
     const btn = document.querySelector("#view-monthly-report .btn-primary");
-    btn.textContent = "Зареждане...";
-    btn.disabled = true;
+    showSaving(btn, "Зареждане...");
 
     try {
         const result = await apiCall('getMonthlyReport', { period: period });
@@ -1782,7 +1781,7 @@ window.generateReport = async function () {
                 security: "Охрана / Консиерж",
                 cleaning: "Хигиена и почистване",
                 podrajka: "Поддръжка на общи части",
-                remont: "Фонд „Ремонт и обновяване“"
+                remont: 'Фонд \u201eРемонт и обновяване\u201c'
             };
 
             for (let key in labels) {
@@ -1791,14 +1790,14 @@ window.generateReport = async function () {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">${labels[key]}</td>
-                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${val.toFixed(2)} лв.</td>
+                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${val.toFixed(2)} EUR</td>
                     `;
                     tableBody.appendChild(tr);
                 }
             }
 
-            document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " лв.";
-            document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " лв.";
+            document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
+            document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
 
             document.getElementById("report-content").style.display = "block";
         } else {
@@ -1808,8 +1807,7 @@ window.generateReport = async function () {
     } catch (e) {
         showToast("Грешка при генериране на отчета", "error");
     } finally {
-        btn.textContent = "Покажи";
-        btn.disabled = false;
+        hideSaving(btn, "Покажи");
     }
 }
 
