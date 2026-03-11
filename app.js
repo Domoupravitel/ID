@@ -926,18 +926,18 @@ window.submitMaster = async function (sheetName) {
     if (sheetName === 'Логика') {
         val = document.getElementById('masterLogikaVal').value;
         fromP = document.getElementById('masterLogikaFrom').value.trim();
-        toP = "01.2099"; // Default to infinity
+        toP = "12.2099"; 
         apt = "";
     } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
         fromP = document.getElementById('masterUchFrom').value.trim();
-        toP = "01.2099";
+        toP = "12.2099";
     } else if (sheetName === 'ОБИТАТЕЛИ') {
         apt = document.getElementById('masterObApt').value;
         val = document.getElementById('masterObVal').value;
         fromP = document.getElementById('masterObFrom').value.trim();
-        toP = "01.2099";
+        toP = "12.2099";
         if (val !== "" && parseInt(val) < 1) {
             showToast("⚠️ Минималният брой е 1.", "error");
             return;
@@ -946,12 +946,12 @@ window.submitMaster = async function (sheetName) {
         apt = document.getElementById('masterChApt').value;
         val = document.getElementById('masterChVal').value;
         fromP = document.getElementById('masterChFrom').value.trim();
-        toP = "01.2099";
+        toP = "12.2099";
     } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
         apt = document.getElementById('masterIdApt').value;
         val = document.getElementById('masterIdVal').value;
         fromP = document.getElementById('masterIdFrom').value.trim();
-        toP = "01.2099";
+        toP = "12.2099";
     }
 
     if (sheetName === 'PAYMENT_INFO') {

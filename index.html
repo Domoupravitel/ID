@@ -183,8 +183,7 @@
                     </select>
                     <label class="admin-label">От период (MM.YYYY)</label>
                     <input type="text" id="masterUchFrom" class="admin-input" placeholder="01.2026">
-                    <button class="admin-btn primary" onclick="submitMaster('УЧАСТИЕ_АСАНСЬОР')">Запиши за
-                        напред</button>
+                    <button class="admin-btn primary" onclick="submitMaster('УЧАСТИЕ_АСАНСЬОР')">Запиши за напред</button>
                 </div>
 
                 <!-- Obitateli Tab Content -->
@@ -193,13 +192,12 @@
                     <select id="masterObApt" class="admin-input"></select>
                     <label class="admin-label">Брой обитатели</label>
                     <input type="number" id="masterObVal" class="admin-input" placeholder="Напр. 2" min="1" step="1">
-                    <div style="display:none;">
-                        <input type="text" id="masterObFrom" class="admin-input" value="01.2026">
-                    </div>
+                    <label class="admin-label">От период (MM.YYYY)</label>
+                    <input type="text" id="masterObFrom" class="admin-input" placeholder="01.2026">
                     <p style="font-size: 11px; color: #888; margin-top: 5px; margin-bottom: 12px; line-height: 1.4;">
-                        Записването променя <b>текущата</b> стойност за този апартамент. История на обитателите вече не се пази с цел улесняване на системата.
+                        Записването променя стойността от избрания период <b>напред</b>. Историята се пази за коректни начисления за минали месеци.
                     </p>
-                    <button class="admin-btn primary" onclick="submitMaster('ОБИТАТЕЛИ')">Запиши стойност</button>
+                    <button class="admin-btn primary" onclick="submitMaster('ОБИТАТЕЛИ')">Запиши за напред</button>
                 </div>
 
                 <!-- Chipove Tab Content -->
@@ -224,7 +222,7 @@
                         <input type="text" id="masterIdFrom" class="admin-input" value="01.2026">
                     </div>
                     <p style="font-size: 11px; color: #888; margin-top: 5px; margin-bottom: 12px; line-height: 1.4;">
-                        Записването променя <b>текущата</b> стойност за този апартамент. История на идеалните части вече не се пази с цел улесняване на системата.
+                        Записването обновява <b>текущата</b> стойност на идеалните части. Тя се прилага автоматично за всички месеци за избрания апартамент.
                     </p>
                     
                     <button class="admin-btn primary" onclick="submitMaster('ИДЕАЛНИ_ЧАСТИ')">Запиши стойност</button>
