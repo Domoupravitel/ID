@@ -1609,7 +1609,7 @@ window.populateAttendanceTable = async function () {
     list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">⏳ Зареждане на данни...</td></tr>';
 
     try {
-        const result = await apiCall('getBuildingIdealParts');
+        const result = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
         _currentIdealParts = (result && result.success) ? result.parts : {};
 
         list.innerHTML = "";
