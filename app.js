@@ -1174,13 +1174,17 @@ async function showSuperAdminDashboard() {
     try {
         const res = await apiCall('getSuperSettings');
         if (res && res.success) {
-            document.getElementById("superPaymentOptions").value = res.paymentOptions || "";
-            document.getElementById("priceBigCities").value = res.priceBigCities || "";
-            document.getElementById("priceOtherCities").value = res.priceOtherCities || "";
-            document.getElementById("priceLifetime").value = res.priceLifetime || "";
-            document.getElementById("superGlobalMessage").value = res.globalMessage || "";
-            document.getElementById("superShowRegForm").value = res.showRegForm || "true";
-            document.getElementById("superRegFormText").value = res.regFormText || "";
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            };
+            setVal("superPaymentOptions", res.paymentOptions);
+            setVal("priceBigCities", res.priceBigCities);
+            setVal("priceOtherCities", res.priceOtherCities);
+            setVal("priceLifetime", res.priceLifetime);
+            setVal("superGlobalMessage", res.globalMessage);
+            setVal("superShowRegForm", res.showRegForm || "true");
+            setVal("superRegFormText", res.regFormText);
         }
     } catch (e) {
         console.error("Error loading super settings:", e);
@@ -1194,27 +1198,37 @@ window.saveSuperSettings = async function () {
     const btn = document.getElementById("saveSuperSettingsBtn");
     showSaving(btn, "Запазване...");
 
-    const reqData = {
-        paymentOptions: document.getElementById("superPaymentOptions").value.trim(),
-        priceBigCities: document.getElementById("priceBigCities").value.trim(),
-        priceOtherCities: document.getElementById("priceOtherCities").value.trim(),
-        priceLifetime: document.getElementById("priceLifetime").value.trim(),
-        showRegForm: document.getElementById("superShowRegForm").value === "true",
-        regFormText: document.getElementById("superRegFormText").value.trim()
-    };
+    try {
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : "";
+        };
 
-    const result = await apiCall('updateSuperSettings', {
-        pin: sessionStorage.getItem("superAdminAuth"),
-        settings: JSON.stringify(reqData)
-    });
+        const reqData = {
+            paymentOptions: getVal("superPaymentOptions"),
+            priceBigCities: getVal("priceBigCities"),
+            priceOtherCities: getVal("priceOtherCities"),
+            priceLifetime: getVal("priceLifetime"),
+            showRegForm: document.getElementById("superShowRegForm").value === "true",
+            regFormText: getVal("superRegFormText")
+        };
 
-    if (result && result.success) {
-        showToast("✅ Настройките са запазени успешно!", "success");
-    } else {
-        showToast(result.error || "Грешка при запазване", "error");
+        const result = await apiCall('updateSuperSettings', {
+            pin: sessionStorage.getItem("superAdminAuth"),
+            settings: JSON.stringify(reqData)
+        });
+
+        if (result && result.success) {
+            showToast("✅ Настройките са запазени успешно!", "success");
+        } else {
+            showToast(result.error || "Грешка при запазване", "error");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("Възникна грешка при запазване", "error");
+    } finally {
+        hideSaving(btn, "Запази настройките");
     }
-
-    hideSaving(btn, "Запази настройките");
 }
 
 window.submitMasterNotice = async function () {
