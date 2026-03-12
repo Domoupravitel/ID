@@ -611,12 +611,16 @@
                         <input type="number" id="priceOtherCities" class="admin-input" placeholder="пр. 0.50">
                     </div>
                 </div>
-                <div style="margin-top: 10px;">
-                    <label class="admin-label">Цена Безсрочен (EUR)</label>
-                    <input type="number" id="priceLifetime" class="admin-input" placeholder="пр. 150">
+                <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                    <label class="admin-label">Показвай бутон "Регистрирай се"</label>
+                    <select id="superShowRegForm" class="admin-input">
+                        <option value="true">Да (Видимо)</option>
+                        <option value="false">Не (Скрито)</option>
+                    </select>
+                    <label class="admin-label" style="margin-top: 8px;">Текст на бутона</label>
+                    <input type="text" id="superRegFormText" class="admin-input" placeholder="✉️ Попитай ни / Регистрирай се">
                 </div>
-                <button class="admin-btn primary" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази
-                    цените</button>
+                <button class="admin-btn primary" style="margin-top: 15px;" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази настройките</button>
             </div>
 
             <!-- Section 3: Global Broadcast (Broadcast to all managers) -->
@@ -734,8 +738,8 @@
 
 
                 <!-- Contact Shortcut -->
-                <a href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none;">
-                    <button class="btn"
+                <a id="regButtonLink" href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none; display: none;">
+                    <button id="regButtonText" class="btn"
                         style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
                         title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
                         onmouseout="this.style.transform='translateY(0)';">✉️ Попитай ни / Регистрирай се</button>

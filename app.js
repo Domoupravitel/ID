@@ -46,7 +46,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('access-id').value = idParam;
         enterEntrance();
     }
+
+    // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
+    loadPublicSettings();
 });
+
+async function loadPublicSettings() {
+    try {
+        const res = await apiCall('getPublicSettings');
+        const regLink = document.getElementById("regButtonLink");
+        const regText = document.getElementById("regButtonText");
+        
+        if (res && res.success && regLink) {
+            regLink.style.display = res.showRegForm ? "block" : "none";
+            if (res.regFormText && regText) {
+                regText.textContent = res.regFormText;
+            }
+        } else if (regLink) {
+            // Default fallback if API fails
+            regLink.style.display = "block";
+        }
+    } catch (e) {
+        console.error("Error loading public settings:", e);
+    }
+}
 
 // ==============================================
 // CORE API CALLER
@@ -368,7 +391,11 @@ async function loadDashboardData() {
             const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
 
             document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
-            document.getElementById('dash-balance').textContent = `${d.totalBalance} ${cur}`;
+            
+            // Показваме събраното спрямо общото начислено
+            const collected = parseFloat(d.totalBalance) || 0;
+            const target = parseFloat(d.totalTargetFund) || 0;
+            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (от ${target.toFixed(2)} ${cur})`;
 
             // Trends status text update
             const debtsTrendEl = document.getElementById('dash-debts-trend');
@@ -464,6 +491,16 @@ function initChart(data) {
                     data: data.map(i => i.podrajka),
                     borderColor: '#ff2d55',
                     backgroundColor: 'rgba(255, 45, 85, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Фонд ремонт',
+                    data: data.map(i => i.remont),
+                    borderColor: '#8e8e93',
+                    backgroundColor: 'rgba(142, 142, 147, 0.1)',
                     tension: 0.3,
                     fill: false,
                     pointRadius: 4,
@@ -926,18 +963,18 @@ window.submitMaster = async function (sheetName) {
     if (sheetName === 'Логика') {
         val = document.getElementById('masterLogikaVal').value;
         fromP = document.getElementById('masterLogikaFrom').value.trim();
-        toP = "12.2099"; 
+        toP = "12.2050"; 
         apt = "";
     } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
         fromP = document.getElementById('masterUchFrom').value.trim();
-        toP = "12.2099";
+        toP = "12.2050";
     } else if (sheetName === 'ОБИТАТЕЛИ') {
         apt = document.getElementById('masterObApt').value;
         val = document.getElementById('masterObVal').value;
         fromP = document.getElementById('masterObFrom').value.trim();
-        toP = "12.2099";
+        toP = "12.2050";
         if (val !== "" && parseInt(val) < 1) {
             showToast("⚠️ Минималният брой е 1.", "error");
             return;
@@ -946,12 +983,12 @@ window.submitMaster = async function (sheetName) {
         apt = document.getElementById('masterChApt').value;
         val = document.getElementById('masterChVal').value;
         fromP = document.getElementById('masterChFrom').value.trim();
-        toP = "12.2099";
+        toP = "12.2050";
     } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
         apt = document.getElementById('masterIdApt').value;
         val = document.getElementById('masterIdVal').value;
         fromP = document.getElementById('masterIdFrom').value.trim();
-        toP = "12.2099";
+        toP = "12.2050";
     }
 
     if (sheetName === 'PAYMENT_INFO') {
@@ -1142,6 +1179,8 @@ async function showSuperAdminDashboard() {
             document.getElementById("priceOtherCities").value = res.priceOtherCities || "";
             document.getElementById("priceLifetime").value = res.priceLifetime || "";
             document.getElementById("superGlobalMessage").value = res.globalMessage || "";
+            document.getElementById("superShowRegForm").value = res.showRegForm || "true";
+            document.getElementById("superRegFormText").value = res.regFormText || "";
         }
     } catch (e) {
         console.error("Error loading super settings:", e);
@@ -1159,7 +1198,9 @@ window.saveSuperSettings = async function () {
         paymentOptions: document.getElementById("superPaymentOptions").value.trim(),
         priceBigCities: document.getElementById("priceBigCities").value.trim(),
         priceOtherCities: document.getElementById("priceOtherCities").value.trim(),
-        priceLifetime: document.getElementById("priceLifetime").value.trim()
+        priceLifetime: document.getElementById("priceLifetime").value.trim(),
+        showRegForm: document.getElementById("superShowRegForm").value === "true",
+        regFormText: document.getElementById("superRegFormText").value.trim()
     };
 
     const result = await apiCall('updateSuperSettings', {
@@ -1173,7 +1214,7 @@ window.saveSuperSettings = async function () {
         showToast(result.error || "Грешка при запазване", "error");
     }
 
-    hideSaving(btn, "Запази цените");
+    hideSaving(btn, "Запази настройките");
 }
 
 window.submitMasterNotice = async function () {
