@@ -668,6 +668,15 @@ function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
 
+    // Първоначална подкана за MASTER настройки
+    const masterPromptKey = "hasSeenMasterPrompt_" + currentRouteKey;
+    if (!localStorage.getItem(masterPromptKey)) {
+        setTimeout(() => {
+            showToast("🎁 Добре дошли! Препоръчваме първо да посетите секция 'MASTER – Настройки', за да въведете началните параметри на входа.", "success");
+            localStorage.setItem(masterPromptKey, "true");
+        }, 1000);
+    }
+
     const subCodeEl = document.getElementById("subscriptionCodeDisplay");
     if (subCodeEl) {
         subCodeEl.textContent = currentRouteKey;
