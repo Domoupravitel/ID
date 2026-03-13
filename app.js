@@ -232,10 +232,9 @@ window.enterEntrance = async function () {
         document.getElementById('payment-details-box').style.display = 'none';
 
         // Имейл за връзка
-        if (info.adminContactEmail) {
-            document.getElementById('admin-mailto-link').href = `mailto:${info.adminContactEmail}`;
+        if (info.adminEmail) {
+            document.getElementById('admin-mailto-link').href = `mailto:${info.adminEmail}`;
             document.getElementById('admin-mailto-link').style.display = 'inline-block';
-            document.getElementById('masterAdminContactEmail').value = info.adminContactEmail;
         } else {
             document.getElementById('admin-mailto-link').style.display = 'none';
         }
@@ -993,7 +992,7 @@ window.submitMaster = async function (sheetName) {
 
     if (sheetName === 'PAYMENT_INFO') {
         const pText = document.getElementById('masterPaymentText').value.trim();
-        const aEmail = document.getElementById('masterAdminContactEmail').value.trim();
+
         const lElectric = document.getElementById('masterLinkElectric').value.trim();
         const lSub = document.getElementById('masterLinkSubscription').value.trim();
 
@@ -1005,7 +1004,7 @@ window.submitMaster = async function (sheetName) {
         // Пращаме го като обект, бекендът ще го разпознае
         val = JSON.stringify({
             paymentInfo: pText,
-            adminContactEmail: aEmail,
+
             linkElectric: lElectric,
             linkSubscription: lSub
         });
