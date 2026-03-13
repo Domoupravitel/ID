@@ -232,11 +232,14 @@ window.enterEntrance = async function () {
         document.getElementById('payment-details-box').style.display = 'none';
 
         // Имейл за връзка
-        if (info.adminEmail) {
-            document.getElementById('admin-mailto-link').href = `mailto:${info.adminEmail}`;
-            document.getElementById('admin-mailto-link').style.display = 'inline-block';
-        } else {
-            document.getElementById('admin-mailto-link').style.display = 'none';
+        const adminMailBtn = document.getElementById('admin-mailto-link');
+        if (adminMailBtn) {
+            if (info.adminEmail) {
+                adminMailBtn.href = `mailto:${info.adminEmail}`;
+                adminMailBtn.style.display = 'inline-block';
+            } else {
+                adminMailBtn.style.display = 'none';
+            }
         }
 
         // Външни линкове
