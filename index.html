@@ -621,8 +621,8 @@
                         <option value="true">Да (Видимо)</option>
                         <option value="false">Не (Скрито)</option>
                     </select>
-                    <label class="admin-label" style="margin-top: 8px;">Текст на бутона</label>
-                    <input type="text" id="superRegFormText" class="admin-input" placeholder="✉️ Попитай ни / Регистрирай се">
+                    <label class="admin-label" style="margin-top: 8px;">Текст на бутона за регистрация</label>
+                    <input type="text" id="superRegFormText" class="admin-input" placeholder="Инфо / Регистрация">
                 </div>
                 <button class="admin-btn primary" style="margin-top: 15px;" id="saveSuperSettingsBtn" onclick="saveSuperSettings()">Запази настройките</button>
             </div>
@@ -741,12 +741,20 @@
             <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
 
 
-                <!-- Contact Shortcut -->
+                <!-- Contact Shortcut (Always visible) -->
+                <a href="https://forms.gle/ozJzqHuGNATgbV967" target="_blank" style="text-decoration: none;">
+                    <button class="btn"
+                        style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                        title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.transform='translateY(0)';">✉️ Контакт</button>
+                </a>
+
+                <!-- Register Shortcut (Controlled by Super Admin) -->
                 <a id="regButtonLink" href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none; display: none;">
                     <button id="regButtonText" class="btn"
                         style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                        title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
-                        onmouseout="this.style.transform='translateY(0)';">✉️ Попитай ни / Регистрирай се</button>
+                        title="Регистрация" onmouseover="this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.transform='translateY(0)';">Инфо / Регистрация</button>
                 </a>
             </div>
 
