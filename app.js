@@ -227,6 +227,27 @@ window.refreshCurrentView = function () {
 // ENTRANCE NAVIGATION
 // ==============================================
 
+window.exitEntrance = function () {
+    // Reset state
+    currentRouteKey = "";
+    apartmentList = [];
+    
+    // Clear hash and UI
+    window.location.hash = "";
+    document.getElementById('access-id').value = "";
+    resetApartmentData();
+    
+    // Switch views
+    document.getElementById('view-entrance-home').classList.remove('active');
+    document.getElementById('view-entrance-home').classList.add('hidden');
+    document.getElementById('view-selector').classList.remove('hidden');
+    document.getElementById('view-selector').classList.add('active');
+    
+    // Smooth reset the apartment dropdown
+    const select = document.getElementById("apartmentSelect");
+    if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
+};
+
 window.enterEntrance = async function () {
     let accessId = document.getElementById('access-id').value.trim();
 
