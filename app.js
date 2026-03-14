@@ -13,7 +13,7 @@ let _currentIdealParts = {};
 // INITIALIZATION
 // ==============================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Възстановяване на запазени данни, ако има такива
     const savedEmail = localStorage.getItem("savedAdminEmail");
     const savedId = localStorage.getItem("savedAccessId");
@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loadApartmentData(e.target.value);
         } else {
             resetApartmentData();
+            // Clear apartment from hash but keep entrance ID
+            if (currentRouteKey) {
+                window.location.hash = currentRouteKey;
+            } else {
+                window.location.hash = "";
+            }
         }
     });
 
@@ -39,12 +45,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') verifyPin();
     });
 
-    // Автоматично влизане, ако в URL-а има ?id=XXXXXX
+    // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
     const urlParams = new URLSearchParams(window.location.search);
-    const idParam = urlParams.get('id');
-    if (idParam) {
-        document.getElementById('access-id').value = idParam;
-        enterEntrance();
+    let idValue = urlParams.get('id');
+    let aptValue = urlParams.get('apt');
+
+    // Hash prioritization for SPAs
+    if (window.location.hash) {
+        const hashClean = window.location.hash.replace('#', '');
+        const parts = hashClean.split('/');
+        if (parts[0]) idValue = parts[0];
+        if (parts[1]) aptValue = parts[1];
+    }
+
+    if (idValue) {
+        document.getElementById('access-id').value = idValue;
+        await enterEntrance();
+
+        if (aptValue) {
+            const select = document.getElementById("apartmentSelect");
+            const decodedApt = decodeURIComponent(aptValue);
+            // Wait a tiny bit for the dropdown to be populated by enterEntrance
+            setTimeout(() => {
+                if (apartmentList.includes(decodedApt)) {
+                    select.value = decodedApt;
+                    loadApartmentData(decodedApt);
+                }
+            }, 500);
+        }
     }
 
     // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
@@ -164,6 +192,15 @@ window.hideSaving = function (btn, originalText) {
     btn.innerHTML = originalText || btn._originalText || "Запази";
     btn.disabled = false;
     btn.style.opacity = "";
+}
+
+window.refreshCurrentView = function () {
+    console.log("Refreshing current view data...");
+    loadDashboardData();
+    const apt = document.getElementById("apartmentSelect").value;
+    if (apt) {
+        loadApartmentData(apt);
+    }
 }
 
 // ==============================================
@@ -356,6 +393,11 @@ window.enterEntrance = async function () {
             select.appendChild(opt);
         });
 
+        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
+        if (window.location.hash !== "#" + currentRouteKey && !window.location.hash.includes("/")) {
+            window.location.hash = currentRouteKey;
+        }
+
         // Зареждаме дашборда
         loadDashboardData();
     } else {
@@ -369,21 +411,7 @@ window.enterEntrance = async function () {
 }
 
 // Check URL params on load
-document.addEventListener('DOMContentLoaded', () => {
-    // Check for standard URL param ?id=123456...
-    const urlParams = new URLSearchParams(window.location.search);
-    let idParam = urlParams.get('id');
-
-    // Check for hash #123456...
-    if (!idParam && window.location.hash) {
-        idParam = window.location.hash.replace('#', '').replace('/', '');
-    }
-
-    if (idParam) {
-        document.getElementById('access-id').value = idParam;
-        enterEntrance();
-    }
-});
+// (Moved logic to main DOMContentLoaded at the top)
 
 async function loadDashboardData() {
     try {
@@ -552,6 +580,11 @@ async function loadApartmentData(apartment) {
 
     // Скриваме инструкциите за плащане докато не знаем дали има дълг
     document.getElementById('payment-details-box').style.display = 'none';
+
+    // Update URL Hash for persistence
+    if (currentRouteKey) {
+        window.location.hash = `${currentRouteKey}/${encodeURIComponent(apartment)}`;
+    }
 
     // Показваме кода за плащане веднага
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
@@ -769,6 +802,7 @@ window.submitPayment = async function () {
     if (result && result.success) {
         showToast("✅ Успешно добавено плащане.", "success");
         document.getElementById("adminAmount").value = "";
+        refreshCurrentView();
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
@@ -895,6 +929,7 @@ window.submitCharges = async function () {
         document.getElementById("chargesCleaning").value = "";
         document.getElementById("chargesPodrajka").value = "";
         document.getElementById("chargesRemont").value = "";
+        refreshCurrentView();
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
@@ -1058,6 +1093,7 @@ window.submitMaster = async function (sheetName) {
                 const valInput = document.getElementById('masterChVal');
                 if (valInput) valInput.value = "";
             }
+            refreshCurrentView();
         } else {
             showToast(result?.error || "Възникна грешка", "error");
         }
@@ -1133,6 +1169,7 @@ window.submitAptNotice = async function () {
 
     if (result && result.success) {
         showToast("Персоналното съобщение е запазено!", "success");
+        refreshCurrentView();
     } else {
         showToast(result?.error || "Грешка при запис", "error");
     }
