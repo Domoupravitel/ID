@@ -50,28 +50,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     let idValue = urlParams.get('id');
     let aptValue = urlParams.get('apt');
 
-    // Hash prioritization for SPAs
+    // Hash priority - Handle both encoded and raw hashes
     if (window.location.hash) {
-        const hashClean = window.location.hash.replace('#', '');
-        const parts = hashClean.split('/');
-        if (parts[0]) idValue = parts[0];
-        if (parts[1]) aptValue = parts[1];
+        try {
+            const rawHash = window.location.hash.replace('#', '');
+            // We split first, then decode each part to avoid merging slashes incorrectly
+            const parts = rawHash.split('/');
+            if (parts[0]) idValue = decodeURIComponent(parts[0]);
+            if (parts[1]) aptValue = decodeURIComponent(parts[1]);
+        } catch(e) { console.error("Hash parsing failed", e); }
     }
 
     if (idValue) {
-        document.getElementById('access-id').value = idValue;
-        await enterEntrance();
+        // Clean up ID if it was corrupted by previous versions (merged with apartment)
+        let cleanId = idValue.trim();
+        // If it starts with digits and then has letters/encoded chars without a slash, it's corrupted
+        const corruptionMatch = cleanId.match(/^(\d+)([^0-9/].*)$/);
+        if (corruptionMatch) {
+            cleanId = corruptionMatch[1];
+            if (!aptValue) aptValue = corruptionMatch[2];
+        }
 
-        if (aptValue) {
+        document.getElementById('access-id').value = cleanId;
+        const success = await enterEntrance();
+
+        if (success && aptValue) {
             const select = document.getElementById("apartmentSelect");
             const decodedApt = decodeURIComponent(aptValue);
-            // Wait a tiny bit for the dropdown to be populated by enterEntrance
-            setTimeout(() => {
-                if (apartmentList.includes(decodedApt)) {
+            // Polling approach is safer than a fixed timeout
+            let attempts = 0;
+            const interval = setInterval(() => {
+                if (apartmentList && apartmentList.includes(decodedApt)) {
                     select.value = decodedApt;
                     loadApartmentData(decodedApt);
+                    clearInterval(interval);
                 }
-            }, 500);
+                if (++attempts > 20) clearInterval(interval);
+            }, 100);
         }
     }
 
@@ -208,11 +223,23 @@ window.refreshCurrentView = function () {
 // ==============================================
 
 window.enterEntrance = async function () {
-    const accessId = document.getElementById('access-id').value.trim();
+    let accessId = document.getElementById('access-id').value.trim();
+
+    // Auto-fix if the field contains corrupted data (ID + Apartment merged or encoded)
+    if (accessId.includes('%') || accessId.match(/^(\d+)([^0-9/].+)$/)) {
+        try {
+            accessId = decodeURIComponent(accessId);
+            const match = accessId.match(/^(\d+)(.*)$/);
+            if (match) {
+                accessId = match[1];
+                document.getElementById('access-id').value = accessId;
+            }
+        } catch(e) {}
+    }
 
     if (!accessId) {
         showToast("Моля, въведете вашето ID за достъп!", "error");
-        return;
+        return false;
     }
 
     // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
@@ -400,6 +427,7 @@ window.enterEntrance = async function () {
 
         // Зареждаме дашборда
         loadDashboardData();
+        return true;
     } else {
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
@@ -407,6 +435,7 @@ window.enterEntrance = async function () {
         } else {
             showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
         }
+        return false;
     }
 }
 
