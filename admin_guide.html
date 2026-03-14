@@ -201,7 +201,7 @@
 <body>
 
     <div class="container">
-        <a href="index.html" class="back-link" onclick="location.href='index.html'+location.hash; return false;">← Към приложението</a>
+        <a href="index.html" class="back-link" onclick="const h = sessionStorage.getItem('originalHash') || ''; location.href='index.html'+h; return false;">← Към приложението</a>
 
         <header>
             <h1>📚 Ръководство за Домоуправителя</h1>
