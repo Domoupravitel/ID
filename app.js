@@ -97,6 +97,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
     loadPublicSettings();
+
+    // Ако сме се върнали от ръководството, отваряме админ панела автоматично
+    if (sessionStorage.getItem('shouldOpenAdmin') === 'true') {
+        sessionStorage.removeItem('shouldOpenAdmin');
+        // Даваме малко време на enterEntrance да приключи ако е в ход
+        setTimeout(() => {
+            if (currentRouteKey) openAdmin();
+        }, 800);
+    }
 });
 
 async function loadPublicSettings() {
@@ -786,7 +795,6 @@ function showAdminContent() {
     }
 
     populateAdminDropdowns();
-    autoFillCurrentPeriod();
 }
 
 function autoFillCurrentPeriod() {
@@ -801,7 +809,30 @@ function autoFillCurrentPeriod() {
 
     periodFields.forEach(id => {
         const el = document.getElementById(id);
-        if (el && !el.value) el.value = currentPeriod;
+        if (el && el.tagName === 'SELECT') {
+            // Populate if empty
+            if (el.options.length === 0) {
+                const year = d.getFullYear();
+                const monthNames = [
+                    "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+                    "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+                ];
+                
+                monthNames.forEach((name, index) => {
+                    const m = String(index + 1).padStart(2, '0');
+                    const val = `${m}.${year}`;
+                    const opt = new Option(`${name} ${year}`, val);
+                    el.appendChild(opt);
+                });
+            }
+            // Always try to set current period as default if no value is set
+            if (!el.getAttribute('data-init-done')) {
+                el.value = currentPeriod;
+                el.setAttribute('data-init-done', 'true');
+            }
+        } else if (el && !el.value) {
+            el.value = currentPeriod;
+        }
     });
 }
 
@@ -824,6 +855,7 @@ function populateAdminDropdowns() {
             }
         });
     }
+    autoFillCurrentPeriod();
 }
 
 const getStoredPin = () => sessionStorage.getItem("adminAuth_" + currentRouteKey);

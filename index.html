@@ -70,7 +70,7 @@
         <div class="admin-card" id="adminCard" style="display:none">
             <button class="admin-close" onclick="closeAdmin()">✕</button>
             <div class="admin-title">⚙️ Админ панел
-                <a href="admin_guide.html" target="_blank"
+                <a href="admin_guide.html" target="_blank" onclick="sessionStorage.setItem('shouldOpenAdmin', 'true'); this.href='admin_guide.html'+window.location.hash"
                     style="font-size: 13px; font-weight: normal; color: var(--primary); text-decoration: none; margin-left: 15px; background: #eefbff; padding: 4px 10px; border-radius: 6px; border: 1px solid #bdeaff;">📘
                     Ръководство</a>
             </div>
@@ -90,7 +90,7 @@
                 <label class="admin-label">Апартамент</label>
                 <select id="adminApt" class="admin-input"></select>
                 <label class="admin-label">Период (MM.YYYY)</label>
-                <input type="text" id="adminPeriod" class="admin-input" placeholder="03.2026">
+                <select id="adminPeriod" class="admin-input"></select>
                 <label class="admin-label">Сума</label>
                 <input type="number" id="adminAmount" class="admin-input" placeholder="0.00" step="0.01">
                 <button class="admin-btn primary" id="payBtn" onclick="submitPayment()">Добави плащане</button>
@@ -102,7 +102,7 @@
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте общите разходи на входа за
                     месеца.</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
-                <input type="text" id="chargesPeriod" class="admin-input" placeholder="03.2026">
+                <select id="chargesPeriod" class="admin-input"></select>
                 <label class="admin-label">Асансьор</label>
                 <input type="number" id="chargesElevator" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
@@ -168,7 +168,7 @@
                         <option value="Идеални части">Идеални части</option>
                     </select>
                     <label class="admin-label">От период (MM.YYYY)</label>
-                    <input type="text" id="masterLogikaFrom" class="admin-input" placeholder="01.2026">
+                    <select id="masterLogikaFrom" class="admin-input"></select>
                     <button class="admin-btn primary" onclick="submitMaster('Логика')">Запиши за напред</button>
                 </div>
 
@@ -182,7 +182,7 @@
                         <option value="Не">Не</option>
                     </select>
                     <label class="admin-label">От период (MM.YYYY)</label>
-                    <input type="text" id="masterUchFrom" class="admin-input" placeholder="01.2026">
+                    <select id="masterUchFrom" class="admin-input"></select>
                     <button class="admin-btn primary" onclick="submitMaster('УЧАСТИЕ_АСАНСЬОР')">Запиши за напред</button>
                 </div>
 
@@ -193,7 +193,7 @@
                     <label class="admin-label">Брой обитатели</label>
                     <input type="number" id="masterObVal" class="admin-input" placeholder="Напр. 2" min="1" step="1">
                     <label class="admin-label">От период (MM.YYYY)</label>
-                    <input type="text" id="masterObFrom" class="admin-input" placeholder="01.2026">
+                    <select id="masterObFrom" class="admin-input"></select>
                     <p style="font-size: 11px; color: #888; margin-top: 5px; margin-bottom: 12px; line-height: 1.4;">
                         Записването променя стойността от избрания период <b>напред</b>. Историята се пази за коректни начисления за минали месеци.
                     </p>
@@ -207,7 +207,7 @@
                     <label class="admin-label">Брой чипове</label>
                     <input type="number" id="masterChVal" class="admin-input" placeholder="Напр. 3" min="0" step="1">
                     <label class="admin-label">От период (MM.YYYY)</label>
-                    <input type="text" id="masterChFrom" class="admin-input" placeholder="01.2026">
+                    <select id="masterChFrom" class="admin-input"></select>
                     <button class="admin-btn primary" onclick="submitMaster('ЧИПОВЕ')">Запиши за напред</button>
                 </div>
 
@@ -219,7 +219,7 @@
                     <input type="number" id="masterIdVal" class="admin-input" placeholder="пр. 2.45" min="0" step="0.01">
                     
                     <div style="display:none;">
-                        <input type="text" id="masterIdFrom" class="admin-input" value="01.2026">
+                        <select id="masterIdFrom" class="admin-input"></select>
                     </div>
                     <p style="font-size: 11px; color: #888; margin-top: 5px; margin-bottom: 12px; line-height: 1.4;">
                         Записването обновява <b>текущата</b> стойност на идеалните части. Тя се прилага автоматично за всички месеци за избрания апартамент.
