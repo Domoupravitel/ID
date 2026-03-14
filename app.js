@@ -21,7 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedEmail) {
         document.getElementById("adminEmailInput").value = savedEmail;
     }
-    if (savedId) {
+    // We only set savedId if NO id is provided in the URL to avoid overwriting clean IDs with old/partial ones
+    const urlParams = new URLSearchParams(window.location.search);
+    if (savedId && !urlParams.get('id') && !window.location.hash) {
         document.getElementById("access-id").value = savedId;
     }
 
@@ -33,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             resetApartmentData();
             // Clear apartment from hash but keep entrance ID
             if (currentRouteKey) {
-                window.location.hash = currentRouteKey;
+                window.location.hash = encodeURIComponent(currentRouteKey);
             } else {
                 window.location.hash = "";
             }
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
-    const urlParams = new URLSearchParams(window.location.search);
+    // (use the already declared urlParams)
     let idValue = urlParams.get('id');
     let aptValue = urlParams.get('apt');
 
@@ -54,38 +56,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.hash) {
         try {
             const rawHash = window.location.hash.replace('#', '');
-            // We split first, then decode each part to avoid merging slashes incorrectly
-            const parts = rawHash.split('/');
-            if (parts[0]) idValue = decodeURIComponent(parts[0]);
-            if (parts[1]) aptValue = decodeURIComponent(parts[1]);
+            if (rawHash) {
+                // Split first to preserve encoded slashes inside parts if any (though rare in IDs)
+                const parts = rawHash.split('/');
+                if (parts[0]) idValue = decodeURIComponent(parts[0]);
+                if (parts[1]) aptValue = decodeURIComponent(parts[1]);
+            }
         } catch(e) { console.error("Hash parsing failed", e); }
     }
 
     if (idValue) {
-        // Clean up ID if it was corrupted by previous versions (merged with apartment)
-        let cleanId = idValue.trim();
-        // If it starts with digits and then has letters/encoded chars without a slash, it's corrupted
-        const corruptionMatch = cleanId.match(/^(\d+)([^0-9/].*)$/);
-        if (corruptionMatch) {
-            cleanId = corruptionMatch[1];
-            if (!aptValue) aptValue = corruptionMatch[2];
-        }
-
+        const cleanId = idValue.trim();
         document.getElementById('access-id').value = cleanId;
+        
+        // Trigger entrance
         const success = await enterEntrance();
 
         if (success && aptValue) {
             const select = document.getElementById("apartmentSelect");
-            const decodedApt = decodeURIComponent(aptValue);
+            const targetApt = decodeURIComponent(aptValue);
+            
             // Polling approach is safer than a fixed timeout
             let attempts = 0;
             const interval = setInterval(() => {
-                if (apartmentList && apartmentList.includes(decodedApt)) {
-                    select.value = decodedApt;
-                    loadApartmentData(decodedApt);
+                if (apartmentList && apartmentList.length > 0) {
+                    // Try to find matching apartment
+                    const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
+                                  apartmentList.find(a => a === targetApt);
+                    
+                    if (found) {
+                        select.value = found;
+                        loadApartmentData(found);
+                    }
                     clearInterval(interval);
                 }
-                if (++attempts > 20) clearInterval(interval);
+                if (++attempts > 30) clearInterval(interval);
             }, 100);
         }
     }
@@ -225,15 +230,11 @@ window.refreshCurrentView = function () {
 window.enterEntrance = async function () {
     let accessId = document.getElementById('access-id').value.trim();
 
-    // Auto-fix if the field contains corrupted data (ID + Apartment merged or encoded)
-    if (accessId.includes('%') || accessId.match(/^(\d+)([^0-9/].+)$/)) {
+    // Auto-decode if the field contains encoded characters (handling %D0 %D1 etc.)
+    if (accessId.includes('%')) {
         try {
             accessId = decodeURIComponent(accessId);
-            const match = accessId.match(/^(\d+)(.*)$/);
-            if (match) {
-                accessId = match[1];
-                document.getElementById('access-id').value = accessId;
-            }
+            document.getElementById('access-id').value = accessId;
         } catch(e) {}
     }
 
@@ -257,24 +258,23 @@ window.enterEntrance = async function () {
     // Зареждаме списъка с апартаменти
     const result = await apiCall('list', { list: 'apartments' });
 
-    // 3. Зареждаме и конфигурацията за входа (Плащане и т.н.)
+    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
     const configResult = await apiCall('getEntranceInfo');
 
-    if (configResult && configResult.info && configResult.info.isHardBlocked) {
-        hideLoading(); // За всеки случай
-        showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+    if (configResult && configResult.success && configResult.info) {
+        const info = configResult.info;
+
+        if (info.isHardBlocked) {
+            hideLoading();
+            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return false; // PREVENT ENTRY
+        }
+
+        // Възстановяваме бутона веднага щом приключат заявките
         btn.textContent = originalText;
         btn.disabled = false;
-        return; // PREVENT ENTRY
-    }
-
-    // Възстановяваме бутона веднага щом приключат заявките
-    btn.textContent = originalText;
-    btn.disabled = false;
-
-    // ОБРАБОТКА НА КОНФИГУРАЦИЯТА
-    if (configResult && configResult.info) {
-        const info = configResult.info;
 
         // Запазваме цените в сесията
         if (info.pricePerApt !== undefined) {
@@ -421,8 +421,9 @@ window.enterEntrance = async function () {
         });
 
         // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
-        if (window.location.hash !== "#" + currentRouteKey && !window.location.hash.includes("/")) {
-            window.location.hash = currentRouteKey;
+        const targetHash = "#" + encodeURIComponent(currentRouteKey);
+        if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
+            window.location.hash = targetHash;
         }
 
         // Зареждаме дашборда
@@ -612,7 +613,7 @@ async function loadApartmentData(apartment) {
 
     // Update URL Hash for persistence
     if (currentRouteKey) {
-        window.location.hash = `${currentRouteKey}/${encodeURIComponent(apartment)}`;
+        window.location.hash = `${encodeURIComponent(currentRouteKey)}/${encodeURIComponent(apartment)}`;
     }
 
     // Показваме кода за плащане веднага
