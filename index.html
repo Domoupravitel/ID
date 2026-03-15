@@ -741,20 +741,16 @@
 
 
                 <!-- Contact Shortcut (Always visible) -->
-                <a href="https://forms.gle/ozJzqHuGNATgbV967" target="_blank" style="text-decoration: none;">
-                    <button class="btn"
-                        style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                        title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
-                        onmouseout="this.style.transform='translateY(0)';">✉️ Контакт</button>
-                </a>
+                <button onclick="toggleContactForm()" class="btn"
+                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                    title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
+                    onmouseout="this.style.transform='translateY(0)';">✉️ Контакт</button>
 
                 <!-- Register Shortcut (Controlled by Super Admin) -->
-                <a id="regButtonLink" href="https://forms.gle/v8WSNL2fVHnSzVTL6" target="_blank" style="text-decoration: none; display: none;">
-                    <button id="regButtonText" class="btn"
-                        style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                        title="Регистрация" onmouseover="this.style.transform='translateY(-2px)';"
-                        onmouseout="this.style.transform='translateY(0)';">Инфо / Регистрация</button>
-                </a>
+                <button id="regButtonLink" onclick="toggleRegistrationForm()" class="btn"
+                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
+                    title="Регистрация" onmouseover="this.style.transform='translateY(-2px)';"
+                    onmouseout="this.style.transform='translateY(0)';">Инфо / Регистрация</button>
             </div>
 
             <div class="selector-card glass-panel" style="margin-top: 60px;">
@@ -805,9 +801,48 @@
                             задължения на етажната собственост, и пълен контрол
                             върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
                             умения.</li>
-                    </ul>
                 </div>
 
+            </div>
+
+            <!-- Integrated Contact Section (Mobile Responsive) -->
+            <div id="contact-section" class="registration-container glass-panel hidden" style="margin: 30px auto; max-width: 700px; width: 95%;">
+                <div class="reg-header">
+                    <h3 style="font-family: var(--font-head); font-size: 1.2rem; margin: 0;">✉️ Форма за контакт</h3>
+                    <button class="btn-close" onclick="toggleContactForm()">✕</button>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe 
+                        id="contact-iframe"
+                        src="https://docs.google.com/forms/d/e/1FAIpQLScw4C6R2YDU8jHfMkiwwtCXgfSPZog-aOLk3zQffCwQ5JkRCQ/viewform?embedded=true" 
+                        width="100%" 
+                        height="520" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0">
+                        Зареждане...
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Integrated Registration Section (Mobile Responsive) -->
+            <div id="registration-section" class="registration-container glass-panel hidden" style="margin: 30px auto; max-width: 700px; width: 95%;">
+                <div class="reg-header">
+                    <h3 style="font-family: var(--font-head); font-size: 1.2rem; margin: 0;">📝 Регистрация / Запитване</h3>
+                    <button class="btn-close" onclick="toggleRegistrationForm()">✕</button>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe 
+                        id="reg-iframe"
+                        src="https://docs.google.com/forms/d/e/1FAIpQLSeEp5lxnm3hEqmrfl-1XfEPlXhJ7wXmCo3_ZBLsDrW2fozc0A/viewform?embedded=true" 
+                        width="100%" 
+                        height="520" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0">
+                        Зареждане...
+                    </iframe>
+                </div>
             </div>
         </div>
 

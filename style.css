@@ -639,3 +639,63 @@ body {
   pointer-events: none;
   font-weight: 500;
 }
+
+/* Registration Form Styles */
+.registration-container {
+    transition: var(--transition);
+    overflow: hidden;
+    margin-top: 30px;
+    padding: 0 !important; /* Премахваме вътрешното поле за по-плътно прилягане на формата */
+}
+
+.reg-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--panel-border-light);
+    background: rgba(0,0,0,0.02);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted-light);
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.btn-close:hover {
+    color: var(--danger);
+    transform: rotate(90deg);
+}
+
+.iframe-wrapper {
+    position: relative;
+    width: 100%;
+    background: white;
+    /* Оптимизация за мобилен скрол */
+    -webkit-overflow-scrolling: touch;
+}
+
+#reg-iframe {
+    display: block;
+    border: none;
+}
+
+@media (max-width: 600px) {
+    .registration-container {
+        border-radius: var(--radius-md); 
+        width: 100% !important;
+        margin: 20px auto;
+        box-shadow: none;
+        border-left: none;
+        border-right: none;
+    }
+    
+    #reg-iframe {
+        height: 600px;
+    }
+}

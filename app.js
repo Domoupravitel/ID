@@ -232,6 +232,37 @@ window.refreshCurrentView = function () {
     }
 }
 
+window.toggleContactForm = function() {
+    const section = document.getElementById('contact-section');
+    if (section.classList.contains('hidden')) {
+        // Затваряме формата за регистрация, ако е отворена
+        document.getElementById('registration-section').classList.add('hidden');
+        
+        section.classList.remove('hidden');
+        setTimeout(() => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        section.classList.add('hidden');
+    }
+};
+
+window.toggleRegistrationForm = function() {
+    const section = document.getElementById('registration-section');
+    if (section.classList.contains('hidden')) {
+        // Затваряме формата за контакт, ако е отворена
+        document.getElementById('contact-section').classList.add('hidden');
+        
+        section.classList.remove('hidden');
+        // Плавно скролване до формата, за да я види потребителят веднага
+        setTimeout(() => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        section.classList.add('hidden');
+    }
+};
+
 // ==============================================
 // ENTRANCE NAVIGATION
 // ==============================================
