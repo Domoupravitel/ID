@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const targetApt = decodeURIComponent(aptValue);
             
             // Polling approach is safer than a fixed timeout
-            let attempts = 0;
-            const interval = setInterval(() => {
+            // removed attempts
+            // removed interval wrapper
                 if (apartmentList && apartmentList.length > 0) {
                     // Try to find matching apartment
                     const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         select.value = found;
                         loadApartmentData(found);
                     }
-                    clearInterval(interval);
+                    // removed clearInterval
                 }
-                if (++attempts > 30) clearInterval(interval);
-            }, 100);
+                // removed attempts check
+            // removed interval closing braces
         }
     }
 
@@ -165,15 +165,24 @@ async function apiCall(action, params = {}) {
 // UI HELPERS
 // ==============================================
 
+window.activeLoadingRequests = 0;
 window.showLoading = function () {
+    window.activeLoadingRequests++;
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.add("active");
 
     // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
     clearTimeout(window.loaderSafetyTimeout);
-    window.loaderSafetyTimeout = setTimeout(hideLoading, 15000);
+    window.loaderSafetyTimeout = setTimeout(() => {
+        window.activeLoadingRequests = 0;
+        const loader = document.getElementById("loadingOverlay");
+        if (loader) loader.classList.remove("active");
+    }, 15000);
 }
 window.hideLoading = function () {
+    window.activeLoadingRequests--;
+    if (window.activeLoadingRequests > 0) return;
+    window.activeLoadingRequests = 0;
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.remove("active");
     clearTimeout(window.loaderSafetyTimeout);
@@ -317,10 +326,13 @@ window.enterEntrance = async function () {
     btn.disabled = true;
 
     // Зареждаме списъка с апартаменти
-    const result = await apiCall('list', { list: 'apartments' });
+    // Обединена заявка по-долу
 
     // Зареждаме и конфигурацията за входа (Плащане и т.н.)
-    const configResult = await apiCall('getEntranceInfo');
+    const [result, configResult] = await Promise.all([
+        apiCall('list', { list: 'apartments' }),
+        apiCall('getEntranceInfo')
+    ]);
 
     if (configResult && configResult.success && configResult.info) {
         const info = configResult.info;
@@ -694,7 +706,7 @@ async function loadApartmentData(apartment) {
         const sEl = document.getElementById("saldo");
         const sCard = document.getElementById("saldoCard");
 
-        sEl.textContent = saldoVal.toFixed(2) + " EUR";
+                sEl.textContent = saldoVal.toFixed(2) + " EUR";
 
         sCard.classList.remove("saldo-positive", "saldo-negative", "saldo-zero");
         if (saldoVal > 0) sCard.classList.add("saldo-positive");
