@@ -838,6 +838,7 @@ function showAdminContent() {
     }
 
     populateAdminDropdowns();
+    if(typeof checkRemontEligibility === 'function') checkRemontEligibility();
 }
 
 function autoFillCurrentPeriod() {
@@ -2120,3 +2121,37 @@ window.switchPage = function (pageId) {
 }
 
 
+
+async function checkRemontEligibility() {
+    try {
+        const res = await apiCall('getBuildingIdealParts');
+        const input = document.getElementById("chargesRemont");
+        const warn = document.getElementById("remontWarning");
+        
+        let allHaveParts = false;
+        let missing = [];
+        if (res && res.success && res.parts && typeof apartmentList !== 'undefined' && apartmentList.length > 0) {
+            missing = apartmentList.filter(apt => res.parts[apt] === undefined || res.parts[apt] === "" || parseFloat(res.parts[apt]) <= 0);
+            allHaveParts = missing.length === 0;
+        }
+
+        if (input) {
+            input.disabled = !allHaveParts;
+            input.placeholder = allHaveParts ? "Обща сума за входа" : "Деактивирано (липсват Ид. части за всички)";
+            if(!allHaveParts) input.value = "";
+        }
+        
+        if (warn) {
+            warn.style.display = allHaveParts ? "none" : "block";
+            if (!allHaveParts) {
+                if (missing.length > 0 && missing.length <= 15) {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за:</b> ${missing.join(", ")}`;
+                } else if (missing.length > 15) {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за ${missing.length} апартамента.</b>`;
+                } else {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.`;
+                }
+            }
+        }
+    } catch(e) {}
+}

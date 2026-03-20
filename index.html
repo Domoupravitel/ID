@@ -124,6 +124,9 @@
                 <label class="admin-label">Фонд Ремонт</label>
                 <input type="number" id="chargesRemont" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
+                <div id="remontWarning" style="color: #ff9800; font-size: 0.75rem; margin-top: 4px; display:none;">
+                    ⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.
+                </div>
                 <button class="admin-btn orange" id="chargesBtn" onclick="submitCharges()">Запиши начисления</button>
             </div>
 
