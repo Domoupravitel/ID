@@ -611,6 +611,22 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  display: inline-block;
+  white-space: nowrap;
+}
+.status-active { background: #2e9e4f; }
+.status-blocked { background: #d32f2f; }
+.status-lifetime { background: #3b6edc; }
+.status-expired { background: #e67e22; }
+
 .admin-btn.small {
   padding: 6px 10px;
   font-size: 11px;
