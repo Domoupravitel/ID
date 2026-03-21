@@ -1,4 +1,4 @@
-﻿// ==============================================
+// ==============================================
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
@@ -706,7 +706,7 @@ async function loadApartmentData(apartment) {
         const sEl = document.getElementById("saldo");
         const sCard = document.getElementById("saldoCard");
 
-                sEl.textContent = saldoVal.toFixed(2) + " EUR";
+        sEl.textContent = saldoVal.toFixed(2) + " EUR";
 
         sCard.classList.remove("saldo-positive", "saldo-negative", "saldo-zero");
         if (saldoVal > 0) sCard.classList.add("saldo-positive");
@@ -729,24 +729,22 @@ async function loadApartmentData(apartment) {
         if (result.periods && Array.isArray(result.periods)) {
             result.periods.forEach((r, idx) => {
                 const tr = document.createElement("tr");
-                tr.style.opacity = '0';
-                tr.style.animation = `fadeIn 0.35s ease forwards ${idx * 0.05}s`;
-
                 tr.innerHTML = `
-                <td style="padding: 8px;"><b>${ent.name}</b></td>
-                <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
-                <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
-                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : ent.validUntil}
-                </td>
-                <td style="padding: 8px;"><span class="status-badge" style="background:${ent.validUntil === '2000-01-01' ? '#fa5252' : '#4ade80'}; color:white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${ent.validUntil === '2000-01-01' ? 'Спрян' : 'Активен'}</span></td>
-                <td style="padding: 8px;">
-                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252;color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80;color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
-                </td>
+                <td>${r.period}</td>
+                <td>${Number(r.elevator || 0).toFixed(2)}</td>
+                <td>${Number(r.subscription || 0).toFixed(2)}</td>
+                <td>${Number(r.light || 0).toFixed(2)}</td>
+                <td>${Number(r.security || 0).toFixed(2)}</td>
+                <td>${Number(r.cleaning || 0).toFixed(2)}</td>
+                <td>${Number(r.podrajka || 0).toFixed(2)}</td>
+                <td>${Number(r.remont || 0).toFixed(2)}</td>
+                <td>${Number(r.due || 0).toFixed(2)}</td>
+                <td>${Number(r.paid || 0).toFixed(2)}</td>
             `;
                 tBody.appendChild(tr);
             });
+        } else {
+            tBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Няма налични данни за избрания апартамент.</td></tr>';
         }
 
         // --- ПЕРСОНАЛНО СЪОБЩЕНИЕ ЗА АПАРТАМЕНТА ---
@@ -1526,12 +1524,17 @@ async function loadSuperAdminEntrances() {
                 <td style="padding: 8px;"><b>${ent.name}</b></td>
                 <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
                 <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
-                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : ent.validUntil}
+                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : (ent.validUntil || '---')}
                 </td>
                 <td style="padding: 8px;">
-                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" class="admin-btn secondary small" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252;color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
-                    <button onclick="manageSub('${ent.id}', 'lifetime')" style="padding:4px 8px; font-size:11px; color:green;">Безсрочен</button>
+                    <span class="status-badge" style="background:${ent.validUntil === '2000-01-01' ? '#fa5252' : '#4ade80'}; color:white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
+                        ${ent.validUntil === '2000-01-01' ? 'Спрян' : 'Активен'}
+                    </span>
+                </td>
+                <td style="padding: 8px;">
+                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
                 </td>
             `;
             tbody.appendChild(tr);
