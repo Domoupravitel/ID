@@ -1,59 +1,63 @@
-// ==============================================
+﻿// ==============================================
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
+// Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDypJEQt07rcjZZ0FDDzV_o2QoTfDBaA3p2CGNi99cGT5FeSrJGY-wYGYuB5UO6BZ8jA/exec";
 
 let currentRouteKey = "";
 let apartmentList = [];
 let _currentIdealParts = {};
 
-function getStoredPin() {
-    return sessionStorage.getItem("adminAuth_" + currentRouteKey);
-}
-
 // ==============================================
 // INITIALIZATION
 // ==============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Възстановяване на запазени данни, ако има такива
     const savedEmail = localStorage.getItem("savedAdminEmail");
     const savedId = localStorage.getItem("savedAccessId");
-    if (savedEmail) document.getElementById("adminEmailInput").value = savedEmail;
-    
+
+    if (savedEmail) {
+        document.getElementById("adminEmailInput").value = savedEmail;
+    }
+    // We only set savedId if NO id is provided in the URL to avoid overwriting clean IDs with old/partial ones
     const urlParams = new URLSearchParams(window.location.search);
     if (savedId && !urlParams.get('id') && !window.location.hash) {
         document.getElementById("access-id").value = savedId;
     }
 
-    const aptSel = document.getElementById('apartmentSelect');
-    if (aptSel) {
-        aptSel.addEventListener('change', (e) => {
-            if (e.target.value) {
-                loadApartmentData(e.target.value);
+    // Apartment Event Listener for the main view
+    document.getElementById('apartmentSelect').addEventListener('change', (e) => {
+        if (e.target.value) {
+            loadApartmentData(e.target.value);
+        } else {
+            resetApartmentData();
+            // Clear apartment from hash but keep entrance ID
+            if (currentRouteKey) {
+                window.location.hash = encodeURIComponent(currentRouteKey);
             } else {
-                resetApartmentData();
-                if (currentRouteKey) window.location.hash = encodeURIComponent(currentRouteKey);
-                else window.location.hash = "";
+                window.location.hash = "";
             }
-        });
-    }
+        }
+    });
 
-    const pinIn = document.getElementById("pinInput");
-    if (pinIn) {
-        pinIn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') verifyPin();
-        });
-    }
+    // Handle Enter key for admin login
+    document.getElementById("pinInput").addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') verifyPin();
+    });
 
-    // --- ID Parsing ---
+    // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
+    // (use the already declared urlParams)
     let idValue = urlParams.get('id');
     let aptValue = urlParams.get('apt');
 
+    // Hash priority - Handle both encoded and raw hashes
     if (window.location.hash) {
         try {
             const rawHash = window.location.hash.replace('#', '');
             if (rawHash) {
+                // Split first to preserve encoded slashes inside parts if any (though rare in IDs)
                 const parts = rawHash.split('/');
                 if (parts[0]) idValue = decodeURIComponent(parts[0]);
                 if (parts[1]) aptValue = decodeURIComponent(parts[1]);
@@ -64,26 +68,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (idValue) {
         const cleanId = idValue.trim();
         document.getElementById('access-id').value = cleanId;
+        
+        // Trigger entrance
         const success = await enterEntrance();
+
         if (success && aptValue) {
             const select = document.getElementById("apartmentSelect");
             const targetApt = decodeURIComponent(aptValue);
-            if (apartmentList && apartmentList.length > 0) {
-                const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
-                              apartmentList.find(a => a === targetApt);
-                if (found) {
-                    select.value = found;
-                    loadApartmentData(found);
+            
+            // Polling approach is safer than a fixed timeout
+            // removed attempts
+            // removed interval wrapper
+                if (apartmentList && apartmentList.length > 0) {
+                    // Try to find matching apartment
+                    const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
+                                  apartmentList.find(a => a === targetApt);
+                    
+                    if (found) {
+                        select.value = found;
+                        loadApartmentData(found);
+                    }
+                    // removed clearInterval
                 }
-            }
+                // removed attempts check
+            // removed interval closing braces
         }
     }
 
+    // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
     loadPublicSettings();
 
+    // Ако сме се върнали от ръководството, отваряме админ панела автоматично
     if (sessionStorage.getItem('shouldOpenAdmin') === 'true') {
         sessionStorage.removeItem('shouldOpenAdmin');
-        setTimeout(() => { if (currentRouteKey) openAdmin(); }, 800);
+        // Даваме малко време на enterEntrance да приключи ако е в ход
+        setTimeout(() => {
+            if (currentRouteKey) openAdmin();
+        }, 800);
     }
 });
 
@@ -92,10 +113,14 @@ async function loadPublicSettings() {
         const res = await apiCall('getPublicSettings');
         const regLink = document.getElementById("regButtonLink");
         const regText = document.getElementById("regButtonText");
+        
         if (res && res.success && regLink) {
             regLink.style.display = res.showRegForm ? "block" : "none";
-            if (res.regFormText && regText) regText.textContent = res.regFormText;
+            if (res.regFormText && regText) {
+                regText.textContent = res.regFormText;
+            }
         } else if (regLink) {
+            // Default fallback if API fails
             regLink.style.display = "block";
         }
     } catch (e) {
@@ -110,15 +135,17 @@ async function loadPublicSettings() {
 async function apiCall(action, params = {}) {
     showLoading();
 
-    if (!SCRIPT_URL || !SCRIPT_URL.startsWith("https://script.google.com/macros")) {
+    // Ако SCRIPT_URL не съдържа истински google script URL, връщаме грешка
+    if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) {
         hideLoading();
-        console.error("No real SCRIPT_URL configured");
+        console.error("Моля, сложете реалния SCRIPT_URL в app.js");
         showToast("Грешка: Липсва връзка с Google Script (API)", "error");
         return { error: 'No Script URL configured' };
     }
 
     params.action = action;
     params.routeKey = currentRouteKey;
+
     const queryParams = new URLSearchParams(params).toString();
 
     try {
@@ -143,14 +170,15 @@ window.showLoading = function () {
     window.activeLoadingRequests++;
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.add("active");
+
+    // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
     clearTimeout(window.loaderSafetyTimeout);
     window.loaderSafetyTimeout = setTimeout(() => {
         window.activeLoadingRequests = 0;
-        const l = document.getElementById("loadingOverlay");
-        if (l) l.classList.remove("active");
+        const loader = document.getElementById("loadingOverlay");
+        if (loader) loader.classList.remove("active");
     }, 15000);
 }
-
 window.hideLoading = function () {
     window.activeLoadingRequests--;
     if (window.activeLoadingRequests > 0) return;
@@ -160,173 +188,333 @@ window.hideLoading = function () {
     clearTimeout(window.loaderSafetyTimeout);
 }
 
-window.normalizeAptName = (name) => {
+window.normalizeAptName = function (name) {
     if (!name) return "";
-    // Заменяме кирилско 'А' (U+0410) с латинско 'A' (U+0041)
-    return name.toString().toUpperCase().replace(/\u0410/g, "A").replace(/\s+/g, "");
+    return name.toString().toUpperCase().replace(/А/g, "A").replace(/\s+/g, "");
 }
 
 function resetApartmentData() {
     const sc = document.getElementById("saldoCard");
-    if (sc) sc.className = "card saldo-card saldo-zero";
-    const sEl = document.getElementById("saldo");
-    if (sEl) sEl.textContent = "-";
-    const tBody = document.getElementById("tableBody");
-    if (tBody) tBody.innerHTML = "";
-    const pRef = document.getElementById("payment-reference-box");
-    if (pRef) pRef.style.display = "none";
-    const pDet = document.getElementById("payment-details-box");
-    if (pDet) pDet.style.display = "none";
-    const iApt = document.getElementById("individualAptNotice");
-    if (iApt) iApt.style.display = "none";
+    sc.className = "card saldo-card saldo-zero";
+    document.getElementById("saldo").textContent = "-";
+    document.getElementById("tableBody").innerHTML = "";
+    document.getElementById("payment-reference-box").style.display = "none";
+    document.getElementById("payment-details-box").style.display = "none";
+    document.getElementById("individualAptNotice").style.display = "none";
 }
 
+// --- TOAST ---
 let toastTimeout;
-window.showToast = (msg, type) => {
+window.showToast = function (msg, type) {
     const t = document.getElementById("toast");
-    if (!t) return;
     t.textContent = msg;
     t.className = "toast " + type;
     clearTimeout(toastTimeout);
-    requestAnimationFrame(() => t.classList.add("show"));
-    toastTimeout = setTimeout(() => t.classList.remove("show"), 3500);
+    requestAnimationFrame(() => { t.classList.add("show"); });
+    toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
 }
 
-window.showSaving = (btn, text = "\u23F3 \u0417\u0430\u043F\u0438\u0441\u0432\u0430\u043D\u0435...") => {
+// --- SAVING STATE (Задача 8: визуална индикация при запис) ---
+window.showSaving = function (btn, text = "⏳ Записване...") {
     if (!btn) return;
     btn._originalText = btn.innerHTML;
-    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;"><span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>${text}</span>`;
+    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;">
+        <span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+        ${text}
+    </span>`;
     btn.disabled = true;
     btn.style.opacity = "0.8";
 }
-
-window.hideSaving = (btn, originalText) => {
+window.hideSaving = function (btn, originalText) {
     if (!btn) return;
-    btn.innerHTML = originalText || btn._originalText || "\u0417\u0430\u043F\u0430\u0437\u0438";
+    btn.innerHTML = originalText || btn._originalText || "Запази";
     btn.disabled = false;
     btn.style.opacity = "";
 }
 
-window.refreshCurrentView = () => {
+window.refreshCurrentView = function () {
+    console.log("Refreshing current view data...");
     loadDashboardData();
     const apt = document.getElementById("apartmentSelect").value;
-    if (apt) loadApartmentData(apt);
+    if (apt) {
+        loadApartmentData(apt);
+    }
 }
 
-window.toggleContactForm = () => {
-    const s = document.getElementById('contact-section');
-    if (s.classList.contains('hidden')) {
+window.toggleContactForm = function() {
+    const section = document.getElementById('contact-section');
+    if (section.classList.contains('hidden')) {
+        // Затваряме формата за регистрация, ако е отворена
         document.getElementById('registration-section').classList.add('hidden');
-        s.classList.remove('hidden');
-        setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    } else s.classList.add('hidden');
-}
+        
+        section.classList.remove('hidden');
+        setTimeout(() => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        section.classList.add('hidden');
+    }
+};
 
-window.toggleRegistrationForm = () => {
-    const s = document.getElementById('registration-section');
-    if (s.classList.contains('hidden')) {
+window.toggleRegistrationForm = function() {
+    const section = document.getElementById('registration-section');
+    if (section.classList.contains('hidden')) {
+        // Затваряме формата за контакт, ако е отворена
         document.getElementById('contact-section').classList.add('hidden');
-        s.classList.remove('hidden');
-        setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    } else s.classList.add('hidden');
-}
+        
+        section.classList.remove('hidden');
+        // Плавно скролване до формата, за да я види потребителят веднага
+        setTimeout(() => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        section.classList.add('hidden');
+    }
+};
 
 // ==============================================
 // ENTRANCE NAVIGATION
 // ==============================================
 
-window.exitEntrance = () => {
+window.exitEntrance = function () {
+    // Reset state
     currentRouteKey = "";
     apartmentList = [];
+    
+    // Clear hash and UI
     window.location.hash = "";
     document.getElementById('access-id').value = "";
     resetApartmentData();
+    
+    // Switch views
+    document.getElementById('view-entrance-home').classList.remove('active');
     document.getElementById('view-entrance-home').classList.add('hidden');
     document.getElementById('view-selector').classList.remove('hidden');
-    const sel = document.getElementById("apartmentSelect");
-    if (sel) sel.innerHTML = '<option value="">Избери апартамент</option>';
-}
+    document.getElementById('view-selector').classList.add('active');
+    
+    // Smooth reset the apartment dropdown
+    const select = document.getElementById("apartmentSelect");
+    if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
+};
 
-window.enterEntrance = async () => {
+window.enterEntrance = async function () {
     let accessId = document.getElementById('access-id').value.trim();
+
+    // Auto-decode if the field contains encoded characters (handling %D0 %D1 etc.)
+    if (accessId.includes('%')) {
+        try {
+            accessId = decodeURIComponent(accessId);
+            document.getElementById('access-id').value = accessId;
+        } catch(e) {}
+    }
+
     if (!accessId) {
-        showToast("\u041C\u043E\u043B\u044F, \u0432\u044A\u0432\u0435\u0434\u0435\u0442\u0435 \u0432\u0430\u0448\u0435\u0442\u043E ID!", "error");
+        showToast("Моля, въведете вашето ID за достъп!", "error");
         return false;
     }
 
+    // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
     localStorage.setItem("savedAccessId", accessId);
+
+    // Задаваме го като текущ ключ за API заявките
     currentRouteKey = accessId;
 
+    // Сменяме бутона за индикация
     const btn = document.querySelector("#view-selector .btn-primary");
     const originalText = btn.textContent;
-    btn.textContent = "\u0417\u0430\u0440\u0435\u0436\u0434\u0430\u043D\u0435...";
+    btn.textContent = "Зареждане...";
     btn.disabled = true;
 
-    try {
-        const [result, configResult] = await Promise.all([
-            apiCall('list', { list: 'apartments' }),
-            apiCall('getEntranceInfo')
-        ]);
+    // Зареждаме списъка с апартаменти
+    // Обединена заявка по-долу
 
+    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
+    const [result, configResult] = await Promise.all([
+        apiCall('list', { list: 'apartments' }),
+        apiCall('getEntranceInfo')
+    ]);
+
+    if (configResult && configResult.success && configResult.info) {
+        const info = configResult.info;
+
+        if (info.isHardBlocked) {
+            hideLoading();
+            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return false; // PREVENT ENTRY
+        }
+
+        // Възстановяваме бутона веднага щом приключат заявките
         btn.textContent = originalText;
         btn.disabled = false;
 
-        if (configResult && configResult.success && configResult.info) {
-            const info = configResult.info;
-            if (info.isHardBlocked) {
-                showToast("⚠️ \u0414\u043E\u0441\u0442\u044A\u043F\u044A\u0442 \u0435 \u041D\u0410\u041F\u042A\u041B\u041D\u041E \u0441\u043F\u0440\u044F\u043D!", "error");
-                return false;
-            }
-
-            // Save prices/info to session
+        // Запазваме цените в сесията
+        if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
-            sessionStorage.setItem("currency_" + currentRouteKey, info.currency || "EUR");
-            if (info.paymentInfo) sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
-            
-            // Set UI titles/news
-            document.getElementById('entrance-title').textContent = info.entranceName || `ID ${currentRouteKey}`;
-            const gn = document.getElementById("adminGlobalNews");
-            if (gn && info.globalMessage) {
-                document.getElementById("adminGlobalNewsText").innerHTML = info.globalMessage.replace(/\n/g, '<br>');
-                gn.style.display = "block";
-            }
-            
-            const un = document.getElementById("userEntranceNotice");
-            if (un && info.entranceNotice) {
-                const fmt = info.entranceNotice.replace(/\n/g, '<br>');
-                document.getElementById("userEntranceNoticeText").innerHTML = fmt;
-                un.style.display = "block";
-                const unh = document.getElementById("userEntranceNoticeHome");
-                if (unh) {
-                    document.getElementById("userEntranceNoticeTextHome").innerHTML = fmt;
-                    unh.style.display = "block";
-                }
-            }
+            sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
+            sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        if (result && !result.error && Array.isArray(result)) {
-            apartmentList = result;
-            document.getElementById('view-selector').classList.add('hidden');
-            document.getElementById('view-entrance-home').classList.remove('hidden');
-            
-            const select = document.getElementById("apartmentSelect");
-            select.innerHTML = '<option value="">\u0418\u0437\u0431\u0435\u0440\u0438 \u0430\u043F\u0430\u0440\u0442\u0430\u043C\u0435\u043D\u0442</option>';
-            apartmentList.forEach(a => select.appendChild(new Option(a, a)));
-
-            window.location.hash = "#" + encodeURIComponent(currentRouteKey);
-            loadDashboardData();
-            return true;
+        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
+        if (info.paymentInfo) {
+            document.getElementById('payment-instructions').textContent = info.paymentInfo;
+            document.getElementById('masterPaymentText').value = info.paymentInfo;
+            // Съхраняваме в session за използване при избор на апартамент
+            sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
-            showToast("\u0413\u0440\u0435\u0448\u0435\u043D \u0432\u0445\u043E\u0434: ID \u043D\u0435 \u0435 \u043D\u0430\u043C\u0435\u0440\u0435\u043D.", "error");
-            return false;
+            sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
         }
-    } catch (err) {
-        console.error("error in enterEntrance", err);
-        btn.textContent = originalText;
-        btn.disabled = false;
+        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
+        document.getElementById('payment-details-box').style.display = 'none';
+
+        // Имейл за връзка
+        const adminMailBtn = document.getElementById('admin-mailto-link');
+        if (adminMailBtn) {
+            if (info.adminEmail) {
+                adminMailBtn.href = `mailto:${info.adminEmail}`;
+                adminMailBtn.style.display = 'inline-block';
+            } else {
+                adminMailBtn.style.display = 'none';
+            }
+        }
+
+        // Външни линкове
+        if (info.linkElectric) {
+            document.getElementById('btn-electric-link').href = info.linkElectric;
+            document.getElementById('btn-electric-link').style.display = 'inline-block';
+            document.getElementById('masterLinkElectric').value = info.linkElectric;
+        } else {
+            document.getElementById('btn-electric-link').style.display = 'none';
+        }
+
+        if (info.linkSubscription) {
+            document.getElementById('btn-subscription-link').href = info.linkSubscription;
+            document.getElementById('btn-subscription-link').style.display = 'inline-block';
+            document.getElementById('masterLinkSubscription').value = info.linkSubscription;
+        } else {
+            document.getElementById('btn-subscription-link').style.display = 'none';
+        }
+
+        // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
+        let totalMonthly = 0;
+        const basePrice = parseFloat(info.pricePerApt) || 0;
+        const aptCount = (result && Array.isArray(result)) ? result.length : 0;
+        const individual = info.individualPrices || [];
+        const globalEx = individual.find(ex => ex.apartment === 'ALL');
+
+        if (globalEx) {
+            totalMonthly = aptCount * parseFloat(globalEx.price);
+        } else {
+            totalMonthly = 0;
+            if (Array.isArray(result)) {
+                result.forEach(apt => {
+                    const aptEx = individual.find(ex => ex.apartment === apt);
+                    totalMonthly += aptEx ? parseFloat(aptEx.price) : basePrice;
+                });
+            }
+        }
+
+        const subMonthlyEl = document.getElementById("subMonthlyPrice");
+        const subLifetimeEl = document.getElementById("subLifetimePrice");
+        const subCodeEl = document.getElementById("subscriptionCodeDisplay");
+
+        if (subMonthlyEl) subMonthlyEl.textContent = `${totalMonthly.toFixed(2)} EUR`;
+        if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} EUR`;
+        if (subCodeEl) subCodeEl.textContent = currentRouteKey;
+
+        if (totalMonthly === 0 && aptCount > 0) {
+            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
+        }
+
+        // --- ГЛОБАЛНО СЪОБЩЕНИЕ ОТ СУПЕР АДМИН ---
+        const newsBanner = document.getElementById("adminGlobalNews");
+        const newsText = document.getElementById("adminGlobalNewsText");
+        if (info.globalMessage && info.globalMessage.trim() !== "") {
+            newsText.innerHTML = info.globalMessage.replace(/\n/g, '<br>');
+            newsBanner.style.display = "block";
+        } else {
+            newsBanner.style.display = "none";
+        }
+
+        // --- СЪОБЩЕНИЕ ОТ ДОМОУПРАВИТЕЛЯ (КЪМ ЖИВУЩИТЕ) ---
+        const userNoticeBanner = document.getElementById("userEntranceNotice");
+        const userNoticeText = document.getElementById("userEntranceNoticeText");
+        const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
+        const userNoticeTextHome = document.getElementById("userEntranceNoticeTextHome");
+
+        if (info.entranceNotice && info.entranceNotice.trim() !== "") {
+            const formatted = info.entranceNotice.replace(/\n/g, '<br>');
+            userNoticeText.innerHTML = formatted;
+            userNoticeBanner.style.display = "block";
+            if (userNoticeTextHome) userNoticeTextHome.innerHTML = formatted;
+            if (userNoticeBannerHome) userNoticeBannerHome.style.display = "block";
+
+            // Populate value in admin tab
+            const adminNoticeInput = document.getElementById("masterEntranceNotice");
+            if (adminNoticeInput) adminNoticeInput.value = info.entranceNotice;
+        } else {
+            userNoticeBanner.style.display = "none";
+            if (userNoticeBannerHome) userNoticeBannerHome.style.display = "none";
+            const adminNoticeInput = document.getElementById("masterEntranceNotice");
+            if (adminNoticeInput) adminNoticeInput.value = "";
+        }
+    } else {
+        // Скриваме всичко, ако няма инфо
+        document.getElementById('payment-details-box').style.display = 'none';
+        document.getElementById('admin-mailto-link').style.display = 'none';
+        document.getElementById('btn-electric-link').style.display = 'none';
+        document.getElementById('btn-subscription-link').style.display = 'none';
+    }
+
+    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
+    if (result && !result.error && Array.isArray(result)) {
+        apartmentList = result;
+
+        // Обновяваме заглавието на входа
+        if (configResult && configResult.info && configResult.info.entranceName) {
+            document.getElementById('entrance-title').textContent = configResult.info.entranceName;
+        } else {
+            document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
+        }
+
+        // Превключваме екрана
+        document.getElementById('view-selector').classList.remove('active');
+        document.getElementById('view-selector').classList.add('hidden');
+        document.getElementById('view-entrance-home').classList.remove('hidden');
+        document.getElementById('view-entrance-home').classList.add('active');
+
+        // Пълним падащото меню
+        const select = document.getElementById("apartmentSelect");
+        select.innerHTML = '<option value="">Избери апартамент</option>';
+        apartmentList.forEach(a => {
+            const opt = document.createElement("option");
+            opt.value = opt.textContent = a;
+            select.appendChild(opt);
+        });
+
+        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
+        const targetHash = "#" + encodeURIComponent(currentRouteKey);
+        if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
+            window.location.hash = targetHash;
+        }
+
+        // Зареждаме дашборда
+        loadDashboardData();
+        return true;
+    } else {
+        const errStr = result && result.error ? result.error.toString() : "";
+        if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
+            showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
+        } else {
+            showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
+        }
         return false;
     }
 }
+
+// Check URL params on load
+// (Moved logic to main DOMContentLoaded at the top)
 
 async function loadDashboardData() {
     try {
@@ -334,142 +522,252 @@ async function loadDashboardData() {
         if (result && result.success && result.dashboard) {
             const d = result.dashboard;
             const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
-            const deb = document.getElementById('dash-debts');
-            const bal = document.getElementById('dash-balance');
-            const dt = document.getElementById('dash-debts-trend');
-            const bt = document.getElementById('dash-balance-trend');
 
-            if (deb) deb.textContent = `${d.totalDebts} ${cur}`;
-            if (bal) bal.textContent = `${parseFloat(d.totalBalance || 0).toFixed(2)} ${cur} (от ${parseFloat(d.totalTargetFund || 0).toFixed(2)} ${cur})`;
-            if (dt) dt.textContent = parseFloat(d.totalDebts) > 0 ? "\u0418\u0437\u0438\u0441\u043A\u0432\u0430 \u0441\u0435 \u0437\u0430\u043F\u043B\u0430\u0449\u0430\u043D\u0435" : "\u0412\u0441\u0438\u0447\u043A\u043E \u0435 \u0438\u0437\u043F\u043B\u0430\u0442\u0435\u043D\u043E";
-            if (bt) bt.textContent = parseFloat(d.totalBalance) > 0 ? "\u041D\u0430\u043B\u0438\u0447\u0435\u043D \u0444\u043E\u043D\u0434" : "\u041E\u0447\u043A\u0432\u0430 \u0441\u044A\u0431\u0438\u0440\u0430\u043D\u0435";
+            document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
             
+            // Показваме събраното спрямо общото начислено
+            const collected = parseFloat(d.totalBalance) || 0;
+            const target = parseFloat(d.totalTargetFund) || 0;
+            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (от ${target.toFixed(2)} ${cur})`;
+
+            // Trends status text update
+            const debtsTrendEl = document.getElementById('dash-debts-trend');
+            const balanceTrendEl = document.getElementById('dash-balance-trend');
+
+            if (debtsTrendEl) {
+                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
+            }
+            if (balanceTrendEl) {
+                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Наличен фонд" : "Очаква събиране";
+            }
+
             if (d.trendData && d.trendData.length > 0) {
-                if (typeof Chart !== 'undefined') initChart(d.trendData);
-                else setTimeout(() => { if (typeof Chart !== 'undefined') initChart(d.trendData); }, 1000);
-            }
-        }
-    } catch (err) {
-        console.error("Error in loadDashboardData:", err);
-    }
-}
-
-async function loadApartmentData(apartment) {
-    resetApartmentData();
-    document.getElementById('payment-details-box').style.display = 'none';
-
-    if (currentRouteKey) {
-        window.location.hash = `${encodeURIComponent(currentRouteKey)}/${encodeURIComponent(apartment)}`;
-    }
-
-    const pref = document.getElementById("payment-reference-value");
-    if (pref) pref.textContent = `${currentRouteKey}-${apartment}`;
-    const prefb = document.getElementById("payment-reference-box");
-    if (prefb) prefb.style.display = "block";
-
-    try {
-        const result = await apiCall('apartment', { apartment: apartment });
-        if (result && result.error) {
-            if (result.showMessage) {
-                document.getElementById("saldo").textContent = "\u0421\u043A\u0440\u0438\u0442";
-                showToast("\u0421\u0430\u043B\u0434\u043E\u0442\u043E \u0412\u0438 \u0435 \u0441\u043A\u0440\u0438\u0442\u043E \u043F\u043E\u0440\u0430\u0434\u0438 \u043D\u0435\u043F\u043B\u0430\u0442\u0435\u043D \u0430\u0431\u043E\u043D\u0430\u043C\u0435\u043D\u0442", "error");
-            } else {
-                showToast("\u0413\u0440\u0435\u0448\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0440\u0435\u0436\u0434\u0430\u043D\u0435: " + result.error, "error");
-            }
-            return;
-        }
-
-        if (result) {
-            const saldoVal = Number(result.saldo || 0);
-            const sEl = document.getElementById("saldo");
-            const sCard = document.getElementById("saldoCard");
-            const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
-
-            if (sEl) sEl.textContent = saldoVal.toFixed(2) + " " + cur;
-            if (sCard) {
-                sCard.className = "card saldo-card " + (saldoVal > 0 ? "saldo-positive" : (saldoVal < 0 ? "saldo-negative" : "saldo-zero"));
-            }
-
-            const pbox = document.getElementById('payment-details-box');
-            if (saldoVal > 0) {
-                const pinfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
-                if (pinfo && pbox) {
-                    document.getElementById('payment-instructions').textContent = pinfo;
-                    pbox.style.display = 'block';
+                // Ensure Chart.js is loaded before calling initChart
+                if (typeof Chart !== 'undefined') {
+                    initChart(d.trendData);
+                } else {
+                    console.warn("Chart.js is not loaded yet.");
+                    setTimeout(() => { if (typeof Chart !== 'undefined') initChart(d.trendData); }, 1000);
                 }
-            } else if (pbox) {
-                pbox.style.display = 'none';
-            }
-
-            const tBody = document.getElementById("tableBody");
-            if (tBody && result.periods) {
-                tBody.innerHTML = "";
-                result.periods.forEach(r => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${r.period}</td>
-                        <td>${Number(r.elevator || 0).toFixed(2)}</td>
-                        <td>${Number(r.subscription || 0).toFixed(2)}</td>
-                        <td>${Number(r.light || 0).toFixed(2)}</td>
-                        <td>${Number(r.security || 0).toFixed(2)}</td>
-                        <td>${Number(r.cleaning || 0).toFixed(2)}</td>
-                        <td>${Number(r.podrajka || 0).toFixed(2)}</td>
-                        <td>${Number(r.remont || 0).toFixed(2)}</td>
-                        <td>${Number(r.due || 0).toFixed(2)}</td>
-                        <td>${Number(r.paid || 0).toFixed(2)}</td>
-                    `;
-                    tBody.appendChild(tr);
-                });
-            }
-
-            const ian = document.getElementById("individualAptNotice");
-            if (ian && result.aptNotice && result.aptNotice.trim() !== "") {
-                document.getElementById("individualAptNoticeText").innerHTML = result.aptNotice.replace(/\n/g, '<br>');
-                ian.style.display = "block";
+            } else {
+                console.log("No trend data available for dashboard chart.");
             }
         } else {
-            showToast("\u041D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0437\u0430\u0440\u0435\u0436\u0434\u0430\u043D\u0435 \u043D\u0430 \u0434\u0430\u043D\u043D\u0438 \u0437\u0430 \u0430\u043F\u0430\u0440\u0442\u0430\u043C\u0435\u043D\u0442.", "error");
+            const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
+            console.error("Dashboard data load failed:", errMsg);
+            // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
+            document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
+            document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
         }
-    } catch (e) {
-        console.error("loadApartmentData failed", e);
-        showToast("\u041A\u0440\u0438\u0442\u0438\u0447\u043D\u0430 \u0433\u0440\u0435\u0448\u043A\u0430!", "error");
+    } catch (err) {
+        console.error("Critical error in loadDashboardData:", err);
     }
 }
-
-// ----------------------------------------------------
-// CHART & ADMIN LOGIC
-// ----------------------------------------------------
 
 let myChart = null;
 function initChart(data) {
-    const canvas = document.getElementById('trendChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (myChart) myChart.destroy();
-    
+    const ctx = document.getElementById('trendChart').getContext('2d');
+
+    if (myChart) {
+        myChart.destroy();
+    }
+
+    const labels = data.map(i => i.period);
+
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.map(i => i.period),
+            labels: labels,
             datasets: [
-                { label: 'Асансьор', data: data.map(i => i.elevator), borderColor: '#3b6edc', tension: 0.3, fill: false },
-                { label: 'Абонамент', data: data.map(i => i.subscription), borderColor: '#ff9500', tension: 0.3, fill: false },
-                { label: 'Осветление', data: data.map(i => i.light), borderColor: '#34c759', tension: 0.3, fill: false },
-                { label: 'Почистване', data: data.map(i => i.cleaning), borderColor: '#5856d6', tension: 0.3, fill: false },
-                { label: 'Поддръжка', data: data.map(i => i.podrajka), borderColor: '#ff2d55', tension: 0.3, fill: false },
-                { label: 'Фонд ремонт', data: data.map(i => i.remont), borderColor: '#8e8e93', tension: 0.3, fill: false }
+                {
+                    label: 'Асансьор',
+                    data: data.map(i => i.elevator),
+                    borderColor: '#3b6edc',
+                    backgroundColor: 'rgba(59, 110, 220, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Абонамент',
+                    data: data.map(i => i.subscription),
+                    borderColor: '#ff9500',
+                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Осветление',
+                    data: data.map(i => i.light),
+                    borderColor: '#34c759',
+                    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Почистване',
+                    data: data.map(i => i.cleaning),
+                    borderColor: '#5856d6',
+                    backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Поддръжка',
+                    data: data.map(i => i.podrajka),
+                    borderColor: '#ff2d55',
+                    backgroundColor: 'rgba(255, 45, 85, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Фонд ремонт',
+                    data: data.map(i => i.remont),
+                    borderColor: '#8e8e93',
+                    backgroundColor: 'rgba(142, 142, 147, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
-            scales: { y: { beginAtZero: true } }
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: { size: 11 }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 }
 
-window.openAdmin = () => {
+// ==============================================
+// APARTMENT DATA
+// ==============================================
+
+async function loadApartmentData(apartment) {
+    resetApartmentData();
+
+    // Скриваме инструкциите за плащане докато не знаем дали има дълг
+    document.getElementById('payment-details-box').style.display = 'none';
+
+    // Update URL Hash for persistence
+    if (currentRouteKey) {
+        window.location.hash = `${encodeURIComponent(currentRouteKey)}/${encodeURIComponent(apartment)}`;
+    }
+
+    // Показваме кода за плащане веднага
+    document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
+    document.getElementById("payment-reference-box").style.display = "block";
+
+    const result = await apiCall('apartment', { apartment: apartment });
+
+    if (result && result.error && result.showMessage) {
+        document.getElementById("saldo").textContent = "Скрит";
+        showToast("Информацията за салдото Ви, не се показва поради неплатен абонамент", "error");
+        return;
+    }
+
+    if (result && !result.error) {
+        const saldoVal = Number(result.saldo || 0);
+        const sEl = document.getElementById("saldo");
+        const sCard = document.getElementById("saldoCard");
+
+                sEl.textContent = saldoVal.toFixed(2) + " EUR";
+
+        sCard.classList.remove("saldo-positive", "saldo-negative", "saldo-zero");
+        if (saldoVal > 0) sCard.classList.add("saldo-positive");
+        else if (saldoVal < 0) sCard.classList.add("saldo-negative");
+        else sCard.classList.add("saldo-zero");
+
+        // --- ИНСТРУКЦИИ ЗА ПЛАЩАНЕ — показват се само при дълг ---
+        const payBox = document.getElementById('payment-details-box');
+        if (saldoVal > 0) {
+            const storedPayInfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
+            if (storedPayInfo) {
+                document.getElementById('payment-instructions').textContent = storedPayInfo;
+                payBox.style.display = 'block';
+            }
+        } else {
+            payBox.style.display = 'none';
+        }
+
+        const tBody = document.getElementById("tableBody");
+        if (result.periods && Array.isArray(result.periods)) {
+            result.periods.forEach((r, idx) => {
+                const tr = document.createElement("tr");
+                tr.style.opacity = '0';
+                tr.style.animation = `fadeIn 0.35s ease forwards ${idx * 0.05}s`;
+
+                tr.innerHTML = `
+                <td style="padding: 8px;"><b>${ent.name}</b></td>
+                <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
+                <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
+                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : ent.validUntil}
+                </td>
+                <td style="padding: 8px;"><span class="status-badge" style="background:${ent.validUntil === '2000-01-01' ? '#fa5252' : '#4ade80'}; color:white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${ent.validUntil === '2000-01-01' ? 'Спрян' : 'Активен'}</span></td>
+                <td style="padding: 8px;">
+                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252;color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80;color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
+                </td>
+            `;
+                tBody.appendChild(tr);
+            });
+        }
+
+        // --- ПЕРСОНАЛНО СЪОБЩЕНИЕ ЗА АПАРТАМЕНТА ---
+        const aptNoticeBanner = document.getElementById("individualAptNotice");
+        const aptNoticeText = document.getElementById("individualAptNoticeText");
+        if (result.aptNotice && result.aptNotice.trim() !== "") {
+            aptNoticeText.innerHTML = result.aptNotice.replace(/\n/g, '<br>');
+            aptNoticeBanner.style.display = "block";
+        } else {
+            aptNoticeBanner.style.display = "none";
+        }
+    } else {
+        showToast("Грешка при зареждане на данните", "error");
+    }
+}
+
+// ==============================================
+// ADMIN PANEL LOGIC 
+// ==============================================
+
+window.openAdmin = function () {
     document.getElementById("adminOverlay").classList.add("active");
     if (sessionStorage.getItem("adminAuth_" + currentRouteKey)) {
         showAdminContent();
@@ -480,325 +778,1382 @@ window.openAdmin = () => {
     }
 }
 
-window.closeAdmin = () => document.getElementById("adminOverlay").classList.remove("active");
+window.closeAdmin = function () {
+    document.getElementById("adminOverlay").classList.remove("active");
+}
 
-window.verifyPin = async () => {
+window.verifyPin = async function () {
     const email = document.getElementById("adminEmailInput").value.trim();
     const pin = document.getElementById("pinInput").value.trim();
     const err = document.getElementById("pinError");
-    if (!email || !pin) { err.textContent = "\u041C\u043E\u043B\u044F, \u0432\u044A\u0432\u0435\u0434\u0435\u0442\u0435 \u0438\u043C\u0435\u0439\u043B \u0438 \u043F\u0430\u0440\u043E\u043B\u0430."; return; }
-    
-    const res = await apiCall('verifyPin', { pin: pin });
-    if (res && res.success) {
+
+    if (!email || !pin) {
+        err.textContent = "Моля, въведете имейл и парола.";
+        return;
+    }
+
+    const result = await apiCall('verifyPin', { pin: pin });
+
+    if (result && result.success) {
         sessionStorage.setItem("adminAuth_" + currentRouteKey, pin);
         localStorage.setItem("savedAdminEmail", email);
         err.textContent = "";
         showAdminContent();
     } else {
-        err.textContent = res?.error || "\u0413\u0440\u0435\u0448\u0435\u043D PIN \u043A\u043E\u0434.";
+        err.textContent = result?.error || "Грешен PIN код.";
     }
 }
 
 function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
-    const subCodeEl = document.getElementById("subscriptionCodeDisplay");
-    if (subCodeEl) subCodeEl.textContent = currentRouteKey;
-    populateAdminDropdowns();
-    if (typeof checkRemontEligibility === 'function') checkRemontEligibility();
-}
 
-function populateAdminDropdowns() {
-    const ids = ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt", "emailAptTarget"];
-    ids.forEach(id => {
-        const sel = document.getElementById(id);
-        if (sel && sel.options.length <= 1) {
-            sel.innerHTML = '<option value="">\u0418\u0437\u0431\u0435\u0440\u0438 \u0430\u043F\u0430\u0440\u0442\u0430\u043C\u0435\u043D\u0442</option>';
-            apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
-        }
-    });
-    autoFillCurrentPeriod();
+    // Първоначална подкана за MASTER настройки
+    const masterPromptKey = "hasSeenMasterPrompt_" + currentRouteKey;
+    if (!localStorage.getItem(masterPromptKey)) {
+        setTimeout(() => {
+            showToast("🎁 Добре дошли! Препоръчваме първо да посетите секция 'MASTER – Настройки', за да въведете началните параметри на входа.", "success");
+            localStorage.setItem(masterPromptKey, "true");
+        }, 1000);
+    }
+
+    const subCodeEl = document.getElementById("subscriptionCodeDisplay");
+    if (subCodeEl) {
+        subCodeEl.textContent = currentRouteKey;
+    }
+
+    // Попълваме цените, ако ги имаме запазени
+    const p1 = sessionStorage.getItem("pricePerApt_" + currentRouteKey);
+    const p2 = sessionStorage.getItem("lifetimePrice_" + currentRouteKey);
+    const curr = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+
+    if (p1 && p2) {
+        const aptCount = apartmentList ? apartmentList.length : 0;
+        const totalMonthly = (parseFloat(p1) * aptCount).toFixed(2);
+
+        const mPriceEl = document.getElementById("subMonthlyPrice");
+        const lPriceEl = document.getElementById("subLifetimePrice");
+
+        if (mPriceEl) mPriceEl.textContent = `${totalMonthly} ${curr}`;
+        if (lPriceEl) lPriceEl.textContent = `${p2} ${curr}`;
+    }
+
+    populateAdminDropdowns();
+    if(typeof checkRemontEligibility === 'function') checkRemontEligibility();
 }
 
 function autoFillCurrentPeriod() {
-    const d = new Date(), cp = String(d.getMonth() + 1).padStart(2, '0') + "." + d.getFullYear();
-    const ids = ["adminPeriod", "chargesPeriod", "masterLogikaFrom", "masterUchFrom", "masterObFrom", "masterChFrom", "masterIdFrom"];
-    ids.forEach(id => {
+    const d = new Date();
+    const currentPeriod = String(d.getMonth() + 1).padStart(2, '0') + "." + d.getFullYear();
+
+    const periodFields = [
+        "adminPeriod", "chargesPeriod",
+        "masterLogikaFrom", "masterUchFrom",
+        "masterObFrom", "masterChFrom", "masterIdFrom"
+    ];
+
+    periodFields.forEach(id => {
         const el = document.getElementById(id);
         if (el && el.tagName === 'SELECT') {
+            // Populate if empty
             if (el.options.length === 0) {
                 const year = d.getFullYear();
-                const names = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"];
-                names.forEach((n, idx) => el.appendChild(new Option(`${n} ${year}`, `${String(idx + 1).padStart(2, '0')}.${year}`)));
+                const monthNames = [
+                    "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+                    "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+                ];
+                
+                monthNames.forEach((name, index) => {
+                    const m = String(index + 1).padStart(2, '0');
+                    const val = `${m}.${year}`;
+                    const opt = new Option(`${name} ${year}`, val);
+                    el.appendChild(opt);
+                });
             }
-            if (!el.getAttribute('data-init-done')) { el.value = cp; el.setAttribute('data-init-done', 'true'); }
-        } else if (el && !el.value) el.value = cp;
+            // Always try to set current period as default if no value is set
+            if (!el.getAttribute('data-init-done')) {
+                el.value = currentPeriod;
+                el.setAttribute('data-init-done', 'true');
+            }
+        } else if (el && !el.value) {
+            el.value = currentPeriod;
+        }
     });
 }
 
-// ==============================================
-// PROTECTED ACTION SUBMISSIONS
-// ==============================================
+function populateAdminDropdowns() {
+    ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt", "emailAptTarget"].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel && sel.options.length <= 1) {
+            sel.innerHTML = '<option value="">Избери апартамент</option>';
+            apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
+        }
+    });
 
-window.submitPayment = async () => {
+    // ЗУЕС Валидация в реално време за обитатели
+    const obInput = document.getElementById("masterObVal");
+    if (obInput) {
+        obInput.addEventListener("change", (e) => {
+            if (e.target.value !== "" && parseInt(e.target.value) < 1) {
+                showToast("⚠️ Минималният брой е 1. „За самостоятелен обект, в който се пребивава не повече от 30 дни в годината, разходите за управление и поддръжка се заплащат в размера, определен за един обитател.“ (Чл. 51, ал. 1 от ЗУЕС)", "error");
+                e.target.value = 1;
+            }
+        });
+    }
+    autoFillCurrentPeriod();
+}
+
+const getStoredPin = () => sessionStorage.getItem("adminAuth_" + currentRouteKey);
+
+window.submitPayment = async function () {
     const apt = document.getElementById("adminApt").value;
     const period = document.getElementById("adminPeriod").value.trim();
     const amount = document.getElementById("adminAmount").value.trim();
-    if (!apt || !period || !amount) { showToast("Попълнете всички полета!", "error"); return; }
-    
+
+    if (!apt || !period || !amount) {
+        showToast("Попълнете всички полета за плащане!", "error");
+        return;
+    }
+
     const btn = document.getElementById("payBtn");
-    showSaving(btn);
-    const result = await apiCall('addPayment', { pin: getStoredPin(), apartment: apt, period: period, amount: amount });
-    hideSaving(btn);
+    showSaving(btn, "Записване...");
+
+    const result = await apiCall('addPayment', {
+        pin: getStoredPin(),
+        apartment: apt,
+        period: period,
+        amount: amount
+    });
+
+    hideSaving(btn, "Добави плащане");
+
     if (result && result.success) {
-        showToast("Успешно добавено плащане!", "success");
+        showToast("✅ Успешно добавено плащане.", "success");
         document.getElementById("adminAmount").value = "";
+        refreshCurrentView();
+    } else {
+        showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.loadBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) return;
+
+    // Clear fields first
+    const fields = ["Owner", "Email", "Occupants", "EntryDate", "Pets", "Purpose"];
+    fields.forEach(f => {
+        const el = document.getElementById("book-" + f);
+        if (el) el.value = "";
+    });
+
+    try {
+        const result = await apiCall('getBookData', { apartment: apt });
+        if (result && result.success && result.data) {
+            const d = result.data;
+            if (d["Собственик"]) document.getElementById("book-Owner").value = d["Собственик"];
+            if (d["Имейл"]) document.getElementById("book-Email").value = d["Имейл"];
+            if (d["Обитатели"]) document.getElementById("book-Occupants").value = d["Обитатели"];
+            if (d["Домашни любимци"]) document.getElementById("book-Pets").value = d["Домашни любимци"];
+            if (d["Предназначение"]) document.getElementById("book-Purpose").value = d["Предназначение"];
+
+            if (d["Дата вписване"]) {
+                try {
+                    const date = new Date(d["Дата вписване"]);
+                    if (!isNaN(date.getTime())) {
+                        document.getElementById("book-EntryDate").value = date.toISOString().split('T')[0];
+                    }
+                } catch (e) { }
+            }
+        }
+    } catch (e) {
+        showToast("Грешка при зареждане на данните", "error");
+    }
+}
+
+window.submitBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) {
+        showToast("Моля, изберете апартамент!", "error");
+        return;
+    }
+
+    const mapping = [
+        { id: "book-Owner", key: "Собственик" },
+        { id: "book-Email", key: "Имейл" },
+        { id: "book-Occupants", key: "Обитатели" },
+        { id: "book-EntryDate", key: "Дата вписване" },
+        { id: "book-Pets", key: "Домашни любимци" },
+        { id: "book-Purpose", key: "Предназначение" }
+    ];
+
+    const updates = {};
+    mapping.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) updates[item.key] = el.value;
+    });
+
+    const btn = document.getElementById('book-save-btn');
+    showSaving(btn, "Записване...");
+
+    try {
+        const result = await apiCall('updateBookData', {
+            pin: getStoredPin(),
+            apartment: apt,
+            updates: JSON.stringify(updates)
+        });
+
+        if (result && result.success) {
+            showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
+        } else {
+            showToast(result?.error || "Грешка при запис", "error");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("Възникна грешка при записа", "error");
+    } finally {
+        hideSaving(btn, "Запиши Промените");
+    }
+}
+
+window.submitCharges = async function () {
+    const period = document.getElementById("chargesPeriod").value.trim();
+    const elev = document.getElementById("chargesElevator").value.trim();
+    const sub = document.getElementById("chargesSubscription").value.trim();
+    const light = document.getElementById("chargesLight").value.trim();
+    const security = document.getElementById("chargesSecurity").value.trim();
+    const cleaning = document.getElementById("chargesCleaning").value.trim();
+    const podrajka = document.getElementById("chargesPodrajka").value.trim();
+    const remont = document.getElementById("chargesRemont").value.trim();
+
+    if (!period) {
+        showToast("Периодът е задължителен!", "error");
+        return;
+    }
+
+    const btn = document.getElementById("chargesBtn");
+    showSaving(btn, "Записване...");
+
+    const result = await apiCall('addCharges', {
+        pin: getStoredPin(),
+        period: period,
+        elevator: elev,
+        subscription: sub,
+        light: light,
+        security: security,
+        cleaning: cleaning,
+        podrajka: podrajka,
+        remont: remont
+    });
+
+    hideSaving(btn, "Запиши начисления");
+
+    if (result && result.success) {
+        showToast("✅ Успешно записани начисления.", "success");
+        document.getElementById("chargesElevator").value = "";
+        document.getElementById("chargesSubscription").value = "";
+        document.getElementById("chargesLight").value = "";
+        document.getElementById("chargesSecurity").value = "";
+        document.getElementById("chargesCleaning").value = "";
+        document.getElementById("chargesPodrajka").value = "";
+        document.getElementById("chargesRemont").value = "";
+        refreshCurrentView();
+    } else {
+        showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.loadCurrentEmail = async function () {
+    const apt = document.getElementById("adminEmailApt").value;
+    if (!apt) {
+        document.getElementById("currentEmailBox").style.display = "none";
+        return;
+    }
+
+    const result = await apiCall('getEmail', { apartment: apt });
+    if (result && typeof result.email !== 'undefined') {
+        const span = document.getElementById("currentEmail");
+        span.textContent = result.email ? result.email : "Няма записан";
+        document.getElementById("currentEmailBox").style.display = "block";
+    }
+}
+
+window.submitEmail = async function () {
+    const apt = document.getElementById("adminEmailApt").value;
+    const email = document.getElementById("adminEmail").value.trim();
+
+    if (!apt || !email) {
+        showToast("Изберете апартамент и имейл!", "error");
+        return;
+    }
+
+    const btn = document.getElementById("emailBtn");
+    btn.textContent = "Записване...";
+
+    const result = await apiCall('addEmail', {
+        pin: getStoredPin(),
+        apartment: apt,
+        email: email
+    });
+
+    btn.textContent = "Запази имейл";
+
+    if (result && result.success) {
+        showToast("Имейлът е обновен.", "success");
+        document.getElementById("adminEmail").value = "";
+        loadCurrentEmail(); // Refresh current email display
+    } else {
+        showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.switchMasterTab = function (tab, btn) {
+    document.querySelectorAll(".master-panel").forEach(p => p.style.display = "none");
+    document.querySelectorAll(".master-tab").forEach(b => {
+        b.classList.remove("active");
+        // Reset special styles for ZUES toggle
+        b.style.background = "";
+        b.style.color = "";
+        b.style.borderColor = "";
+    });
+
+    const pane = document.getElementById("master-tab-" + tab);
+    if (pane) pane.style.display = "block";
+    btn.classList.add("active");
+
+    if (tab === 'zues') {
+        // Синьо когато е активно
+        btn.style.background = "var(--primary)";
+        btn.style.color = "white";
+        btn.style.borderColor = "var(--primary)";
+        switchZuesSubTab('z-book');
+    }
+}
+
+window.submitMaster = async function (sheetName) {
+    // В зависимост от подаденото име (Логика, и т.н.) събираме стойностите
+    let val, fromP, toP, apt;
+
+    if (sheetName === 'Логика') {
+        val = document.getElementById('masterLogikaVal').value;
+        fromP = document.getElementById('masterLogikaFrom').value.trim();
+        toP = "12.2050"; 
+        apt = "";
+    } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
+        apt = document.getElementById('masterUchApt').value;
+        val = document.getElementById('masterUchVal').value;
+        fromP = document.getElementById('masterUchFrom').value.trim();
+        toP = "12.2050";
+    } else if (sheetName === 'ОБИТАТЕЛИ') {
+        apt = document.getElementById('masterObApt').value;
+        val = document.getElementById('masterObVal').value;
+        fromP = document.getElementById('masterObFrom').value.trim();
+        toP = "12.2050";
+        if (val !== "" && parseInt(val) < 1) {
+            showToast("⚠️ Минималният брой е 1.", "error");
+            return;
+        }
+    } else if (sheetName === 'ЧИПОВЕ') {
+        apt = document.getElementById('masterChApt').value;
+        val = document.getElementById('masterChVal').value;
+        fromP = document.getElementById('masterChFrom').value.trim();
+        toP = "12.2050";
+    } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
+        apt = document.getElementById('masterIdApt').value;
+        val = document.getElementById('masterIdVal').value;
+        fromP = document.getElementById('masterIdFrom').value.trim();
+        toP = "12.2050";
+    }
+
+    if (sheetName === 'PAYMENT_INFO') {
+        const pText = document.getElementById('masterPaymentText').value.trim();
+
+        const lElectric = document.getElementById('masterLinkElectric').value.trim();
+        const lSub = document.getElementById('masterLinkSubscription').value.trim();
+
+        if (!pText && !aEmail && !lElectric && !lSub) {
+            showToast("Моля, попълнете поне едно поле!", "error");
+            return;
+        }
+
+        // Пращаме го като обект, бекендът ще го разпознае
+        val = JSON.stringify({
+            paymentInfo: pText,
+
+            linkElectric: lElectric,
+            linkSubscription: lSub
+        });
+
+        fromP = "01.2000";
+        apt = "global";
+    }
+
+    if (sheetName !== 'PAYMENT_INFO' && (!val || !fromP || (sheetName !== 'Логика' && !apt))) {
+        showToast("Моля, попълнете задължителните полета!", "error");
+        return;
+    }
+
+    // Изчистваме и намираме активния бутон, за да му сложим Loading State
+    const activeTabObj = document.querySelector(`.master-panel[style*="display: block"] button`);
+    const originalText = activeTabObj ? activeTabObj.textContent : "Запиши";
+    if (activeTabObj) {
+        activeTabObj.disabled = true;
+        activeTabObj.textContent = "Записване...";
+    }
+
+    try {
+        const result = await apiCall('updateMaster', {
+            pin: getStoredPin(),
+            sheet: sheetName,
+            value: val,
+            apartment: apt,
+            fromPeriod: fromP,
+            toPeriod: toP
+        });
+
+        if (result && result.success) {
+            showToast(`Успешно обновен регистър: ${sheetName}`, "success");
+            if (sheetName === 'ОБИТАТЕЛИ') {
+                const valInput = document.getElementById('masterObVal');
+                if (valInput) valInput.value = "";
+            }
+            if (sheetName === 'ЧИПОВЕ') {
+                const valInput = document.getElementById('masterChVal');
+                if (valInput) valInput.value = "";
+            }
+            refreshCurrentView();
+        } else {
+            showToast(result?.error || "Възникна грешка", "error");
+        }
+    } catch (e) {
+        showToast("Сървърна грешка при запис", "error");
+    } finally {
+        if (activeTabObj) {
+            activeTabObj.disabled = false;
+            activeTabObj.textContent = originalText;
+        }
+    }
+}
+
+window.loadApartmentMasterSummary = async function () {
+    const apt = document.getElementById("masterInfoApt").value;
+    const container = document.getElementById("aptMasterSummary");
+    if (!apt) {
+        container.innerHTML = '<p style="color:#666; font-style:italic;">Изберете апартамент...</p>';
+        return;
+    }
+
+    container.innerHTML = "⌛ Зареждане на информация...";
+
+    try {
+        const res = await apiCall('getApartmentMasterSummary', { apartment: apt, pin: getStoredPin() });
+        if (res && res.success) {
+            const d = res.data;
+            container.innerHTML = `
+                <div style="background:rgba(0,122,255,0.05); padding:15px; border-radius:8px; border-left:4px solid var(--primary);">
+                    <h4 style="margin-bottom:10px;">📊 Статус за Апт. ${apt}</h4>
+                    <ul style="list-style:none; padding:0;">
+                        <li><b>👥 Обитатели:</b> ${d.occupants || 0} бр.</li>
+                        <li><b>🔑 Чипове:</b> ${d.chips || 0} бр.</li>
+                        <li><b>🔘 Уч. асансьор:</b> ${d.participation === 'Да' ? '✅ Да' : '❌ Не'}</li>
+                        <li><b>📐 Идеални части:</b> ${d.idealParts || 0}%</li>
+                    </ul>
+                    <p style="font-size:11px; color:#666; margin-top:10px;">* Посочените данни са от текущия MASTER регистър и се използват за следващите начисления.</p>
+                </div>
+            `;
+
+            // Show notice editor
+            const editor = document.getElementById("aptNoticeEditor");
+            const input = document.getElementById("masterAptNoticeVal");
+            if (editor && input) {
+                editor.style.display = "block";
+                input.value = d.notice || "";
+            }
+        } else {
+            container.innerHTML = '<p style="color:red;">Грешка при зареждане на данните.</p>';
+            const editor = document.getElementById("aptNoticeEditor");
+            if (editor) editor.style.display = "none";
+        }
+    } catch (e) {
+        container.innerHTML = '<p style="color:red;">Сървърна грешка.</p>';
+        const editor = document.getElementById("aptNoticeEditor");
+        if (editor) editor.style.display = "none";
+    }
+}
+
+window.submitAptNotice = async function () {
+    const apt = document.getElementById("masterInfoApt").value;
+    const notice = document.getElementById("masterAptNoticeVal").value.trim();
+    if (!apt) return;
+
+    showLoading();
+    const result = await apiCall('updateMaster', {
+        pin: getStoredPin(),
+        sheet: 'PAYMENT_INFO',
+        apartment: apt,
+        value: JSON.stringify({ ['notice_' + normalizeAptName(apt)]: notice })
+    });
+    hideLoading();
+
+    if (result && result.success) {
+        showToast("Персоналното съобщение е запазено!", "success");
         refreshCurrentView();
     } else {
         showToast(result?.error || "Грешка при запис", "error");
     }
 }
 
-window.submitCharges = async () => {
-    const p = document.getElementById("chargesPeriod").value.trim();
-    if (!p) { showToast("Изберете период!", "error"); return; }
-    
-    const fields = {
-        elevator: "chargesElevator", subscription: "chargesSubscription", light: "chargesLight",
-        security: "chargesSecurity", cleaning: "chargesCleaning", podrajka: "chargesPodrajka", remont: "chargesRemont"
-    };
-    const params = { pin: getStoredPin(), period: p };
-    for (let k in fields) params[k] = document.getElementById(fields[k]).value.trim();
-    
-    const btn = document.getElementById("chargesBtn");
-    showSaving(btn);
-    const result = await apiCall('addCharges', params);
-    hideSaving(btn);
-    if (result && result.success) {
-        showToast("Разходите са записани!", "success");
-        refreshCurrentView();
-    } else {
-        showToast(result?.error || "Грешка", "error");
-    }
-}
-
-window.submitEmail = async () => {
-    const apt = document.getElementById("adminEmailApt").value;
-    const mail = document.getElementById("adminEmail").value.trim();
-    if (!apt || !mail) { showToast("Изберете апартамент и имейл!", "error"); return; }
-    const btn = document.getElementById("emailBtn");
-    showSaving(btn);
-    const result = await apiCall('addEmail', { pin: getStoredPin(), apartment: apt, email: mail });
-    hideSaving(btn);
-    if (result && result.success) {
-        showToast("Имейлът е записан!", "success");
-        loadCurrentEmail();
-    } else showToast(result?.error || "Грешка", "error");
-}
-
-window.loadCurrentEmail = async () => {
-    const apt = document.getElementById("adminEmailApt").value;
-    const box = document.getElementById("currentEmailBox"), el = document.getElementById("currentEmail");
-    if (!apt) { box.style.display = "none"; return; }
-    const res = await apiCall('getEmail', { apartment: apt });
-    box.style.display = "block";
-    el.textContent = (res && res.email) ? res.email : "\u2014";
-}
-
-window.switchMasterTab = (tabId, btn) => {
-    document.querySelectorAll('.master-panel').forEach(p => p.style.display = 'none');
-    const target = document.getElementById('master-tab-' + tabId);
-    if (target) target.style.display = 'block';
-    
-    document.querySelectorAll('.master-tab').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-}
-
-window.submitMaster = async (type) => {
-    const params = { pin: getStoredPin(), type: type };
-    if (type === 'Логика') {
-        params.value = document.getElementById("masterLogikaVal").value;
-        params.period = document.getElementById("masterLogikaFrom").value;
-    } else if (type === 'УЧАСТИЕ_АСАНСЬОР') {
-        params.apartment = document.getElementById("masterUchApt").value;
-        params.value = document.getElementById("masterUchVal").value;
-        params.period = document.getElementById("masterUchFrom").value;
-    } else if (type === 'ОБИТАТЕЛИ') {
-        params.apartment = document.getElementById("masterObApt").value;
-        params.value = document.getElementById("masterObVal").value;
-        params.period = document.getElementById("masterObFrom").value;
-    } else if (type === 'ЧИПОВЕ') {
-        params.apartment = document.getElementById("masterChApt").value;
-        params.value = document.getElementById("masterChVal").value;
-        params.period = document.getElementById("masterChFrom").value;
-    } else if (type === 'ИДЕАЛНИ_ЧАСТИ') {
-        params.apartment = document.getElementById("masterIdApt").value;
-        params.value = document.getElementById("masterIdVal").value;
-    } else if (type === 'PAYMENT_INFO') {
-        params.paymentInfo = document.getElementById("masterPaymentText").value;
-        params.linkElectric = document.getElementById("masterLinkElectric").value;
-        params.linkSubscription = document.getElementById("masterLinkSubscription").value;
-    }
-    
-    const loader = showLoading();
-    const result = await apiCall('updateMaster', params);
-    hideLoading();
-    if (result && result.success) showToast("Данните са запазени в MASTER!", "success");
-    else showToast(result?.error || "Грешка", "error");
-}
-
-window.loadApartmentMasterSummary = async () => {
-    const apt = document.getElementById("masterInfoApt").value;
-    const container = document.getElementById("aptMasterSummary");
-    const editor = document.getElementById("aptNoticeEditor");
-    if (!apt) { container.innerHTML = `<p style="font-style:italic;">Изберете апартамент...</p>`; editor.style.display = "none"; return; }
-    
-    const res = await apiCall('getApartmentMasterSummary', { apartment: apt });
-    if (res && res.success && res.data) {
-        const d = res.data;
-        container.innerHTML = `
-            <div style="background:white; padding:15px; border-radius:10px; border:1px solid #eee;">
-                <strong>Апартамент ${apt}</strong><br>
-                \u2022 Обитатели (текущо): ${d.occupants}<br>
-                \u2022 Чипове (текущо): ${d.chips}<br>
-                \u2022 Участие асансьор: ${d.participation}<br>
-                \u2022 Идеални части: ${d.idealParts}%
-            </div>
-        `;
-        document.getElementById("masterAptNoticeVal").value = d.notice || "";
-        editor.style.display = "block";
-    }
-}
-
-window.submitAptNotice = async () => {
-    const apt = document.getElementById("masterInfoApt").value;
-    const notice = document.getElementById("masterAptNoticeVal").value;
-    const res = await apiCall('updateMaster', { pin: getStoredPin(), type: 'APT_NOTICE', apartment: apt, notice: notice });
-    if (res && res.success) showToast("Съобщението е запазено!", "success");
-}
-
-window.submitMasterNotice = async () => {
-    const notice = document.getElementById("masterEntranceNotice").value;
-    if (!confirm("Ще бъде изпратен имейл до всички апартаменти. Продължавате ли?")) return;
-    const res = await apiCall('sendNoticeEmail', { pin: getStoredPin(), notice: notice });
-    if (res && res.success) showToast(`Успешно изпратени имейли до ${res.sent} апартамента.`, "success");
-}
-
 // ==============================================
-// SUPER ADMIN LOGIC
+// SUPER ADMIN LOGIC 
 // ==============================================
 
-window.openSuperAdmin = () => {
+window.openSuperAdmin = function () {
+    console.log("Opening Super Admin Overlay...");
     document.getElementById("superAdminOverlay").style.display = "flex";
-    if (sessionStorage.getItem("superAdminAuth")) showSuperDashboard();
-    else { document.getElementById("superAdminLoginCard").style.display = "block"; document.getElementById("superAdminDashboard").style.display = "none"; }
+    if (sessionStorage.getItem("superAdminAuth")) {
+        showSuperAdminDashboard();
+    } else {
+        document.getElementById("superAdminLoginCard").style.display = "block";
+        document.getElementById("superAdminDashboard").style.display = "none";
+        document.getElementById("superPinInput").value = "";
+        document.getElementById("superPinInput").focus();
+    }
 }
 
-window.closeSuperAdmin = () => document.getElementById("superAdminOverlay").style.display = "none";
+window.closeSuperAdmin = function () {
+    document.getElementById("superAdminOverlay").style.display = "none";
+}
 
-window.loginSuperAdmin = async () => {
+window.loginSuperAdmin = async function () {
     const pin = document.getElementById("superPinInput").value.trim();
-    if (!pin) return;
-    const res = await apiCall('verifySuperPin', { pin: pin });
-    if (res && res.success) { sessionStorage.setItem("superAdminAuth", pin); showSuperDashboard(); }
-    else document.getElementById("superPinError").textContent = res?.error || "\u0413\u0440\u0435\u0448\u043D\u0430 \u043F\u0430\u0440\u043E\u043B\u0430.";
+    if (!pin) {
+        document.getElementById("superPinError").textContent = "Въведете парола!";
+        return;
+    }
+
+    // ПИН кодът се проверява централно през специалния endpoint verifySuperPin
+    const result = await apiCall('verifySuperPin', { pin: pin });
+
+    if (result && result.success) {
+        sessionStorage.setItem("superAdminAuth", pin);
+        showSuperAdminDashboard();
+    } else {
+        document.getElementById("superPinError").textContent = result.error || "Грешна парола за Супер Админ.";
+    }
 }
 
-async function showSuperDashboard() {
+async function showSuperAdminDashboard() {
+    console.log("Loading Super Admin Dashboard...");
     document.getElementById("superAdminLoginCard").style.display = "none";
     document.getElementById("superAdminDashboard").style.display = "block";
-    
-    // Load lists
-    const [regRes, setRes, excRes] = await Promise.all([
-        apiCall('getRegistryList'),
-        apiCall('getSuperSettings'),
-        apiCall('getSuperExceptions', { superPin: sessionStorage.getItem("superAdminAuth") })
-    ]);
 
-    if (regRes && regRes.registry) {
-        const list = document.getElementById("superAdminEntrancesList");
-        list.innerHTML = "";
+    try {
+        const res = await apiCall('getSuperSettings');
+        if (res && res.success) {
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            };
+            setVal("superPaymentOptions", res.paymentOptions);
+            setVal("priceBigCities", res.priceBigCities);
+            setVal("priceOtherCities", res.priceOtherCities);
+            setVal("priceLifetime", res.priceLifetime);
+            setVal("superGlobalMessage", res.globalMessage);
+            setVal("superShowRegForm", res.showRegForm || "true");
+            setVal("superRegFormText", res.regFormText);
+        }
+    } catch (e) {
+        console.error("Error loading super settings:", e);
+    }
+
+    loadSuperAdminEntrances();
+    loadSuperExceptions();
+}
+
+window.saveSuperSettings = async function () {
+    const btn = document.getElementById("saveSuperSettingsBtn");
+    showSaving(btn, "Запазване...");
+
+    try {
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : "";
+        };
+
+        const reqData = {
+            paymentOptions: getVal("superPaymentOptions"),
+            priceBigCities: getVal("priceBigCities"),
+            priceOtherCities: getVal("priceOtherCities"),
+            priceLifetime: getVal("priceLifetime"),
+            showRegForm: document.getElementById("superShowRegForm").value === "true",
+            regFormText: getVal("superRegFormText")
+        };
+
+        const result = await apiCall('updateSuperSettings', {
+            pin: sessionStorage.getItem("superAdminAuth"),
+            settings: JSON.stringify(reqData)
+        });
+
+        if (result && result.success) {
+            showToast("✅ Настройките са запазени успешно!", "success");
+        } else {
+            showToast(result.error || "Грешка при запазване", "error");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("Възникна грешка при запазване", "error");
+    } finally {
+        hideSaving(btn, "Запази настройките");
+    }
+}
+
+window.submitMasterNotice = async function () {
+    const notice = document.getElementById("masterEntranceNotice").value.trim();
+    showLoading();
+
+    const result = await apiCall('updateMaster', {
+        pin: getStoredPin(),
+        sheet: 'PAYMENT_INFO', // Reuse config logic
+        value: JSON.stringify({ entranceNotice: notice })
+    });
+
+    hideLoading();
+
+    if (result && result.success) {
+        showToast("Съобщението е запазено!", "success");
+        // Update local displays
+        const banners = ["userEntranceNotice", "userEntranceNoticeHome"];
+        const texts = ["userEntranceNoticeText", "userEntranceNoticeTextHome"];
+
+        if (notice !== "") {
+            const formatted = notice.replace(/\n/g, '<br>');
+            banners.forEach(bId => {
+                const b = document.getElementById(bId);
+                if (b) b.style.display = "block";
+            });
+            texts.forEach(tId => {
+                const t = document.getElementById(tId);
+                if (t) t.innerHTML = formatted;
+            });
+
+            // Изпращаме имейл до всички живущи с регистриран имейл
+            if (notice !== "") {
+                apiCall('sendNoticeEmail', { pin: getStoredPin(), notice: notice })
+                    .then(emailResult => {
+                        if (emailResult && emailResult.success) {
+                            showToast(`📧 Имейлът е изпратен до ${emailResult.sent || 0} апартамента.`, "success");
+                        }
+                    })
+                    .catch(() => { });
+            }
+        } else {
+            banners.forEach(bId => {
+                const b = document.getElementById(bId);
+                if (b) b.style.display = "none";
+            });
+        }
+    } else {
+        showToast(result?.error || "Грешка при запис", "error");
+    }
+}
+
+// Изпращане на индивидуален имейл до конкретен апартамент
+window.sendAptEmail = async function () {
+    const apt = document.getElementById("emailAptTarget").value;
+    const subject = document.getElementById("emailAptSubject").value.trim();
+    const body = document.getElementById("emailAptBody").value.trim();
+
+    if (!apt) { showToast("Изберете апартамент!", "error"); return; }
+    if (!subject) { showToast("Попълнете тема на имейла!", "error"); return; }
+    if (!body) { showToast("Попълнете текст на имейла!", "error"); return; }
+
+    showLoading();
+    const result = await apiCall('sendAptEmail', {
+        pin: getStoredPin(),
+        apartment: apt,
+        subject: subject,
+        body: body
+    });
+    hideLoading();
+
+    if (result && result.success) {
+        showToast("✅ Имейлът е изпратен успешно!", "success");
+        document.getElementById("emailAptSubject").value = "";
+        document.getElementById("emailAptBody").value = "";
+    } else {
+        showToast(result?.error || "Грешка при изпращане", "error");
+    }
+}
+
+window.saveGlobalMessage = async function () {
+    const btn = document.getElementById("saveGlobalMessageBtn");
+    const msg = document.getElementById("superGlobalMessage").value.trim();
+
+    showSaving(btn, "Изпращане...");
+
+    try {
+        const result = await apiCall('updateGlobalMessage', {
+            pin: sessionStorage.getItem("superAdminAuth"),
+            message: msg
+        });
+
+        if (result && result.success) {
+            showToast("✅ Съобщението е изпратено до всички!", "success");
+        } else {
+            showToast(result.error || "Грешка при изпращане", "error");
+        }
+    } catch (e) {
+        showToast("Проблем при комуникация със сървъра", "error");
+    } finally {
+        hideSaving(btn, "Изпрати съобщение");
+    }
+}
+
+async function loadSuperAdminEntrances() {
+    const tbody = document.getElementById("superAdminEntrancesList");
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+
+    const result = await apiCall('getRegistryList');
+    if (result && result.success && Array.isArray(result.registry)) {
+        tbody.innerHTML = '';
         const select = document.getElementById("superExceptionRegistry");
-        select.innerHTML = '<option value="">\u0418\u0437\u0431\u0435\u0440\u0438 \u0412\u0445\u043E\u0434</option>';
-        
-        regRes.registry.forEach(e => {
+        if (select) select.innerHTML = '<option value="">-- Избери вход --</option>';
+
+        result.registry.forEach(ent => {
+            if (select) select.appendChild(new Option(ent.name + " (" + ent.id + ")", ent.id));
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td style="padding:8px;">${e.name}</td>
-                <td style="padding:8px; font-family:monospace;">${e.id}</td>
-                <td style="padding:8px;">${e.validUntil}</td>
-                <td style="padding:8px;"><span class="status-badge" style="background:#ddd;">---</span></td>
-                <td style="padding:8px;">
-                    <button class="admin-btn secondary small" onclick="manageSub('${e.id}','unblock')">+30</button>
-                    <button class="admin-btn small" style="background:#fa5252;color:white;" onclick="manageSub('${e.id}','block')">X</button>
+                <td style="padding: 8px;"><b>${ent.name}</b></td>
+                <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
+                <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
+                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : ent.validUntil}
+                </td>
+                <td style="padding: 8px;">
+                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" class="admin-btn secondary small" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252;color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
+                    <button onclick="manageSub('${ent.id}', 'lifetime')" style="padding:4px 8px; font-size:11px; color:green;">Безсрочен</button>
                 </td>
             `;
-            list.appendChild(tr);
-            select.appendChild(new Option(e.name, e.id));
+            tbody.appendChild(tr);
         });
-    }
-
-    if (setRes && setRes.success) {
-        document.getElementById("superPaymentOptions").value = setRes.paymentOptions;
-        document.getElementById("priceBigCities").value = setRes.priceBigCities;
-        document.getElementById("priceOtherCities").value = setRes.priceOtherCities;
-        document.getElementById("priceLifetime").value = setRes.priceLifetime;
-        document.getElementById("superGlobalMessage").value = setRes.globalMessage;
-        document.getElementById("superShowRegForm").value = setRes.showRegForm;
-        document.getElementById("superRegFormText").value = setRes.regFormText;
+    } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Грешка при зареждане.</td></tr>';
     }
 }
 
-window.saveSuperSettings = async () => {
-    const settings = {
-        paymentOptions: document.getElementById("superPaymentOptions").value,
-        priceBigCities: document.getElementById("priceBigCities").value,
-        priceOtherCities: document.getElementById("priceOtherCities").value,
-        priceLifetime: document.getElementById("priceLifetime").value,
-        showRegForm: document.getElementById("superShowRegForm").value === "true",
-        regFormText: document.getElementById("superRegFormText").value
-    };
-    const res = await apiCall('updateSuperSettings', { pin: sessionStorage.getItem("superAdminAuth"), settings: JSON.stringify(settings) });
-    if (res && res.success) showToast("Супер настройките са запазени!", "success");
-}
+window.manageSub = async function (targetId, subAction) {
+    if (!confirm(`Сигурни ли сте, че искате да промените достъпа на ID: ${targetId}?`)) return;
 
-window.saveGlobalMessage = async () => {
-    const msg = document.getElementById("superGlobalMessage").value;
-    const res = await apiCall('updateGlobalMessage', { pin: sessionStorage.getItem("superAdminAuth"), message: msg });
-    if (res && res.success) showToast("Глобалното съобщение е обновено!", "success");
-}
-
-window.manageSub = async (id, action) => {
-    const res = await apiCall('updateSubscription', { superPin: sessionStorage.getItem("superAdminAuth"), targetId: id, subAction: action });
-    if (res && res.success) { showToast("Абонаментът е обновен!", "success"); showSuperDashboard(); }
-}
-
-window.submitNewClient = async () => {
-    const params = {
+    const result = await apiCall('updateSubscription', {
         superPin: sessionStorage.getItem("superAdminAuth"),
-        city: document.getElementById("newCity").value,
-        block: document.getElementById("newBlock").value,
-        entrance: document.getElementById("newEntrance").value,
-        adminEmail: document.getElementById("newAdminEmail").value,
-        apartmentsCount: document.getElementById("newAptCount").value
-    };
-    if (!params.city || !params.adminEmail) return;
+        targetId: targetId,
+        subAction: subAction
+    });
+
+    if (result && result.success) {
+        showToast("Правата са обновени успешно!", "success");
+        loadSuperAdminEntrances();
+    } else {
+        showToast(result?.error || "Грешка при обновяване", "error");
+    }
+}
+
+window.submitNewClient = async function () {
+    const city = document.getElementById("newCity").value.trim();
+    const block = document.getElementById("newBlock").value.trim();
+    const entrance = document.getElementById("newEntrance").value.trim();
+    const email = document.getElementById("newAdminEmail").value.trim();
+    const aptCount = document.getElementById("newAptCount").value.trim();
+
+    if (!city || !block || !entrance || !email || !aptCount) {
+        showToast("Моля, попълнете всички полета", "error");
+        return;
+    }
+
     const btn = document.getElementById("createClientBtn");
-    showSaving(btn, "Създаване...");
-    const res = await apiCall('createClient', params);
-    hideSaving(btn);
-    if (res && res.success) showToast("Новият клиент е създаден успешно!", "success");
-    else showToast(res?.error || "Грешка", "error");
+    btn.textContent = "Генериране (Изчакайте до 15 сек)...";
+
+    const result = await apiCall('createClient', {
+        superPin: sessionStorage.getItem("superAdminAuth"),
+        city: city,
+        block: block,
+        entrance: entrance,
+        adminEmail: email,
+        apartmentsCount: aptCount
+    });
+
+    btn.textContent = "Създай Клиент & Генерирай Таблици";
+
+    if (result && result.success) {
+        showToast("✅ Клиентът е създаден успешно! Имейлът е изпратен.", "success");
+        document.getElementById("newCity").value = "";
+        document.getElementById("newBlock").value = "";
+        document.getElementById("newEntrance").value = "";
+        document.getElementById("newAdminEmail").value = "";
+        document.getElementById("newAptCount").value = "";
+
+        // Refresh dropdowns if necessary by refreshing page
+        setTimeout(() => location.reload(), 3000);
+    } else {
+        showToast(result?.error || "Грешка при създаване", "error");
+    }
 }
 
-// ZUES SUBTAB SWITCH
-window.switchZuesSubTab = (sub) => {
-    document.querySelectorAll('.zues-sub-panel').forEach(p => p.style.display = 'none');
-    const t = document.getElementById('zub-' + sub);
-    if (t) t.style.display = 'block';
+window.runSystemBackup = async function () {
+    const btn = document.getElementById("runBackupBtn");
+    const statusDiv = document.getElementById("backupStatus");
+    const linkA = document.getElementById("backupFolderLink");
+
+    btn.disabled = true;
+    btn.textContent = "Архивиране (Моля, изчакайте)...";
+    statusDiv.style.display = "block";
+    statusDiv.innerHTML = "⏳ Обикаляне на всички входове и копиране на таблици...";
+    statusDiv.style.color = "#666";
+
+    const result = await apiCall('runBackup', {
+        superPin: sessionStorage.getItem("superAdminAuth")
+    });
+
+    btn.disabled = false;
+    btn.textContent = "📦 Създай Ръчен Архив Сега";
+
+    if (result && result.success) {
+        statusDiv.innerHTML = "✅ " + result.message;
+        statusDiv.style.color = "green";
+        if (result.folderUrl) {
+            linkA.href = result.folderUrl;
+            // Показваме и временен линк директно в статуса за удобство
+            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Виж новия архив тук ➔</a>`;
+        }
+    } else {
+        statusDiv.innerHTML = "❌ Грешка: " + (result?.error || "Проблем при архивиране");
+        statusDiv.style.color = "red";
+    }
 }
 
-function checkRemontEligibility() {
-    // Basic logic to show warning if some apt lacks ideal parts
-    // In current version, this is checked via getApartmentMasterSummary or similar
+async function loadSuperExceptions() {
+    const list = document.getElementById("superAdminExceptionsList");
+    if (!list) return;
+    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+
+    const result = await apiCall('getSuperExceptions', {
+        superPin: sessionStorage.getItem("superAdminAuth")
+    });
+
+    if (result && result.success && Array.isArray(result.exceptions)) {
+        list.innerHTML = "";
+        result.exceptions.forEach(ex => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="padding:6px;">${ex.targetId}</td>
+                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Всички' : ex.apartment}</td>
+                <td style="padding:6px;">${ex.price} EUR</td>
+                <td style="padding:6px;">${ex.validUntil}</td>
+                <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">✕</button></td>
+            `;
+            list.appendChild(tr);
+        });
+    } else {
+        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">Няма активни изключения.</td></tr>';
+    }
 }
+
+window.addSuperException = async function () {
+    const targetId = document.getElementById("superExceptionRegistry").value;
+    const apartment = document.getElementById("superExceptionApt").value.trim();
+    const price = document.getElementById("superExceptionPrice").value.trim();
+    const validUntil = document.getElementById("superExceptionDate").value;
+
+    if (!targetId || price === "") {
+        showToast("Изберете вход и ценова стойност!", "error");
+        return;
+    }
+
+    const res = await apiCall('addSuperException', {
+        superPin: sessionStorage.getItem("superAdminAuth"),
+        targetId: targetId,
+        apartment: apartment || "ALL",
+        price: price,
+        validUntil: validUntil || "2099-12-31"
+    });
+
+    if (res && res.success) {
+        showToast("Специалната цена е добавена!", "success");
+        document.getElementById("superExceptionApt").value = "";
+        document.getElementById("superExceptionPrice").value = "";
+        loadSuperExceptions();
+    } else {
+        showToast(res?.error || "Възникна грешка", "error");
+    }
+}
+
+window.deleteSuperException = async function (rowIdx) {
+    if (!confirm("Сигурни ли сте, че искате да премахнете това изключение?")) return;
+    const res = await apiCall('deleteSuperException', {
+        superPin: sessionStorage.getItem("superAdminAuth"),
+        rowIdx: rowIdx
+    });
+    if (res && res.success) {
+        showToast("Изключението е премахнато", "success");
+        loadSuperExceptions();
+    } else {
+        showToast("Грешка при изтриване", "error");
+    }
+}
+
+// ==============================================
+// ⚖️ ЗУЕС МЕНИДЖЪР ЛОГИКА
+// ==============================================
+
+window.switchZuesSubTab = function (subId) {
+    document.querySelectorAll(".zues-sub-panel").forEach(p => p.style.display = "none");
+    const target = document.getElementById("zub-" + subId);
+    if (target) target.style.display = "block";
+
+    if (subId === 'z-meeting') {
+        populateAttendanceTable();
+    }
+    if (subId === 'z-fullbook') {
+        loadFullBook();
+    }
+}
+
+// ==============================================
+// 📋 ЦЯЛА ДОМОВА КНИГА
+// ==============================================
+
+let _fullBookData = []; // кеш за търсене
+
+window.loadFullBook = async function () {
+    const tbody = document.getElementById("fullBookBody");
+    const status = document.getElementById("fullBookStatus");
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">⏳ Зареждане...</td></tr>';
+    if (status) status.textContent = "";
+
+    const result = await apiCall('getFullBook', { pin: getStoredPin() });
+
+    if (!result || !result.success) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">❌ Грешка при зареждане</td></tr>';
+        return;
+    }
+
+    _fullBookData = result.rows || [];
+    renderBookTable(_fullBookData);
+
+    if (status) {
+        const filled = _fullBookData.filter(r => r["Собственик"] && r["Собственик"].trim() !== "").length;
+        status.textContent = `Общо: ${_fullBookData.length} апартамента | Попълнени: ${filled} | Непопълнени: ${_fullBookData.length - filled}`;
+    }
+}
+
+function renderBookTable(rows) {
+    const tbody = document.getElementById("fullBookBody");
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Няма данни в книгата.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = rows.map((r, idx) => {
+        const hasMissing = !r["Собственик"] || r["Собственик"].trim() === "";
+        const bg = hasMissing ? "background:#fffbf0;" : (idx % 2 === 0 ? "" : "background:#fafbfd;");
+        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">⚠️</span>' : '';
+
+        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["Апартамент"] || ""}'; loadBookData();">
+            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["Апартамент"] || "—"}${missingMark}</td>
+            <td style="padding:9px 12px;">${r["Собственик"] || '<span style="color:#ccc;">непопълнено</span>'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Имейл"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Обитатели"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Предназначение"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Дата вписване"] || '—'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Домашни любимци"] || '—'}</td>
+        </tr>`;
+    }).join('');
+}
+
+window.filterBookTable = function () {
+    const q = (document.getElementById("bookSearchInput").value || "").toLowerCase();
+    if (!q) {
+        renderBookTable(_fullBookData);
+        return;
+    }
+    const filtered = _fullBookData.filter(r =>
+        Object.values(r).some(v => String(v).toLowerCase().includes(q))
+    );
+    renderBookTable(filtered);
+    const status = document.getElementById("fullBookStatus");
+    if (status) status.textContent = `Намерени: ${filtered.length} от ${_fullBookData.length} апартамента`;
+}
+
+window.printFullBook = function () {
+    if (!_fullBookData || _fullBookData.length === 0) {
+        showToast("Заредете книгата преди печат!", "error");
+        return;
+    }
+
+    const rows = _fullBookData.map((r, idx) => `
+        <tr style="${idx % 2 === 0 ? '' : 'background:#f9f9f9;'}">
+            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["Апартамент"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Собственик"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["Имейл"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Обитатели"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Предназначение"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Дата вписване"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Домашни любимци"] || "—"}</td>
+        </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>Домова книга — Чл. 7 от ЗУЕС</title>
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 13px; padding: 30px; color: #222; }
+            h2 { text-align: center; margin-bottom: 4px; }
+            p.subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th { background: #1a1a2e; color: white; padding: 8px; border: 1px solid #333; font-size: 12px; }
+            @media print { button { display: none; } }
+        </style>
+    </head><body>
+        <h2>📋 ДОМОВА КНИГА — Книга на етажната собственост (Чл. 7 от ЗУЕС)</h2>
+        <p class="subtitle">Дата на извличане: ${new Date().toLocaleDateString('bg-BG')} г. | Общо апартаменти: ${_fullBookData.length}</p>
+        <table>
+            <thead><tr>
+                <th>Апт.</th><th>Собственик/ци</th><th>Имейл</th>
+                <th>Обитатели</th><th>Предназн.</th><th>Дата вписване</th><th>Домашни</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div style="margin-top:30px; font-size:11px; color:#888; text-align:right;">
+            Управлявано от системата за управление на ЕС
+        </div>
+        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">🖨️ Печат</button>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+
+window.populateAttendanceTable = async function () {
+    const list = document.getElementById("meeting-attendance-list");
+    if (!list) return;
+    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">⏳ Зареждане на данни...</td></tr>';
+
+    try {
+        const result = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
+        _currentIdealParts = (result && result.success) ? result.parts : {};
+
+        list.innerHTML = "";
+        apartmentList.forEach(apt => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #eee";
+
+            const normApt = normalizeAptName(apt);
+            const percent = _currentIdealParts[normApt] !== undefined ? parseFloat(_currentIdealParts[normApt]) : 0;
+
+            tr.innerHTML = `
+                <td style="padding:6px;">${apt}</td>
+                <td style="padding:6px; text-align:center;">
+                    <input type="checkbox" class="quorum-check" data-apt="${apt}" data-percent="${percent}" onchange="calculateQuorum()">
+                </td>
+                <td style="padding:6px; text-align:right;">${percent.toFixed(2)}%</td>
+            `;
+            list.appendChild(tr);
+        });
+        calculateQuorum();
+    } catch (e) {
+        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Грешка при зареждане на идеалните части.</td></tr>';
+    }
+}
+
+window.calculateQuorum = function () {
+    let total = 0;
+    document.querySelectorAll(".quorum-check:checked").forEach(chk => {
+        total += parseFloat(chk.dataset.percent);
+    });
+
+    const p = document.getElementById("quorum-percent");
+    const s = document.getElementById("quorum-status");
+    if (p) p.innerText = total.toFixed(2) + "%";
+
+    if (s) {
+        if (total >= 67) {
+            s.innerText = "✅ Има кворум (над 67%)";
+            s.style.color = "green";
+        } else if (total >= 51) {
+            s.innerText = "🔶 Кворум за отложено събрание (над 51%)";
+            s.style.color = "orange";
+        } else {
+            s.innerText = "❌ Няма кворум (необходими 67%)";
+            s.style.color = "red";
+        }
+    }
+}
+
+window.printAttendanceList = function () {
+    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const now = new Date();
+
+    let html = `
+        <div style="font-family: Arial, sans-serif; padding: 40px; line-height: 1.6;">
+            <h2 style="text-align:center;">ПРИСЪСТВЕН СПИСЪК</h2>
+            <p style="text-align:center;">на собствениците/обитателите в етажна собственост</p>
+            <p><strong>Дата:</strong> ${now.toLocaleDateString('bg-BG')} г.</p>
+            <p><strong>Дневен ред:</strong> ${agenda}</p>
+            <table border="1" style="width:100%; border-collapse: collapse; margin-top:20px;">
+                <thead>
+                    <tr style="background:#eee;">
+                        <th style="padding:8px;">Апт.</th>
+                        <th style="padding:8px;">Представени Ид.части %</th>
+                        <th style="padding:8px;">Име на присъстващия / Пълномощник</th>
+                        <th style="padding:8px;">Подпис</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    apartmentList.forEach(apt => {
+        const normApt = normalizeAptName(apt);
+        const percent = _currentIdealParts[normApt] !== undefined ? parseFloat(_currentIdealParts[normApt]) : 0;
+
+        html += `
+            <tr>
+                <td style="padding:10px;">${apt}</td>
+                <td style="padding:10px; text-align:center;">${percent.toFixed(2)}%</td>
+                <td style="padding:10px;"></td>
+                <td style="padding:10px; height: 30px;"></td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+            <div style="margin-top:30px;">
+                <p>Председател на събранието: ____________________</p>
+                <p>Протоколчик: ____________________</p>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.print();
+}
+
+window.generateMeetingMinutes = function () {
+    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const quorum = document.getElementById("quorum-percent").innerText;
+    const now = new Date();
+
+    let html = `
+        <div style="font-family: Times New Roman, serif; padding: 50px; line-height: 1.5; color: #000;">
+            <h2 style="text-align:center; text-decoration: underline;">ПРОТОКОЛ №____</h2>
+            <h3 style="text-align:center;">от Общо събрание на собствениците</h3>
+            <p>Днес, ${now.toLocaleDateString('bg-BG')} г., се проведе общо събрание на етажната собственост.</p>
+            <p><strong>Представени идеални части:</strong> ${quorum}</p>
+            <p><strong>Дневен ред:</strong></p>
+            <p>${agenda}</p>
+            <hr>
+            <p><strong>ХОД НА СЪБРАНИЕТО И ПРИЕТИ РЕШЕНИЯ:</strong></p>
+            <div style="min-height: 300px; border: 1px dashed #ccc; padding: 10px;">
+                <em>[Тук опишете дискусиите и гласуванията за всяка точка...]</em>
+            </div>
+            <p style="margin-top:40px;">Протоколът е съставен съгласно Чл. 16 от ЗУЕС.</p>
+            <div style="display:flex; justify-content: space-between; margin-top:50px;">
+                <div>Председател: ......................</div>
+                <div>Протоколчик: ......................</div>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+window.printOwnerDeclaration = async function () {
+    const apt = document.getElementById("docAptSelect").value;
+    if (!apt) {
+        showToast("Моля, изберете апартамент", "warning");
+        return;
+    }
+
+    // Зареждаме данните от Книгата (ако са налични)
+    const result = await apiCall('getBookData', { apartment: apt });
+    const data = result?.data || {};
+
+    let html = `
+        <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6;">
+            <h2 style="text-align:center;">ДЕКЛАРАЦИЯ</h2>
+            <p style="text-align:center;">по Чл. 47, ал. 2 от Закона за управление на етажната собственост</p>
+            <br>
+            <p>До Управителния съвет / Управителя на ЕС</p>
+            <p><strong>ОТНОСНО:</strong> Вписване на данни в Книгата на етажната собственост</p>
+            <br>
+            <p>Долуподписаният/ата: <strong>${data.Owner || '..........................................................'}</strong></p>
+            <p>В качеството ми на собственик/ползвател на самостоятелен обект <strong>№ ${apt}</strong></p>
+            <br>
+            <p><strong>ДЕКЛАРИРАМ СЛЕДНИТЕ ОБСТОЯТЕЛСТВА:</strong></p>
+            <p>1. Членове на моето домакинство / Обитатели: <br><em>${data.Occupants || '..........................................................'}</em></p>
+            <p>2. Притежавани домашни любимци: <em>${data.Pets || 'Няма'}</em></p>
+            <p>3. Използвам обекта за: <em>${data.Purpose || 'Жилищни нужди'}</em></p>
+            <br>
+            <p>Известно ми е, че за декларирани неверни данни нося наказателна отговорност по чл. 313 от Наказателния кодекс.</p>
+            <br><br>
+            <div style="display:flex; justify-content: space-between;">
+                <div>Дата: ......................</div>
+                <div>Декларатор: ......................</div>
+            </div>
+        </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.print();
+}
+
+// ==============================================
+// МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)
+// ==============================================
+
+window.openMonthlyReport = function () {
+    switchPage('monthly-report');
+    const d = new Date();
+    // По подразбиране предходния месец (защото отчетите се правят за завършен период)
+    const lastMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const periodStr = String(lastMonth.getMonth() + 1).padStart(2, '0') + "." + lastMonth.getFullYear();
+    document.getElementById("reportPeriodInput").value = periodStr;
+    document.getElementById("report-content").style.display = "none";
+}
+
+window.generateReport = async function () {
+    const period = document.getElementById("reportPeriodInput").value.trim();
+    if (!period) {
+        showToast("Моля, въведете период!", "error");
+        return;
+    }
+
+    const btn = document.querySelector("#view-monthly-report .btn-primary");
+    showSaving(btn, "Зареждане...");
+
+    try {
+        const result = await apiCall('getMonthlyReport', { period: period });
+        if (result && result.success && result.data) {
+            const d = result.data;
+            document.getElementById("report-title-period").textContent = `за месец ${period} г.`;
+            document.getElementById("report-gen-date").textContent = new Date().toLocaleDateString('bg-BG');
+
+            const tableBody = document.getElementById("report-invoiced-rows");
+            tableBody.innerHTML = "";
+
+            const labels = {
+                elevator: "Разходи за асансьор",
+                subscription: "Други абонаменти",
+                light: "Електрическа енергия - общи части",
+                security: "Охрана / Консиерж",
+                cleaning: "Хигиена и почистване",
+                podrajka: "Поддръжка на общи части",
+                remont: 'Фонд \u201eРемонт и обновяване\u201c'
+            };
+
+            for (let key in labels) {
+                const val = d.invoiced[key] || 0;
+                if (val > 0) {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">${labels[key]}</td>
+                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${val.toFixed(2)} EUR</td>
+                    `;
+                    tableBody.appendChild(tr);
+                }
+            }
+
+            document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
+            document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
+
+            document.getElementById("report-content").style.display = "block";
+        } else {
+            showToast(result?.error || "Няма данни за този период.", "error");
+            document.getElementById("report-content").style.display = "none";
+        }
+    } catch (e) {
+        showToast("Грешка при генериране на отчета", "error");
+    } finally {
+        hideSaving(btn, "Покажи");
+    }
+}
+
+window.printReport = function () {
+    const printContents = document.getElementById('report-print-area').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    // Временна смяна на тялото за принтиране (или по-добре чрез CSS media print)
+    // Тъй като това е SPA, print() ще хване всичко. Използваме прост метод:
+    const printWindow = window.open('', '', 'height=800,width=800');
+    printWindow.document.write('<html><head><title>Месечен отчет - ' + document.getElementById("reportPeriodInput").value + '</title>');
+    printWindow.document.write('<style>body{font-family: Arial, sans-serif; padding: 40px;} table{width:100%; border-collapse:collapse;} td{padding:10px 0;} tr.total{font-weight:bold; border-top:2px solid black;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printContents);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Помощна функция за смяна на страниците
+window.switchPage = function (pageId) {
+    // Всички панели
+    const panels = ['view-selector', 'view-entrance-home', 'view-monthly-report'];
+    panels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('active');
+            el.classList.add('hidden');
+        }
+    });
+
+    const activePanel = document.getElementById('view-' + pageId) || document.getElementById(pageId);
+    if (activePanel) {
+        activePanel.classList.remove('hidden');
+        activePanel.classList.add('active');
+    }
+}
+
+
+
+async function checkRemontEligibility() {
+    try {
+        const res = await apiCall('getBuildingIdealParts');
+        const input = document.getElementById("chargesRemont");
+        const warn = document.getElementById("remontWarning");
+        
+        let allHaveParts = false;
+        let missing = [];
+        if (res && res.success && res.parts && typeof apartmentList !== 'undefined' && apartmentList.length > 0) {
+            missing = apartmentList.filter(apt => res.parts[apt] === undefined || res.parts[apt] === "" || parseFloat(res.parts[apt]) <= 0);
+            allHaveParts = missing.length === 0;
+        }
+
+        if (input) {
+            input.disabled = !allHaveParts;
+            input.placeholder = allHaveParts ? "Обща сума за входа" : "Деактивирано (липсват Ид. части за всички)";
+            if(!allHaveParts) input.value = "";
+        }
+        
+        if (warn) {
+            warn.style.display = allHaveParts ? "none" : "block";
+            if (!allHaveParts) {
+                if (missing.length > 0 && missing.length <= 15) {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за:</b> ${missing.join(", ")}`;
+                } else if (missing.length > 15) {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за ${missing.length} апартамента.</b>`;
+                } else {
+                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.`;
+                }
+            }
+        }
+    } catch(e) {}
+}
+
