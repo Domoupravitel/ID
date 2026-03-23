@@ -2077,6 +2077,30 @@ window.generateReport = async function () {
             document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
             document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
 
+            // --- ДОБАВЯНЕ НА СТАТИСТИКА ЗА ПЕРИОДА (ПАРАМЕТРИ) ---
+            const statsBoxId = "monthly-report-stats-box";
+            let statsSect = document.getElementById(statsBoxId);
+            if (!statsSect) {
+                statsSect = document.createElement("div");
+                statsSect.id = statsBoxId;
+                statsSect.style.marginTop = "25px";
+                statsSect.style.padding = "20px";
+                statsSect.style.background = "#fff8f0";
+                statsSect.style.border = "1px solid #feebc8";
+                statsSect.style.borderRadius = "10px";
+                document.getElementById("report-content").appendChild(statsSect);
+            }
+            statsSect.innerHTML = `
+                <h4 style="margin: 0 0 12px; font-size: 13px; color: #c05621; text-transform: uppercase;">📊 Параметри за периода:</h4>
+                <table style="width: 100%; font-size: 14px; color: #4a5568; border-collapse: collapse;">
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Логика на разпределение:</td><td style="text-align: right; font-weight: 700; color: #2d3748;">${d.logic || 'Равно'}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Общо обитатели:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalOccupants || 0}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Участници в асансьора (брой):</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalParticipation || 0}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Активни чипове за месеца:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalChips || 0}</td></tr>
+                    <tr><td style="padding: 5px 0;">Общо идеални части:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalIdealParts || 0}%</td></tr>
+                </table>
+            `;
+
             document.getElementById("report-content").style.display = "block";
         } else {
             showToast(result?.error || "Няма данни за този период.", "error");
