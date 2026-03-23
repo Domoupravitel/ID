@@ -137,8 +137,9 @@
                     автоматични месечни отчети.</p>
                 <label class="admin-label">Апартамент</label>
                 <select id="adminEmailApt" class="admin-input" onchange="loadCurrentEmail()"></select>
-                <div id="currentEmailBox" class="admin-current" style="display:none">
-                    Текущ имейл: <span id="currentEmail">—</span>
+                <div id="currentEmailBox" style="display:none; background: linear-gradient(135deg, #e8f4fd, #d1ecf9); border: 1px solid #91cef4; border-radius: 8px; padding: 10px 14px; margin-top: 8px; margin-bottom: 12px;">
+                    <span style="font-size: 13px; color: #555;">📧 Текущ имейл:</span>
+                    <span id="currentEmail" style="display: block; font-weight: 700; font-size: 15px; color: #1a6dab; margin-top: 3px; word-break: break-all;">—</span>
                 </div>
                 <label class="admin-label">Нов имейл</label>
                 <input type="email" id="adminEmail" class="admin-input" placeholder="email@example.com">
