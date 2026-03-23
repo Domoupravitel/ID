@@ -2,7 +2,7 @@
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
-// Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
+// Р СћРЎС“Р С” РЎвЂљРЎР‚РЎРЏР В±Р Р†Р В° Р Т‘Р В° РЎРѓР Вµ Р С—Р С•РЎРѓРЎвЂљР В°Р Р†Р С‘ Р В»Р С‘Р Р…Р С”Р В° Р С•РЎвЂљ Google Apps Script, РЎРѓР В»Р ВµР Т‘ Р С”Р В°РЎвЂљР С• РЎРѓР Вµ РЎР‚Р В°Р В·Р С–РЎР‰РЎР‚Р Р…Р Вµ (Deploy -> Web App)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDypJEQt07rcjZZ0FDDzV_o2QoTfDBaA3p2CGNi99cGT5FeSrJGY-wYGYuB5UO6BZ8jA/exec";
 
 let currentRouteKey = "";
@@ -14,7 +14,7 @@ let _currentIdealParts = {};
 // ==============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Възстановяване на запазени данни, ако има такива
+    // Р вЂ™РЎР‰Р В·РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†РЎРЏР Р†Р В°Р Р…Р Вµ Р Р…Р В° Р В·Р В°Р С—Р В°Р В·Р ВµР Р…Р С‘ Р Т‘Р В°Р Р…Р Р…Р С‘, Р В°Р С”Р С• Р С‘Р СР В° РЎвЂљР В°Р С”Р С‘Р Р†Р В°
     const savedEmail = localStorage.getItem("savedAdminEmail");
     const savedId = localStorage.getItem("savedAccessId");
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.key === 'Enter') verifyPin();
     });
 
-    // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
+    // --- Р С’Р Р†РЎвЂљР С•Р СР В°РЎвЂљР С‘РЎвЂЎР Р…Р С• Р Р†Р В»Р С‘Р В·Р В°Р Р…Р Вµ (Parsing ID and Apartment from Hash or Query) ---
     // (use the already declared urlParams)
     let idValue = urlParams.get('id');
     let aptValue = urlParams.get('apt');
@@ -95,13 +95,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
+    // Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р СР Вµ Р С—РЎС“Р В±Р В»Р С‘РЎвЂЎР Р…Р С‘РЎвЂљР Вµ Р Р…Р В°РЎРѓРЎвЂљРЎР‚Р С•Р в„–Р С”Р С‘ (Р вЂРЎС“РЎвЂљР С•Р Р… Р В·Р В° РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‚Р В°РЎвЂ Р С‘РЎРЏ Р С‘ РЎвЂљ.Р Р….)
     loadPublicSettings();
 
-    // Ако сме се върнали от ръководството, отваряме админ панела автоматично
+    // Р С’Р С”Р С• РЎРѓР СР Вµ РЎРѓР Вµ Р Р†РЎР‰РЎР‚Р Р…Р В°Р В»Р С‘ Р С•РЎвЂљ РЎР‚РЎР‰Р С”Р С•Р Р†Р С•Р Т‘РЎРѓРЎвЂљР Р†Р С•РЎвЂљР С•, Р С•РЎвЂљР Р†Р В°РЎР‚РЎРЏР СР Вµ Р В°Р Т‘Р СР С‘Р Р… Р С—Р В°Р Р…Р ВµР В»Р В° Р В°Р Р†РЎвЂљР С•Р СР В°РЎвЂљР С‘РЎвЂЎР Р…Р С•
     if (sessionStorage.getItem('shouldOpenAdmin') === 'true') {
         sessionStorage.removeItem('shouldOpenAdmin');
-        // Даваме малко време на enterEntrance да приключи ако е в ход
+        // Р вЂќР В°Р Р†Р В°Р СР Вµ Р СР В°Р В»Р С”Р С• Р Р†РЎР‚Р ВµР СР Вµ Р Р…Р В° enterEntrance Р Т‘Р В° Р С—РЎР‚Р С‘Р С”Р В»РЎР‹РЎвЂЎР С‘ Р В°Р С”Р С• Р Вµ Р Р† РЎвЂ¦Р С•Р Т‘
         setTimeout(() => {
             if (currentRouteKey) openAdmin();
         }, 800);
@@ -135,11 +135,11 @@ async function loadPublicSettings() {
 async function apiCall(action, params = {}) {
     showLoading();
 
-    // Ако SCRIPT_URL не съдържа истински google script URL, връщаме грешка
+    // Р С’Р С”Р С• SCRIPT_URL Р Р…Р Вµ РЎРѓРЎР‰Р Т‘РЎР‰РЎР‚Р В¶Р В° Р С‘РЎРѓРЎвЂљР С‘Р Р…РЎРѓР С”Р С‘ google script URL, Р Р†РЎР‚РЎР‰РЎвЂ°Р В°Р СР Вµ Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) {
         hideLoading();
-        console.error("Моля, сложете реалния SCRIPT_URL в app.js");
-        showToast("Грешка: Липсва връзка с Google Script (API)", "error");
+        console.error("Р СљР С•Р В»РЎРЏ, РЎРѓР В»Р С•Р В¶Р ВµРЎвЂљР Вµ РЎР‚Р ВµР В°Р В»Р Р…Р С‘РЎРЏ SCRIPT_URL Р Р† app.js");
+        showToast("Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В°: Р вЂєР С‘Р С—РЎРѓР Р†Р В° Р Р†РЎР‚РЎР‰Р В·Р С”Р В° РЎРѓ Google Script (API)", "error");
         return { error: 'No Script URL configured' };
     }
 
@@ -156,7 +156,7 @@ async function apiCall(action, params = {}) {
     } catch (error) {
         hideLoading();
         console.error("API Call failed:", error);
-        showToast("Проблем с връзката към сървъра", "error");
+        showToast("Р СџРЎР‚Р С•Р В±Р В»Р ВµР С РЎРѓ Р Р†РЎР‚РЎР‰Р В·Р С”Р В°РЎвЂљР В° Р С”РЎР‰Р С РЎРѓРЎР‰РЎР‚Р Р†РЎР‰РЎР‚Р В°", "error");
         return { error: error.toString() };
     }
 }
@@ -171,7 +171,7 @@ window.showLoading = function () {
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.add("active");
 
-    // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
+    // Safety timeout: Р В°Р С”Р С• Р Р…Р ВµРЎвЂ°Р С• Р В·Р В°Р В±Р С‘Р Вµ, РЎРѓР С”РЎР‚Р С‘Р Р†Р В°Р СР Вµ Р В»Р С•РЎС“Р Т‘РЎР‰РЎР‚Р В° РЎРѓР В»Р ВµР Т‘ 15 РЎРѓР ВµР С”РЎС“Р Р…Р Т‘Р С‘
     clearTimeout(window.loaderSafetyTimeout);
     window.loaderSafetyTimeout = setTimeout(() => {
         window.activeLoadingRequests = 0;
@@ -190,7 +190,7 @@ window.hideLoading = function () {
 
 window.normalizeAptName = function (name) {
     if (!name) return "";
-    return name.toString().toUpperCase().replace(/А/g, "A").replace(/\s+/g, "");
+    return name.toString().toUpperCase().replace(/Р С’/g, "A").replace(/\s+/g, "");
 }
 
 function resetApartmentData() {
@@ -214,8 +214,8 @@ window.showToast = function (msg, type) {
     toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
 }
 
-// --- SAVING STATE (Задача 8: визуална индикация при запис) ---
-window.showSaving = function (btn, text = "⏳ Записване...") {
+// --- SAVING STATE (Р вЂ”Р В°Р Т‘Р В°РЎвЂЎР В° 8: Р Р†Р С‘Р В·РЎС“Р В°Р В»Р Р…Р В° Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂ Р С‘РЎРЏ Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓ) ---
+window.showSaving = function (btn, text = "РІРЏС– Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...") {
     if (!btn) return;
     btn._originalText = btn.innerHTML;
     btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;">
@@ -227,7 +227,7 @@ window.showSaving = function (btn, text = "⏳ Записване...") {
 }
 window.hideSaving = function (btn, originalText) {
     if (!btn) return;
-    btn.innerHTML = originalText || btn._originalText || "Запази";
+    btn.innerHTML = originalText || btn._originalText || "Р вЂ”Р В°Р С—Р В°Р В·Р С‘";
     btn.disabled = false;
     btn.style.opacity = "";
 }
@@ -244,7 +244,7 @@ window.refreshCurrentView = function () {
 window.toggleContactForm = function() {
     const section = document.getElementById('contact-section');
     if (section.classList.contains('hidden')) {
-        // Затваряме формата за регистрация, ако е отворена
+        // Р вЂ”Р В°РЎвЂљР Р†Р В°РЎР‚РЎРЏР СР Вµ РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР В° Р В·Р В° РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‚Р В°РЎвЂ Р С‘РЎРЏ, Р В°Р С”Р С• Р Вµ Р С•РЎвЂљР Р†Р С•РЎР‚Р ВµР Р…Р В°
         document.getElementById('registration-section').classList.add('hidden');
         
         section.classList.remove('hidden');
@@ -259,11 +259,11 @@ window.toggleContactForm = function() {
 window.toggleRegistrationForm = function() {
     const section = document.getElementById('registration-section');
     if (section.classList.contains('hidden')) {
-        // Затваряме формата за контакт, ако е отворена
+        // Р вЂ”Р В°РЎвЂљР Р†Р В°РЎР‚РЎРЏР СР Вµ РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР В° Р В·Р В° Р С”Р С•Р Р…РЎвЂљР В°Р С”РЎвЂљ, Р В°Р С”Р С• Р Вµ Р С•РЎвЂљР Р†Р С•РЎР‚Р ВµР Р…Р В°
         document.getElementById('contact-section').classList.add('hidden');
         
         section.classList.remove('hidden');
-        // Плавно скролване до формата, за да я види потребителят веднага
+        // Р СџР В»Р В°Р Р†Р Р…Р С• РЎРѓР С”РЎР‚Р С•Р В»Р Р†Р В°Р Р…Р Вµ Р Т‘Р С• РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР В°, Р В·Р В° Р Т‘Р В° РЎРЏ Р Р†Р С‘Р Т‘Р С‘ Р С—Р С•РЎвЂљРЎР‚Р ВµР В±Р С‘РЎвЂљР ВµР В»РЎРЏРЎвЂљ Р Р†Р ВµР Т‘Р Р…Р В°Р С–Р В°
         setTimeout(() => {
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
@@ -294,7 +294,7 @@ window.exitEntrance = function () {
     
     // Smooth reset the apartment dropdown
     const select = document.getElementById("apartmentSelect");
-    if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
+    if (select) select.innerHTML = '<option value="">Р ВР В·Р В±Р ВµРЎР‚Р С‘ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ</option>';
 };
 
 window.enterEntrance = async function () {
@@ -309,26 +309,26 @@ window.enterEntrance = async function () {
     }
 
     if (!accessId) {
-        showToast("Моля, въведете вашето ID за достъп!", "error");
+        showToast("Р СљР С•Р В»РЎРЏ, Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р Р†Р В°РЎв‚¬Р ВµРЎвЂљР С• ID Р В·Р В° Р Т‘Р С•РЎРѓРЎвЂљРЎР‰Р С—!", "error");
         return false;
     }
 
-    // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
+    // Р вЂ”Р В°Р С—Р В°Р В·Р Р†Р В°Р СР Вµ Р Р† Р В±РЎР‚Р В°РЎС“Р В·РЎР‰РЎР‚Р В° (localStorage), Р В·Р В° Р Р…Р Вµ Р В·Р В°РЎвЂљРЎР‚РЎС“Р Т‘Р Р…РЎРЏР Р†Р В°Р СР Вµ Р Т‘Р С•Р СР С•РЎС“Р С—РЎР‚Р В°Р Р†Р С‘РЎвЂљР ВµР В»РЎРЏ РЎРѓР В»Р ВµР Т‘Р Р†Р В°РЎвЂ°Р С‘РЎРЏ Р С—РЎР‰РЎвЂљ
     localStorage.setItem("savedAccessId", accessId);
 
-    // Задаваме го като текущ ключ за API заявките
+    // Р вЂ”Р В°Р Т‘Р В°Р Р†Р В°Р СР Вµ Р С–Р С• Р С”Р В°РЎвЂљР С• РЎвЂљР ВµР С”РЎС“РЎвЂ° Р С”Р В»РЎР‹РЎвЂЎ Р В·Р В° API Р В·Р В°РЎРЏР Р†Р С”Р С‘РЎвЂљР Вµ
     currentRouteKey = accessId;
 
-    // Сменяме бутона за индикация
+    // Р РЋР СР ВµР Р…РЎРЏР СР Вµ Р В±РЎС“РЎвЂљР С•Р Р…Р В° Р В·Р В° Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂ Р С‘РЎРЏ
     const btn = document.querySelector("#view-selector .btn-primary");
     const originalText = btn.textContent;
-    btn.textContent = "Зареждане...";
+    btn.textContent = "Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ...";
     btn.disabled = true;
 
-    // Зареждаме списъка с апартаменти
-    // Обединена заявка по-долу
+    // Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р СР Вµ РЎРѓР С—Р С‘РЎРѓРЎР‰Р С”Р В° РЎРѓ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР С‘
+    // Р С›Р В±Р ВµР Т‘Р С‘Р Р…Р ВµР Р…Р В° Р В·Р В°РЎРЏР Р†Р С”Р В° Р С—Р С•-Р Т‘Р С•Р В»РЎС“
 
-    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
+    // Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р СР Вµ Р С‘ Р С”Р С•Р Р…РЎвЂћР С‘Р С–РЎС“РЎР‚Р В°РЎвЂ Р С‘РЎРЏРЎвЂљР В° Р В·Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р В° (Р СџР В»Р В°РЎвЂ°Р В°Р Р…Р Вµ Р С‘ РЎвЂљ.Р Р….)
     const [result, configResult] = await Promise.all([
         apiCall('list', { list: 'apartments' }),
         apiCall('getEntranceInfo')
@@ -339,36 +339,36 @@ window.enterEntrance = async function () {
 
         if (info.isHardBlocked) {
             hideLoading();
-            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            showToast(`РІС™В РїС‘РЏ Р вЂќР С•РЎРѓРЎвЂљРЎР‰Р С—РЎР‰РЎвЂљ Р Вµ Р Р…Р В°Р С—РЎР‰Р В»Р Р…Р С• РЎРѓР С—РЎР‚РЎРЏР Р… Р С—Р С•РЎР‚Р В°Р Т‘Р С‘ Р Р…Р В°Р Т‘ 3 Р СР ВµРЎРѓР ВµРЎвЂ Р В° Р Р…Р ВµР С—Р В»Р В°РЎвЂљР ВµР Р… Р В°Р В±Р С•Р Р…Р В°Р СР ВµР Р…РЎвЂљ. (Р СџРЎР‚Р С‘ Р С—РЎР‚Р ВµР Р†Р С•Р Т‘ Р В·Р В°Р Т‘РЎР‰Р В»Р В¶Р С‘РЎвЂљР ВµР В»Р Р…Р С• Р С—Р С•РЎРѓР С•РЎвЂЎР ВµРЎвЂљР Вµ ID: ${currentRouteKey})`, "error");
             btn.textContent = originalText;
             btn.disabled = false;
             return false; // PREVENT ENTRY
         }
 
-        // Възстановяваме бутона веднага щом приключат заявките
+        // Р вЂ™РЎР‰Р В·РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†РЎРЏР Р†Р В°Р СР Вµ Р В±РЎС“РЎвЂљР С•Р Р…Р В° Р Р†Р ВµР Т‘Р Р…Р В°Р С–Р В° РЎвЂ°Р С•Р С Р С—РЎР‚Р С‘Р С”Р В»РЎР‹РЎвЂЎР В°РЎвЂљ Р В·Р В°РЎРЏР Р†Р С”Р С‘РЎвЂљР Вµ
         btn.textContent = originalText;
         btn.disabled = false;
 
-        // Запазваме цените в сесията
+        // Р вЂ”Р В°Р С—Р В°Р В·Р Р†Р В°Р СР Вµ РЎвЂ Р ВµР Р…Р С‘РЎвЂљР Вµ Р Р† РЎРѓР ВµРЎРѓР С‘РЎРЏРЎвЂљР В°
         if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
+        // Р ВР Р…РЎРѓРЎвЂљРЎР‚РЎС“Р С”РЎвЂ Р С‘Р С‘ Р В·Р В° Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ РІР‚вЂќ Р В·Р В°Р С—Р В°Р В·Р Р†Р В°Р СР Вµ Р В·Р В° Р С—Р С•-Р С”РЎР‰РЎРѓР Р…Р С•, Р Р…Р С• Р СњР вЂў Р С—Р С•Р С”Р В°Р В·Р Р†Р В°Р СР Вµ Р Р†Р ВµР Т‘Р Р…Р В°Р С–Р В° Р С—РЎР‚Р С‘ Р Р†Р В»Р С‘Р В·Р В°Р Р…Р Вµ
         if (info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = info.paymentInfo;
             document.getElementById('masterPaymentText').value = info.paymentInfo;
-            // Съхраняваме в session за използване при избор на апартамент
+            // Р РЋРЎР‰РЎвЂ¦РЎР‚Р В°Р Р…РЎРЏР Р†Р В°Р СР Вµ Р Р† session Р В·Р В° Р С‘Р В·Р С—Р С•Р В»Р В·Р Р†Р В°Р Р…Р Вµ Р С—РЎР‚Р С‘ Р С‘Р В·Р В±Р С•РЎР‚ Р Р…Р В° Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ
             sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
             sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
         }
-        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
+        // Р вЂ™Р С‘Р Р…Р В°Р С–Р С‘ РЎРѓР С”РЎР‚Р С‘Р Р†Р В°Р СР Вµ Р С—РЎР‚Р С‘ Р Р†Р В»Р С‘Р В·Р В°Р Р…Р Вµ РІР‚вЂќ РЎвЂ°Р Вµ РЎРѓР Вµ Р С—Р С•Р С”Р В°Р В¶Р Вµ РЎРѓР В°Р СР С• Р С—РЎР‚Р С‘ Р С‘Р В·Р В±РЎР‚Р В°Р Р… Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ РЎРѓ Р Т‘РЎР‰Р В»Р С–
         document.getElementById('payment-details-box').style.display = 'none';
 
-        // Имейл за връзка
+        // Р ВР СР ВµР в„–Р В» Р В·Р В° Р Р†РЎР‚РЎР‰Р В·Р С”Р В°
         const adminMailBtn = document.getElementById('admin-mailto-link');
         if (adminMailBtn) {
             if (info.adminEmail) {
@@ -379,7 +379,7 @@ window.enterEntrance = async function () {
             }
         }
 
-        // Външни линкове
+        // Р вЂ™РЎР‰Р Р…РЎв‚¬Р Р…Р С‘ Р В»Р С‘Р Р…Р С”Р С•Р Р†Р Вµ
         if (info.linkElectric) {
             document.getElementById('btn-electric-link').href = info.linkElectric;
             document.getElementById('btn-electric-link').style.display = 'inline-block';
@@ -396,7 +396,7 @@ window.enterEntrance = async function () {
             document.getElementById('btn-subscription-link').style.display = 'none';
         }
 
-        // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
+        // --- Р ВР вЂ”Р В§Р ВР РЋР вЂєР Р‡Р вЂ™Р С’Р СњР вЂў Р СњР С’ Р С’Р вЂР С›Р СњР С’Р СљР вЂўР СњР Сћ Р С™Р Р„Р Сљ Р СџР вЂєР С’Р СћР В¤Р С›Р В Р СљР С’Р СћР С’ ---
         let totalMonthly = 0;
         const basePrice = parseFloat(info.pricePerApt) || 0;
         const aptCount = (result && Array.isArray(result)) ? result.length : 0;
@@ -424,10 +424,10 @@ window.enterEntrance = async function () {
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
         if (totalMonthly === 0 && aptCount > 0) {
-            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
+            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">СЂСџР‹Рѓ Р вЂР вЂўР вЂ”Р СџР вЂєР С’Р СћР СњР С›</span>';
         }
 
-        // --- ГЛОБАЛНО СЪОБЩЕНИЕ ОТ СУПЕР АДМИН ---
+        // --- Р вЂњР вЂєР С›Р вЂР С’Р вЂєР СњР С› Р РЋР Р„Р С›Р вЂР В©Р вЂўР СњР ВР вЂў Р С›Р Сћ Р РЋР Р€Р СџР вЂўР В  Р С’Р вЂќР СљР ВР Сњ ---
         const newsBanner = document.getElementById("adminGlobalNews");
         const newsText = document.getElementById("adminGlobalNewsText");
         if (info.globalMessage && info.globalMessage.trim() !== "") {
@@ -437,7 +437,7 @@ window.enterEntrance = async function () {
             newsBanner.style.display = "none";
         }
 
-        // --- СЪОБЩЕНИЕ ОТ ДОМОУПРАВИТЕЛЯ (КЪМ ЖИВУЩИТЕ) ---
+        // --- Р РЋР Р„Р С›Р вЂР В©Р вЂўР СњР ВР вЂў Р С›Р Сћ Р вЂќР С›Р СљР С›Р Р€Р СџР В Р С’Р вЂ™Р ВР СћР вЂўР вЂєР Р‡ (Р С™Р Р„Р Сљ Р вЂ“Р ВР вЂ™Р Р€Р В©Р ВР СћР вЂў) ---
         const userNoticeBanner = document.getElementById("userEntranceNotice");
         const userNoticeText = document.getElementById("userEntranceNoticeText");
         const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
@@ -460,54 +460,54 @@ window.enterEntrance = async function () {
             if (adminNoticeInput) adminNoticeInput.value = "";
         }
     } else {
-        // Скриваме всичко, ако няма инфо
+        // Р РЋР С”РЎР‚Р С‘Р Р†Р В°Р СР Вµ Р Р†РЎРѓР С‘РЎвЂЎР С”Р С•, Р В°Р С”Р С• Р Р…РЎРЏР СР В° Р С‘Р Р…РЎвЂћР С•
         document.getElementById('payment-details-box').style.display = 'none';
         document.getElementById('admin-mailto-link').style.display = 'none';
         document.getElementById('btn-electric-link').style.display = 'none';
         document.getElementById('btn-subscription-link').style.display = 'none';
     }
 
-    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
+    // Р С›Р вЂР В Р С’Р вЂР С›Р СћР С™Р С’ Р СњР С’ Р РЋР СџР ВР РЋР Р„Р С™Р С’ Р РЋ Р С’Р СџР С’Р В Р СћР С’Р СљР вЂўР СњР СћР В Р В Р РЋР СљР Р‡Р СњР С’ Р СњР С’ Р ВР вЂ”Р вЂњР вЂєР вЂўР вЂќР С’
     if (result && !result.error && Array.isArray(result)) {
         apartmentList = result;
 
-        // Обновяваме заглавието на входа
+        // Р С›Р В±Р Р…Р С•Р Р†РЎРЏР Р†Р В°Р СР Вµ Р В·Р В°Р С–Р В»Р В°Р Р†Р С‘Р ВµРЎвЂљР С• Р Р…Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р В°
         if (configResult && configResult.info && configResult.info.entranceName) {
             document.getElementById('entrance-title').textContent = configResult.info.entranceName;
         } else {
-            document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
+            document.getElementById('entrance-title').textContent = `Р вЂўРЎвЂљР В°Р В¶Р Р…Р В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ - ID ${currentRouteKey}`;
         }
 
-        // Превключваме екрана
+        // Р СџРЎР‚Р ВµР Р†Р С”Р В»РЎР‹РЎвЂЎР Р†Р В°Р СР Вµ Р ВµР С”РЎР‚Р В°Р Р…Р В°
         document.getElementById('view-selector').classList.remove('active');
         document.getElementById('view-selector').classList.add('hidden');
         document.getElementById('view-entrance-home').classList.remove('hidden');
         document.getElementById('view-entrance-home').classList.add('active');
 
-        // Пълним падащото меню
+        // Р СџРЎР‰Р В»Р Р…Р С‘Р С Р С—Р В°Р Т‘Р В°РЎвЂ°Р С•РЎвЂљР С• Р СР ВµР Р…РЎР‹
         const select = document.getElementById("apartmentSelect");
-        select.innerHTML = '<option value="">Избери апартамент</option>';
+        select.innerHTML = '<option value="">Р ВР В·Р В±Р ВµРЎР‚Р С‘ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ</option>';
         apartmentList.forEach(a => {
             const opt = document.createElement("option");
             opt.value = opt.textContent = a;
             select.appendChild(opt);
         });
 
-        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
+        // Р СџР В Р вЂўР вЂ”Р С’Р С™Р вЂєР В®Р В§Р вЂ™Р С’Р СљР вЂў HASH Р вЂ”Р С’ Р РЋР ВР СњР ТђР В Р С›Р СњР ВР вЂ”Р С’Р В¦Р ВР Р‡ (Р В±Р ВµР В· Р В·Р В°РЎвЂ Р С‘Р С”Р В»РЎРЏР Р…Р Вµ)
         const targetHash = "#" + encodeURIComponent(currentRouteKey);
         if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
             window.location.hash = targetHash;
         }
 
-        // Зареждаме дашборда
+        // Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р СР Вµ Р Т‘Р В°РЎв‚¬Р В±Р С•РЎР‚Р Т‘Р В°
         loadDashboardData();
         return true;
     } else {
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
-            showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
+            showToast("Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р Р†РЎР‚РЎР‰Р В·Р С”Р В° (Failed to fetch). Р СџРЎР‚Р С•Р Р†Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р С‘Р Р…РЎвЂљР ВµРЎР‚Р Р…Р ВµРЎвЂљ Р Р†РЎР‚РЎР‰Р В·Р С”Р В°РЎвЂљР В° РЎРѓР С‘.", "error");
         } else {
-            showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
+            showToast(`Р вЂњРЎР‚Р ВµРЎв‚¬Р ВµР Р… Р Р†РЎвЂ¦Р С•Р Т‘: ${currentRouteKey} Р Р…Р Вµ Р Вµ Р Р…Р В°Р СР ВµРЎР‚Р ВµР Р… Р Р† Р В±Р В°Р В·Р В°РЎвЂљР В°.`, "error");
         }
         return false;
     }
@@ -525,20 +525,20 @@ async function loadDashboardData() {
 
             document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
             
-            // Показваме събраното спрямо общото начислено
+            // Р СџР С•Р С”Р В°Р В·Р Р†Р В°Р СР Вµ РЎРѓРЎР‰Р В±РЎР‚Р В°Р Р…Р С•РЎвЂљР С• РЎРѓР С—РЎР‚РЎРЏР СР С• Р С•Р В±РЎвЂ°Р С•РЎвЂљР С• Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С•
             const collected = parseFloat(d.totalBalance) || 0;
             const target = parseFloat(d.totalTargetFund) || 0;
-            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (от ${target.toFixed(2)} ${cur})`;
+            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (Р С•РЎвЂљ ${target.toFixed(2)} ${cur})`;
 
             // Trends status text update
             const debtsTrendEl = document.getElementById('dash-debts-trend');
             const balanceTrendEl = document.getElementById('dash-balance-trend');
 
             if (debtsTrendEl) {
-                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
+                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Р ВР В·Р С‘РЎРѓР С”Р Р†Р В° РЎРѓР Вµ Р В·Р В°Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ" : "Р вЂ™РЎРѓР С‘РЎвЂЎР С”Р С• Р Вµ Р С‘Р В·Р С—Р В»Р В°РЎвЂљР ВµР Р…Р С•";
             }
             if (balanceTrendEl) {
-                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Наличен фонд" : "Очаква събиране";
+                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Р СњР В°Р В»Р С‘РЎвЂЎР ВµР Р… РЎвЂћР С•Р Р…Р Т‘" : "Р С›РЎвЂЎР В°Р С”Р Р†Р В° РЎРѓРЎР‰Р В±Р С‘РЎР‚Р В°Р Р…Р Вµ";
             }
 
             if (d.trendData && d.trendData.length > 0) {
@@ -553,11 +553,11 @@ async function loadDashboardData() {
                 console.log("No trend data available for dashboard chart.");
             }
         } else {
-            const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
+            const errMsg = result?.error || "Р СњР ВµРЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р С•Р В±Р С•Р В±РЎвЂ°Р ВµР Р…Р С‘РЎвЂљР Вµ Р Т‘Р В°Р Р…Р Р…Р С‘.";
             console.error("Dashboard data load failed:", errMsg);
             // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
-            document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
-            document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
+            document.getElementById('dash-debts-trend').textContent = "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ";
+            document.getElementById('dash-balance-trend').textContent = "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ";
         }
     } catch (err) {
         console.error("Critical error in loadDashboardData:", err);
@@ -580,7 +580,7 @@ function initChart(data) {
             labels: labels,
             datasets: [
                 {
-                    label: 'Асансьор',
+                    label: 'Р С’РЎРѓР В°Р Р…РЎРѓРЎРЉР С•РЎР‚',
                     data: data.map(i => i.elevator),
                     borderColor: '#3b6edc',
                     backgroundColor: 'rgba(59, 110, 220, 0.1)',
@@ -590,7 +590,7 @@ function initChart(data) {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Абонамент',
+                    label: 'Р С’Р В±Р С•Р Р…Р В°Р СР ВµР Р…РЎвЂљ',
                     data: data.map(i => i.subscription),
                     borderColor: '#ff9500',
                     backgroundColor: 'rgba(255, 149, 0, 0.1)',
@@ -600,7 +600,7 @@ function initChart(data) {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Осветление',
+                    label: 'Р С›РЎРѓР Р†Р ВµРЎвЂљР В»Р ВµР Р…Р С‘Р Вµ',
                     data: data.map(i => i.light),
                     borderColor: '#34c759',
                     backgroundColor: 'rgba(52, 199, 89, 0.1)',
@@ -610,7 +610,7 @@ function initChart(data) {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Почистване',
+                    label: 'Р СџР С•РЎвЂЎР С‘РЎРѓРЎвЂљР Р†Р В°Р Р…Р Вµ',
                     data: data.map(i => i.cleaning),
                     borderColor: '#5856d6',
                     backgroundColor: 'rgba(88, 86, 214, 0.1)',
@@ -620,7 +620,7 @@ function initChart(data) {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Поддръжка',
+                    label: 'Р СџР С•Р Т‘Р Т‘РЎР‚РЎР‰Р В¶Р С”Р В°',
                     data: data.map(i => i.podrajka),
                     borderColor: '#ff2d55',
                     backgroundColor: 'rgba(255, 45, 85, 0.1)',
@@ -630,7 +630,7 @@ function initChart(data) {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Фонд ремонт',
+                    label: 'Р В¤Р С•Р Р…Р Т‘ РЎР‚Р ВµР СР С•Р Р…РЎвЂљ',
                     data: data.map(i => i.remont),
                     borderColor: '#8e8e93',
                     backgroundColor: 'rgba(142, 142, 147, 0.1)',
@@ -681,7 +681,7 @@ function initChart(data) {
 async function loadApartmentData(apartment) {
     resetApartmentData();
 
-    // Скриваме инструкциите за плащане докато не знаем дали има дълг
+    // Р РЋР С”РЎР‚Р С‘Р Р†Р В°Р СР Вµ Р С‘Р Р…РЎРѓРЎвЂљРЎР‚РЎС“Р С”РЎвЂ Р С‘Р С‘РЎвЂљР Вµ Р В·Р В° Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ Р Т‘Р С•Р С”Р В°РЎвЂљР С• Р Р…Р Вµ Р В·Р Р…Р В°Р ВµР С Р Т‘Р В°Р В»Р С‘ Р С‘Р СР В° Р Т‘РЎР‰Р В»Р С–
     document.getElementById('payment-details-box').style.display = 'none';
 
     // Update URL Hash for persistence
@@ -689,15 +689,15 @@ async function loadApartmentData(apartment) {
         window.location.hash = `${encodeURIComponent(currentRouteKey)}/${encodeURIComponent(apartment)}`;
     }
 
-    // Показваме кода за плащане веднага
+    // Р СџР С•Р С”Р В°Р В·Р Р†Р В°Р СР Вµ Р С”Р С•Р Т‘Р В° Р В·Р В° Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ Р Р†Р ВµР Т‘Р Р…Р В°Р С–Р В°
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
     document.getElementById("payment-reference-box").style.display = "block";
 
     const result = await apiCall('apartment', { apartment: apartment });
 
     if (result && result.error && result.showMessage) {
-        document.getElementById("saldo").textContent = "Скрит";
-        showToast("Информацията за салдото Ви, не се показва поради неплатен абонамент", "error");
+        document.getElementById("saldo").textContent = "Р РЋР С”РЎР‚Р С‘РЎвЂљ";
+        showToast("Р ВР Р…РЎвЂћР С•РЎР‚Р СР В°РЎвЂ Р С‘РЎРЏРЎвЂљР В° Р В·Р В° РЎРѓР В°Р В»Р Т‘Р С•РЎвЂљР С• Р вЂ™Р С‘, Р Р…Р Вµ РЎРѓР Вµ Р С—Р С•Р С”Р В°Р В·Р Р†Р В° Р С—Р С•РЎР‚Р В°Р Т‘Р С‘ Р Р…Р ВµР С—Р В»Р В°РЎвЂљР ВµР Р… Р В°Р В±Р С•Р Р…Р В°Р СР ВµР Р…РЎвЂљ", "error");
         return;
     }
 
@@ -713,7 +713,7 @@ async function loadApartmentData(apartment) {
         else if (saldoVal < 0) sCard.classList.add("saldo-negative");
         else sCard.classList.add("saldo-zero");
 
-        // --- ИНСТРУКЦИИ ЗА ПЛАЩАНЕ — показват се само при дълг ---
+        // --- Р ВР СњР РЋР СћР В Р Р€Р С™Р В¦Р ВР В Р вЂ”Р С’ Р СџР вЂєР С’Р В©Р С’Р СњР вЂў РІР‚вЂќ Р С—Р С•Р С”Р В°Р В·Р Р†Р В°РЎвЂљ РЎРѓР Вµ РЎРѓР В°Р СР С• Р С—РЎР‚Р С‘ Р Т‘РЎР‰Р В»Р С– ---
         const payBox = document.getElementById('payment-details-box');
         if (saldoVal > 0) {
             const storedPayInfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
@@ -744,10 +744,10 @@ async function loadApartmentData(apartment) {
                 tBody.appendChild(tr);
             });
         } else {
-            tBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Няма налични данни за избрания апартамент.</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Р СњРЎРЏР СР В° Р Р…Р В°Р В»Р С‘РЎвЂЎР Р…Р С‘ Р Т‘Р В°Р Р…Р Р…Р С‘ Р В·Р В° Р С‘Р В·Р В±РЎР‚Р В°Р Р…Р С‘РЎРЏ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ.</td></tr>';
         }
 
-        // --- ПЕРСОНАЛНО СЪОБЩЕНИЕ ЗА АПАРТАМЕНТА ---
+        // --- Р СџР вЂўР В Р РЋР С›Р СњР С’Р вЂєР СњР С› Р РЋР Р„Р С›Р вЂР В©Р вЂўР СњР ВР вЂў Р вЂ”Р С’ Р С’Р СџР С’Р В Р СћР С’Р СљР вЂўР СњР СћР С’ ---
         const aptNoticeBanner = document.getElementById("individualAptNotice");
         const aptNoticeText = document.getElementById("individualAptNoticeText");
         if (result.aptNotice && result.aptNotice.trim() !== "") {
@@ -757,7 +757,7 @@ async function loadApartmentData(apartment) {
             aptNoticeBanner.style.display = "none";
         }
     } else {
-        showToast("Грешка при зареждане на данните", "error");
+        showToast("Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р Т‘Р В°Р Р…Р Р…Р С‘РЎвЂљР Вµ", "error");
     }
 }
 
@@ -786,7 +786,7 @@ window.verifyPin = async function () {
     const err = document.getElementById("pinError");
 
     if (!email || !pin) {
-        err.textContent = "Моля, въведете имейл и парола.";
+        err.textContent = "Р СљР С•Р В»РЎРЏ, Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р С‘Р СР ВµР в„–Р В» Р С‘ Р С—Р В°РЎР‚Р С•Р В»Р В°.";
         return;
     }
 
@@ -798,7 +798,7 @@ window.verifyPin = async function () {
         err.textContent = "";
         showAdminContent();
     } else {
-        err.textContent = result?.error || "Грешен PIN код.";
+        err.textContent = result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р ВµР Р… PIN Р С”Р С•Р Т‘.";
     }
 }
 
@@ -806,11 +806,11 @@ function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
 
-    // Първоначална подкана за MASTER настройки
+    // Р СџРЎР‰РЎР‚Р Р†Р С•Р Р…Р В°РЎвЂЎР В°Р В»Р Р…Р В° Р С—Р С•Р Т‘Р С”Р В°Р Р…Р В° Р В·Р В° MASTER Р Р…Р В°РЎРѓРЎвЂљРЎР‚Р С•Р в„–Р С”Р С‘
     const masterPromptKey = "hasSeenMasterPrompt_" + currentRouteKey;
     if (!localStorage.getItem(masterPromptKey)) {
         setTimeout(() => {
-            showToast("🎁 Добре дошли! Препоръчваме първо да посетите секция 'MASTER – Настройки', за да въведете началните параметри на входа.", "success");
+            showToast("СЂСџР‹Рѓ Р вЂќР С•Р В±РЎР‚Р Вµ Р Т‘Р С•РЎв‚¬Р В»Р С‘! Р СџРЎР‚Р ВµР С—Р С•РЎР‚РЎР‰РЎвЂЎР Р†Р В°Р СР Вµ Р С—РЎР‰РЎР‚Р Р†Р С• Р Т‘Р В° Р С—Р С•РЎРѓР ВµРЎвЂљР С‘РЎвЂљР Вµ РЎРѓР ВµР С”РЎвЂ Р С‘РЎРЏ 'MASTER РІР‚вЂњ Р СњР В°РЎРѓРЎвЂљРЎР‚Р С•Р в„–Р С”Р С‘', Р В·Р В° Р Т‘Р В° Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р Р…Р В°РЎвЂЎР В°Р В»Р Р…Р С‘РЎвЂљР Вµ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚Р С‘ Р Р…Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р В°.", "success");
             localStorage.setItem(masterPromptKey, "true");
         }, 1000);
     }
@@ -820,7 +820,7 @@ function showAdminContent() {
         subCodeEl.textContent = currentRouteKey;
     }
 
-    // Попълваме цените, ако ги имаме запазени
+    // Р СџР С•Р С—РЎР‰Р В»Р Р†Р В°Р СР Вµ РЎвЂ Р ВµР Р…Р С‘РЎвЂљР Вµ, Р В°Р С”Р С• Р С–Р С‘ Р С‘Р СР В°Р СР Вµ Р В·Р В°Р С—Р В°Р В·Р ВµР Р…Р С‘
     const p1 = sessionStorage.getItem("pricePerApt_" + currentRouteKey);
     const p2 = sessionStorage.getItem("lifetimePrice_" + currentRouteKey);
     const curr = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
@@ -857,8 +857,8 @@ function autoFillCurrentPeriod() {
             if (el.options.length === 0) {
                 const year = d.getFullYear();
                 const monthNames = [
-                    "Януари", "Февруари", "Март", "Април", "Май", "Юни",
-                    "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+                    "Р Р‡Р Р…РЎС“Р В°РЎР‚Р С‘", "Р В¤Р ВµР Р†РЎР‚РЎС“Р В°РЎР‚Р С‘", "Р СљР В°РЎР‚РЎвЂљ", "Р С’Р С—РЎР‚Р С‘Р В»", "Р СљР В°Р в„–", "Р В®Р Р…Р С‘",
+                    "Р В®Р В»Р С‘", "Р С’Р Р†Р С–РЎС“РЎРѓРЎвЂљ", "Р РЋР ВµР С—РЎвЂљР ВµР СР Р†РЎР‚Р С‘", "Р С›Р С”РЎвЂљР С•Р СР Р†РЎР‚Р С‘", "Р СњР С•Р ВµР СР Р†РЎР‚Р С‘", "Р вЂќР ВµР С”Р ВµР СР Р†РЎР‚Р С‘"
                 ];
                 
                 monthNames.forEach((name, index) => {
@@ -883,17 +883,17 @@ function populateAdminDropdowns() {
     ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt", "emailAptTarget"].forEach(id => {
         const sel = document.getElementById(id);
         if (sel && sel.options.length <= 1) {
-            sel.innerHTML = '<option value="">Избери апартамент</option>';
+            sel.innerHTML = '<option value="">Р ВР В·Р В±Р ВµРЎР‚Р С‘ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ</option>';
             apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
         }
     });
 
-    // ЗУЕС Валидация в реално време за обитатели
+    // Р вЂ”Р Р€Р вЂўР РЋ Р вЂ™Р В°Р В»Р С‘Р Т‘Р В°РЎвЂ Р С‘РЎРЏ Р Р† РЎР‚Р ВµР В°Р В»Р Р…Р С• Р Р†РЎР‚Р ВµР СР Вµ Р В·Р В° Р С•Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘
     const obInput = document.getElementById("masterObVal");
     if (obInput) {
         obInput.addEventListener("change", (e) => {
             if (e.target.value !== "" && parseInt(e.target.value) < 1) {
-                showToast("⚠️ Минималният брой е 1. „За самостоятелен обект, в който се пребивава не повече от 30 дни в годината, разходите за управление и поддръжка се заплащат в размера, определен за един обитател.“ (Чл. 51, ал. 1 от ЗУЕС)", "error");
+                showToast("РІС™В РїС‘РЏ Р СљР С‘Р Р…Р С‘Р СР В°Р В»Р Р…Р С‘РЎРЏРЎвЂљ Р В±РЎР‚Р С•Р в„– Р Вµ 1. РІР‚С›Р вЂ”Р В° РЎРѓР В°Р СР С•РЎРѓРЎвЂљР С•РЎРЏРЎвЂљР ВµР В»Р ВµР Р… Р С•Р В±Р ВµР С”РЎвЂљ, Р Р† Р С”Р С•Р в„–РЎвЂљР С• РЎРѓР Вµ Р С—РЎР‚Р ВµР В±Р С‘Р Р†Р В°Р Р†Р В° Р Р…Р Вµ Р С—Р С•Р Р†Р ВµРЎвЂЎР Вµ Р С•РЎвЂљ 30 Р Т‘Р Р…Р С‘ Р Р† Р С–Р С•Р Т‘Р С‘Р Р…Р В°РЎвЂљР В°, РЎР‚Р В°Р В·РЎвЂ¦Р С•Р Т‘Р С‘РЎвЂљР Вµ Р В·Р В° РЎС“Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Р С‘ Р С—Р С•Р Т‘Р Т‘РЎР‚РЎР‰Р В¶Р С”Р В° РЎРѓР Вµ Р В·Р В°Р С—Р В»Р В°РЎвЂ°Р В°РЎвЂљ Р Р† РЎР‚Р В°Р В·Р СР ВµРЎР‚Р В°, Р С•Р С—РЎР‚Р ВµР Т‘Р ВµР В»Р ВµР Р… Р В·Р В° Р ВµР Т‘Р С‘Р Р… Р С•Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В».РІР‚Сљ (Р В§Р В». 51, Р В°Р В». 1 Р С•РЎвЂљ Р вЂ”Р Р€Р вЂўР РЋ)", "error");
                 e.target.value = 1;
             }
         });
@@ -909,12 +909,12 @@ window.submitPayment = async function () {
     const amount = document.getElementById("adminAmount").value.trim();
 
     if (!apt || !period || !amount) {
-        showToast("Попълнете всички полета за плащане!", "error");
+        showToast("Р СџР С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘ Р С—Р С•Р В»Р ВµРЎвЂљР В° Р В·Р В° Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ!", "error");
         return;
     }
 
     const btn = document.getElementById("payBtn");
-    showSaving(btn, "Записване...");
+    showSaving(btn, "Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...");
 
     const result = await apiCall('addPayment', {
         pin: getStoredPin(),
@@ -923,14 +923,14 @@ window.submitPayment = async function () {
         amount: amount
     });
 
-    hideSaving(btn, "Добави плащане");
+    hideSaving(btn, "Р вЂќР С•Р В±Р В°Р Р†Р С‘ Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ");
 
     if (result && result.success) {
-        showToast("✅ Успешно добавено плащане.", "success");
+        showToast("РІСљвЂ¦ Р Р€РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р Т‘Р С•Р В±Р В°Р Р†Р ВµР Р…Р С• Р С—Р В»Р В°РЎвЂ°Р В°Р Р…Р Вµ.", "success");
         document.getElementById("adminAmount").value = "";
         refreshCurrentView();
     } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        showToast(result?.error || "Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°", "error");
     }
 }
 
@@ -949,15 +949,15 @@ window.loadBookData = async function () {
         const result = await apiCall('getBookData', { apartment: apt });
         if (result && result.success && result.data) {
             const d = result.data;
-            if (d["Собственик"]) document.getElementById("book-Owner").value = d["Собственик"];
-            if (d["Имейл"]) document.getElementById("book-Email").value = d["Имейл"];
-            if (d["Обитатели"]) document.getElementById("book-Occupants").value = d["Обитатели"];
-            if (d["Домашни любимци"]) document.getElementById("book-Pets").value = d["Домашни любимци"];
-            if (d["Предназначение"]) document.getElementById("book-Purpose").value = d["Предназначение"];
+            if (d["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"]) document.getElementById("book-Owner").value = d["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"];
+            if (d["Р ВР СР ВµР в„–Р В»"]) document.getElementById("book-Email").value = d["Р ВР СР ВµР в„–Р В»"];
+            if (d["Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘"]) document.getElementById("book-Occupants").value = d["Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘"];
+            if (d["Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘"]) document.getElementById("book-Pets").value = d["Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘"];
+            if (d["Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ"]) document.getElementById("book-Purpose").value = d["Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ"];
 
-            if (d["Дата вписване"]) {
+            if (d["Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ"]) {
                 try {
-                    const date = new Date(d["Дата вписване"]);
+                    const date = new Date(d["Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ"]);
                     if (!isNaN(date.getTime())) {
                         document.getElementById("book-EntryDate").value = date.toISOString().split('T')[0];
                     }
@@ -965,24 +965,24 @@ window.loadBookData = async function () {
             }
         }
     } catch (e) {
-        showToast("Грешка при зареждане на данните", "error");
+        showToast("Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р Т‘Р В°Р Р…Р Р…Р С‘РЎвЂљР Вµ", "error");
     }
 }
 
 window.submitBookData = async function () {
     const apt = document.getElementById("masterBookApt").value;
     if (!apt) {
-        showToast("Моля, изберете апартамент!", "error");
+        showToast("Р СљР С•Р В»РЎРЏ, Р С‘Р В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ!", "error");
         return;
     }
 
     const mapping = [
-        { id: "book-Owner", key: "Собственик" },
-        { id: "book-Email", key: "Имейл" },
-        { id: "book-Occupants", key: "Обитатели" },
-        { id: "book-EntryDate", key: "Дата вписване" },
-        { id: "book-Pets", key: "Домашни любимци" },
-        { id: "book-Purpose", key: "Предназначение" }
+        { id: "book-Owner", key: "Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”" },
+        { id: "book-Email", key: "Р ВР СР ВµР в„–Р В»" },
+        { id: "book-Occupants", key: "Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘" },
+        { id: "book-EntryDate", key: "Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ" },
+        { id: "book-Pets", key: "Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘" },
+        { id: "book-Purpose", key: "Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ" }
     ];
 
     const updates = {};
@@ -992,7 +992,7 @@ window.submitBookData = async function () {
     });
 
     const btn = document.getElementById('book-save-btn');
-    showSaving(btn, "Записване...");
+    showSaving(btn, "Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...");
 
     try {
         const result = await apiCall('updateBookData', {
@@ -1002,15 +1002,15 @@ window.submitBookData = async function () {
         });
 
         if (result && result.success) {
-            showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
+            showToast("РІСљвЂ¦ Р С™Р Р…Р С‘Р С–Р В°РЎвЂљР В° Р Р…Р В° Р вЂўР РЋ Р Вµ РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р С•Р В±Р Р…Р С•Р Р†Р ВµР Р…Р В° Р В·Р В° " + apt, "success");
         } else {
-            showToast(result?.error || "Грешка при запис", "error");
+            showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓ", "error");
         }
     } catch (e) {
         console.error(e);
-        showToast("Възникна грешка при записа", "error");
+        showToast("Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓР В°", "error");
     } finally {
-        hideSaving(btn, "Запиши Промените");
+        hideSaving(btn, "Р вЂ”Р В°Р С—Р С‘РЎв‚¬Р С‘ Р СџРЎР‚Р С•Р СР ВµР Р…Р С‘РЎвЂљР Вµ");
     }
 }
 
@@ -1025,12 +1025,12 @@ window.submitCharges = async function () {
     const remont = document.getElementById("chargesRemont").value.trim();
 
     if (!period) {
-        showToast("Периодът е задължителен!", "error");
+        showToast("Р СџР ВµРЎР‚Р С‘Р С•Р Т‘РЎР‰РЎвЂљ Р Вµ Р В·Р В°Р Т‘РЎР‰Р В»Р В¶Р С‘РЎвЂљР ВµР В»Р ВµР Р…!", "error");
         return;
     }
 
     const btn = document.getElementById("chargesBtn");
-    showSaving(btn, "Записване...");
+    showSaving(btn, "Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...");
 
     const result = await apiCall('addCharges', {
         pin: getStoredPin(),
@@ -1044,10 +1044,10 @@ window.submitCharges = async function () {
         remont: remont
     });
 
-    hideSaving(btn, "Запиши начисления");
+    hideSaving(btn, "Р вЂ”Р В°Р С—Р С‘РЎв‚¬Р С‘ Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ");
 
     if (result && result.success) {
-        showToast("✅ Успешно записани начисления.", "success");
+        showToast("РІСљвЂ¦ Р Р€РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р В·Р В°Р С—Р С‘РЎРѓР В°Р Р…Р С‘ Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ.", "success");
         document.getElementById("chargesElevator").value = "";
         document.getElementById("chargesSubscription").value = "";
         document.getElementById("chargesLight").value = "";
@@ -1057,7 +1057,7 @@ window.submitCharges = async function () {
         document.getElementById("chargesRemont").value = "";
         refreshCurrentView();
     } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        showToast(result?.error || "Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°", "error");
     }
 }
 
@@ -1071,7 +1071,7 @@ window.loadCurrentEmail = async function () {
     const result = await apiCall('getEmail', { apartment: apt });
     if (result && typeof result.email !== 'undefined') {
         const span = document.getElementById("currentEmail");
-        span.textContent = result.email ? result.email : "Няма записан";
+        span.textContent = result.email ? result.email : "Р СњРЎРЏР СР В° Р В·Р В°Р С—Р С‘РЎРѓР В°Р Р…";
         document.getElementById("currentEmailBox").style.display = "block";
     }
 }
@@ -1081,12 +1081,12 @@ window.submitEmail = async function () {
     const email = document.getElementById("adminEmail").value.trim();
 
     if (!apt || !email) {
-        showToast("Изберете апартамент и имейл!", "error");
+        showToast("Р ВР В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ Р С‘ Р С‘Р СР ВµР в„–Р В»!", "error");
         return;
     }
 
     const btn = document.getElementById("emailBtn");
-    btn.textContent = "Записване...";
+    btn.textContent = "Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...";
 
     const result = await apiCall('addEmail', {
         pin: getStoredPin(),
@@ -1094,14 +1094,14 @@ window.submitEmail = async function () {
         email: email
     });
 
-    btn.textContent = "Запази имейл";
+    btn.textContent = "Р вЂ”Р В°Р С—Р В°Р В·Р С‘ Р С‘Р СР ВµР в„–Р В»";
 
     if (result && result.success) {
-        showToast("Имейлът е обновен.", "success");
+        showToast("Р ВР СР ВµР в„–Р В»РЎР‰РЎвЂљ Р Вµ Р С•Р В±Р Р…Р С•Р Р†Р ВµР Р….", "success");
         document.getElementById("adminEmail").value = "";
         loadCurrentEmail(); // Refresh current email display
     } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        showToast(result?.error || "Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°", "error");
     }
 }
 
@@ -1120,7 +1120,7 @@ window.switchMasterTab = function (tab, btn) {
     btn.classList.add("active");
 
     if (tab === 'zues') {
-        // Синьо когато е активно
+        // Р РЋР С‘Р Р…РЎРЉР С• Р С”Р С•Р С–Р В°РЎвЂљР С• Р Вµ Р В°Р С”РЎвЂљР С‘Р Р†Р Р…Р С•
         btn.style.background = "var(--primary)";
         btn.style.color = "white";
         btn.style.borderColor = "var(--primary)";
@@ -1129,34 +1129,34 @@ window.switchMasterTab = function (tab, btn) {
 }
 
 window.submitMaster = async function (sheetName) {
-    // В зависимост от подаденото име (Логика, и т.н.) събираме стойностите
+    // Р вЂ™ Р В·Р В°Р Р†Р С‘РЎРѓР С‘Р СР С•РЎРѓРЎвЂљ Р С•РЎвЂљ Р С—Р С•Р Т‘Р В°Р Т‘Р ВµР Р…Р С•РЎвЂљР С• Р С‘Р СР Вµ (Р вЂєР С•Р С–Р С‘Р С”Р В°, Р С‘ РЎвЂљ.Р Р….) РЎРѓРЎР‰Р В±Р С‘РЎР‚Р В°Р СР Вµ РЎРѓРЎвЂљР С•Р в„–Р Р…Р С•РЎРѓРЎвЂљР С‘РЎвЂљР Вµ
     let val, fromP, toP, apt;
 
-    if (sheetName === 'Логика') {
+    if (sheetName === 'Р вЂєР С•Р С–Р С‘Р С”Р В°') {
         val = document.getElementById('masterLogikaVal').value;
         fromP = document.getElementById('masterLogikaFrom').value.trim();
         toP = "12.2050"; 
         apt = "";
-    } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
+    } else if (sheetName === 'Р Р€Р В§Р С’Р РЋР СћР ВР вЂў_Р С’Р РЋР С’Р СњР РЋР В¬Р С›Р В ') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
         fromP = document.getElementById('masterUchFrom').value.trim();
         toP = "12.2050";
-    } else if (sheetName === 'ОБИТАТЕЛИ') {
+    } else if (sheetName === 'Р С›Р вЂР ВР СћР С’Р СћР вЂўР вЂєР В') {
         apt = document.getElementById('masterObApt').value;
         val = document.getElementById('masterObVal').value;
         fromP = document.getElementById('masterObFrom').value.trim();
         toP = "12.2050";
         if (val !== "" && parseInt(val) < 1) {
-            showToast("⚠️ Минималният брой е 1.", "error");
+            showToast("РІС™В РїС‘РЏ Р СљР С‘Р Р…Р С‘Р СР В°Р В»Р Р…Р С‘РЎРЏРЎвЂљ Р В±РЎР‚Р С•Р в„– Р Вµ 1.", "error");
             return;
         }
-    } else if (sheetName === 'ЧИПОВЕ') {
+    } else if (sheetName === 'Р В§Р ВР СџР С›Р вЂ™Р вЂў') {
         apt = document.getElementById('masterChApt').value;
         val = document.getElementById('masterChVal').value;
         fromP = document.getElementById('masterChFrom').value.trim();
         toP = "12.2050";
-    } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
+    } else if (sheetName === 'Р ВР вЂќР вЂўР С’Р вЂєР СњР В_Р В§Р С’Р РЋР СћР В') {
         apt = document.getElementById('masterIdApt').value;
         val = document.getElementById('masterIdVal').value;
         fromP = document.getElementById('masterIdFrom').value.trim();
@@ -1170,11 +1170,11 @@ window.submitMaster = async function (sheetName) {
         const lSub = document.getElementById('masterLinkSubscription').value.trim();
 
         if (!pText && !aEmail && !lElectric && !lSub) {
-            showToast("Моля, попълнете поне едно поле!", "error");
+            showToast("Р СљР С•Р В»РЎРЏ, Р С—Р С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ Р С—Р С•Р Р…Р Вµ Р ВµР Т‘Р Р…Р С• Р С—Р С•Р В»Р Вµ!", "error");
             return;
         }
 
-        // Пращаме го като обект, бекендът ще го разпознае
+        // Р СџРЎР‚Р В°РЎвЂ°Р В°Р СР Вµ Р С–Р С• Р С”Р В°РЎвЂљР С• Р С•Р В±Р ВµР С”РЎвЂљ, Р В±Р ВµР С”Р ВµР Р…Р Т‘РЎР‰РЎвЂљ РЎвЂ°Р Вµ Р С–Р С• РЎР‚Р В°Р В·Р С—Р С•Р В·Р Р…Р В°Р Вµ
         val = JSON.stringify({
             paymentInfo: pText,
 
@@ -1186,17 +1186,17 @@ window.submitMaster = async function (sheetName) {
         apt = "global";
     }
 
-    if (sheetName !== 'PAYMENT_INFO' && (!val || !fromP || (sheetName !== 'Логика' && !apt))) {
-        showToast("Моля, попълнете задължителните полета!", "error");
+    if (sheetName !== 'PAYMENT_INFO' && (!val || !fromP || (sheetName !== 'Р вЂєР С•Р С–Р С‘Р С”Р В°' && !apt))) {
+        showToast("Р СљР С•Р В»РЎРЏ, Р С—Р С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ Р В·Р В°Р Т‘РЎР‰Р В»Р В¶Р С‘РЎвЂљР ВµР В»Р Р…Р С‘РЎвЂљР Вµ Р С—Р С•Р В»Р ВµРЎвЂљР В°!", "error");
         return;
     }
 
-    // Изчистваме и намираме активния бутон, за да му сложим Loading State
+    // Р ВР В·РЎвЂЎР С‘РЎРѓРЎвЂљР Р†Р В°Р СР Вµ Р С‘ Р Р…Р В°Р СР С‘РЎР‚Р В°Р СР Вµ Р В°Р С”РЎвЂљР С‘Р Р†Р Р…Р С‘РЎРЏ Р В±РЎС“РЎвЂљР С•Р Р…, Р В·Р В° Р Т‘Р В° Р СРЎС“ РЎРѓР В»Р С•Р В¶Р С‘Р С Loading State
     const activeTabObj = document.querySelector(`.master-panel[style*="display: block"] button`);
-    const originalText = activeTabObj ? activeTabObj.textContent : "Запиши";
+    const originalText = activeTabObj ? activeTabObj.textContent : "Р вЂ”Р В°Р С—Р С‘РЎв‚¬Р С‘";
     if (activeTabObj) {
         activeTabObj.disabled = true;
-        activeTabObj.textContent = "Записване...";
+        activeTabObj.textContent = "Р вЂ”Р В°Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ...";
     }
 
     try {
@@ -1210,21 +1210,21 @@ window.submitMaster = async function (sheetName) {
         });
 
         if (result && result.success) {
-            showToast(`Успешно обновен регистър: ${sheetName}`, "success");
-            if (sheetName === 'ОБИТАТЕЛИ') {
+            showToast(`Р Р€РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р С•Р В±Р Р…Р С•Р Р†Р ВµР Р… РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‰РЎР‚: ${sheetName}`, "success");
+            if (sheetName === 'Р С›Р вЂР ВР СћР С’Р СћР вЂўР вЂєР В') {
                 const valInput = document.getElementById('masterObVal');
                 if (valInput) valInput.value = "";
             }
-            if (sheetName === 'ЧИПОВЕ') {
+            if (sheetName === 'Р В§Р ВР СџР С›Р вЂ™Р вЂў') {
                 const valInput = document.getElementById('masterChVal');
                 if (valInput) valInput.value = "";
             }
             refreshCurrentView();
         } else {
-            showToast(result?.error || "Възникна грешка", "error");
+            showToast(result?.error || "Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°", "error");
         }
     } catch (e) {
-        showToast("Сървърна грешка при запис", "error");
+        showToast("Р РЋРЎР‰РЎР‚Р Р†РЎР‰РЎР‚Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓ", "error");
     } finally {
         if (activeTabObj) {
             activeTabObj.disabled = false;
@@ -1237,11 +1237,11 @@ window.loadApartmentMasterSummary = async function () {
     const apt = document.getElementById("masterInfoApt").value;
     const container = document.getElementById("aptMasterSummary");
     if (!apt) {
-        container.innerHTML = '<p style="color:#666; font-style:italic;">Изберете апартамент...</p>';
+        container.innerHTML = '<p style="color:#666; font-style:italic;">Р ВР В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ...</p>';
         return;
     }
 
-    container.innerHTML = "⌛ Зареждане на информация...";
+    container.innerHTML = "РІРЉвЂє Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р С‘Р Р…РЎвЂћР С•РЎР‚Р СР В°РЎвЂ Р С‘РЎРЏ...";
 
     try {
         const res = await apiCall('getApartmentMasterSummary', { apartment: apt, pin: getStoredPin() });
@@ -1249,14 +1249,14 @@ window.loadApartmentMasterSummary = async function () {
             const d = res.data;
             container.innerHTML = `
                 <div style="background:rgba(0,122,255,0.05); padding:15px; border-radius:8px; border-left:4px solid var(--primary);">
-                    <h4 style="margin-bottom:10px;">📊 Статус за Апт. ${apt}</h4>
+                    <h4 style="margin-bottom:10px;">СЂСџвЂњР‰ Р РЋРЎвЂљР В°РЎвЂљРЎС“РЎРѓ Р В·Р В° Р С’Р С—РЎвЂљ. ${apt}</h4>
                     <ul style="list-style:none; padding:0;">
-                        <li><b>👥 Обитатели:</b> ${d.occupants || 0} бр.</li>
-                        <li><b>🔑 Чипове:</b> ${d.chips || 0} бр.</li>
-                        <li><b>🔘 Уч. асансьор:</b> ${d.participation === 'Да' ? '✅ Да' : '❌ Не'}</li>
-                        <li><b>📐 Идеални части:</b> ${d.idealParts || 0}%</li>
+                        <li><b>СЂСџвЂТђ Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘:</b> ${d.occupants || 0} Р В±РЎР‚.</li>
+                        <li><b>СЂСџвЂќвЂ Р В§Р С‘Р С—Р С•Р Р†Р Вµ:</b> ${d.chips || 0} Р В±РЎР‚.</li>
+                        <li><b>СЂСџвЂќВ Р Р€РЎвЂЎ. Р В°РЎРѓР В°Р Р…РЎРѓРЎРЉР С•РЎР‚:</b> ${d.participation === 'Р вЂќР В°' ? 'РІСљвЂ¦ Р вЂќР В°' : 'РІСњРЉ Р СњР Вµ'}</li>
+                        <li><b>СЂСџвЂњС’ Р ВР Т‘Р ВµР В°Р В»Р Р…Р С‘ РЎвЂЎР В°РЎРѓРЎвЂљР С‘:</b> ${d.idealParts || 0}%</li>
                     </ul>
-                    <p style="font-size:11px; color:#666; margin-top:10px;">* Посочените данни са от текущия MASTER регистър и се използват за следващите начисления.</p>
+                    <p style="font-size:11px; color:#666; margin-top:10px;">* Р СџР С•РЎРѓР С•РЎвЂЎР ВµР Р…Р С‘РЎвЂљР Вµ Р Т‘Р В°Р Р…Р Р…Р С‘ РЎРѓР В° Р С•РЎвЂљ РЎвЂљР ВµР С”РЎС“РЎвЂ°Р С‘РЎРЏ MASTER РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‰РЎР‚ Р С‘ РЎРѓР Вµ Р С‘Р В·Р С—Р С•Р В»Р В·Р Р†Р В°РЎвЂљ Р В·Р В° РЎРѓР В»Р ВµР Т‘Р Р†Р В°РЎвЂ°Р С‘РЎвЂљР Вµ Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ.</p>
                 </div>
             `;
 
@@ -1268,12 +1268,12 @@ window.loadApartmentMasterSummary = async function () {
                 input.value = d.notice || "";
             }
         } else {
-            container.innerHTML = '<p style="color:red;">Грешка при зареждане на данните.</p>';
+            container.innerHTML = '<p style="color:red;">Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р Т‘Р В°Р Р…Р Р…Р С‘РЎвЂљР Вµ.</p>';
             const editor = document.getElementById("aptNoticeEditor");
             if (editor) editor.style.display = "none";
         }
     } catch (e) {
-        container.innerHTML = '<p style="color:red;">Сървърна грешка.</p>';
+        container.innerHTML = '<p style="color:red;">Р РЋРЎР‰РЎР‚Р Р†РЎР‰РЎР‚Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°.</p>';
         const editor = document.getElementById("aptNoticeEditor");
         if (editor) editor.style.display = "none";
     }
@@ -1294,10 +1294,10 @@ window.submitAptNotice = async function () {
     hideLoading();
 
     if (result && result.success) {
-        showToast("Персоналното съобщение е запазено!", "success");
+        showToast("Р СџР ВµРЎР‚РЎРѓР С•Р Р…Р В°Р В»Р Р…Р С•РЎвЂљР С• РЎРѓРЎР‰Р С•Р В±РЎвЂ°Р ВµР Р…Р С‘Р Вµ Р Вµ Р В·Р В°Р С—Р В°Р В·Р ВµР Р…Р С•!", "success");
         refreshCurrentView();
     } else {
-        showToast(result?.error || "Грешка при запис", "error");
+        showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓ", "error");
     }
 }
 
@@ -1325,18 +1325,18 @@ window.closeSuperAdmin = function () {
 window.loginSuperAdmin = async function () {
     const pin = document.getElementById("superPinInput").value.trim();
     if (!pin) {
-        document.getElementById("superPinError").textContent = "Въведете парола!";
+        document.getElementById("superPinError").textContent = "Р вЂ™РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р С—Р В°РЎР‚Р С•Р В»Р В°!";
         return;
     }
 
-    // ПИН кодът се проверява централно през специалния endpoint verifySuperPin
+    // Р СџР ВР Сњ Р С”Р С•Р Т‘РЎР‰РЎвЂљ РЎРѓР Вµ Р С—РЎР‚Р С•Р Р†Р ВµРЎР‚РЎРЏР Р†Р В° РЎвЂ Р ВµР Р…РЎвЂљРЎР‚Р В°Р В»Р Р…Р С• Р С—РЎР‚Р ВµР В· РЎРѓР С—Р ВµРЎвЂ Р С‘Р В°Р В»Р Р…Р С‘РЎРЏ endpoint verifySuperPin
     const result = await apiCall('verifySuperPin', { pin: pin });
 
     if (result && result.success) {
         sessionStorage.setItem("superAdminAuth", pin);
         showSuperAdminDashboard();
     } else {
-        document.getElementById("superPinError").textContent = result.error || "Грешна парола за Супер Админ.";
+        document.getElementById("superPinError").textContent = result.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р Р…Р В° Р С—Р В°РЎР‚Р С•Р В»Р В° Р В·Р В° Р РЋРЎС“Р С—Р ВµРЎР‚ Р С’Р Т‘Р СР С‘Р Р….";
     }
 }
 
@@ -1370,7 +1370,7 @@ async function showSuperAdminDashboard() {
 
 window.saveSuperSettings = async function () {
     const btn = document.getElementById("saveSuperSettingsBtn");
-    showSaving(btn, "Запазване...");
+    showSaving(btn, "Р вЂ”Р В°Р С—Р В°Р В·Р Р†Р В°Р Р…Р Вµ...");
 
     try {
         const getVal = (id) => {
@@ -1393,15 +1393,15 @@ window.saveSuperSettings = async function () {
         });
 
         if (result && result.success) {
-            showToast("✅ Настройките са запазени успешно!", "success");
+            showToast("РІСљвЂ¦ Р СњР В°РЎРѓРЎвЂљРЎР‚Р С•Р в„–Р С”Р С‘РЎвЂљР Вµ РЎРѓР В° Р В·Р В°Р С—Р В°Р В·Р ВµР Р…Р С‘ РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С•!", "success");
         } else {
-            showToast(result.error || "Грешка при запазване", "error");
+            showToast(result.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р В°Р В·Р Р†Р В°Р Р…Р Вµ", "error");
         }
     } catch (e) {
         console.error(e);
-        showToast("Възникна грешка при запазване", "error");
+        showToast("Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р В°Р В·Р Р†Р В°Р Р…Р Вµ", "error");
     } finally {
-        hideSaving(btn, "Запази настройките");
+        hideSaving(btn, "Р вЂ”Р В°Р С—Р В°Р В·Р С‘ Р Р…Р В°РЎРѓРЎвЂљРЎР‚Р С•Р в„–Р С”Р С‘РЎвЂљР Вµ");
     }
 }
 
@@ -1418,7 +1418,7 @@ window.submitMasterNotice = async function () {
     hideLoading();
 
     if (result && result.success) {
-        showToast("Съобщението е запазено!", "success");
+        showToast("Р РЋРЎР‰Р С•Р В±РЎвЂ°Р ВµР Р…Р С‘Р ВµРЎвЂљР С• Р Вµ Р В·Р В°Р С—Р В°Р В·Р ВµР Р…Р С•!", "success");
         // Update local displays
         const banners = ["userEntranceNotice", "userEntranceNoticeHome"];
         const texts = ["userEntranceNoticeText", "userEntranceNoticeTextHome"];
@@ -1434,12 +1434,12 @@ window.submitMasterNotice = async function () {
                 if (t) t.innerHTML = formatted;
             });
 
-            // Изпращаме имейл до всички живущи с регистриран имейл
+            // Р ВР В·Р С—РЎР‚Р В°РЎвЂ°Р В°Р СР Вµ Р С‘Р СР ВµР в„–Р В» Р Т‘Р С• Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘ Р В¶Р С‘Р Р†РЎС“РЎвЂ°Р С‘ РЎРѓ РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‚Р С‘РЎР‚Р В°Р Р… Р С‘Р СР ВµР в„–Р В»
             if (notice !== "") {
                 apiCall('sendNoticeEmail', { pin: getStoredPin(), notice: notice })
                     .then(emailResult => {
                         if (emailResult && emailResult.success) {
-                            showToast(`📧 Имейлът е изпратен до ${emailResult.sent || 0} апартамента.`, "success");
+                            showToast(`СЂСџвЂњВ§ Р ВР СР ВµР в„–Р В»РЎР‰РЎвЂљ Р Вµ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂљР ВµР Р… Р Т‘Р С• ${emailResult.sent || 0} Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР В°.`, "success");
                         }
                     })
                     .catch(() => { });
@@ -1451,19 +1451,19 @@ window.submitMasterNotice = async function () {
             });
         }
     } else {
-        showToast(result?.error || "Грешка при запис", "error");
+        showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°Р С—Р С‘РЎРѓ", "error");
     }
 }
 
-// Изпращане на индивидуален имейл до конкретен апартамент
+// Р ВР В·Р С—РЎР‚Р В°РЎвЂ°Р В°Р Р…Р Вµ Р Р…Р В° Р С‘Р Р…Р Т‘Р С‘Р Р†Р С‘Р Т‘РЎС“Р В°Р В»Р ВµР Р… Р С‘Р СР ВµР в„–Р В» Р Т‘Р С• Р С”Р С•Р Р…Р С”РЎР‚Р ВµРЎвЂљР ВµР Р… Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ
 window.sendAptEmail = async function () {
     const apt = document.getElementById("emailAptTarget").value;
     const subject = document.getElementById("emailAptSubject").value.trim();
     const body = document.getElementById("emailAptBody").value.trim();
 
-    if (!apt) { showToast("Изберете апартамент!", "error"); return; }
-    if (!subject) { showToast("Попълнете тема на имейла!", "error"); return; }
-    if (!body) { showToast("Попълнете текст на имейла!", "error"); return; }
+    if (!apt) { showToast("Р ВР В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ!", "error"); return; }
+    if (!subject) { showToast("Р СџР С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ РЎвЂљР ВµР СР В° Р Р…Р В° Р С‘Р СР ВµР в„–Р В»Р В°!", "error"); return; }
+    if (!body) { showToast("Р СџР С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ РЎвЂљР ВµР С”РЎРѓРЎвЂљ Р Р…Р В° Р С‘Р СР ВµР в„–Р В»Р В°!", "error"); return; }
 
     showLoading();
     const result = await apiCall('sendAptEmail', {
@@ -1475,11 +1475,11 @@ window.sendAptEmail = async function () {
     hideLoading();
 
     if (result && result.success) {
-        showToast("✅ Имейлът е изпратен успешно!", "success");
+        showToast("РІСљвЂ¦ Р ВР СР ВµР в„–Р В»РЎР‰РЎвЂљ Р Вµ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂљР ВµР Р… РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С•!", "success");
         document.getElementById("emailAptSubject").value = "";
         document.getElementById("emailAptBody").value = "";
     } else {
-        showToast(result?.error || "Грешка при изпращане", "error");
+        showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂ°Р В°Р Р…Р Вµ", "error");
     }
 }
 
@@ -1487,7 +1487,7 @@ window.saveGlobalMessage = async function () {
     const btn = document.getElementById("saveGlobalMessageBtn");
     const msg = document.getElementById("superGlobalMessage").value.trim();
 
-    showSaving(btn, "Изпращане...");
+    showSaving(btn, "Р ВР В·Р С—РЎР‚Р В°РЎвЂ°Р В°Р Р…Р Вµ...");
 
     try {
         const result = await apiCall('updateGlobalMessage', {
@@ -1496,26 +1496,26 @@ window.saveGlobalMessage = async function () {
         });
 
         if (result && result.success) {
-            showToast("✅ Съобщението е изпратено до всички!", "success");
+            showToast("РІСљвЂ¦ Р РЋРЎР‰Р С•Р В±РЎвЂ°Р ВµР Р…Р С‘Р ВµРЎвЂљР С• Р Вµ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂљР ВµР Р…Р С• Р Т‘Р С• Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘!", "success");
         } else {
-            showToast(result.error || "Грешка при изпращане", "error");
+            showToast(result.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂ°Р В°Р Р…Р Вµ", "error");
         }
     } catch (e) {
-        showToast("Проблем при комуникация със сървъра", "error");
+        showToast("Р СџРЎР‚Р С•Р В±Р В»Р ВµР С Р С—РЎР‚Р С‘ Р С”Р С•Р СРЎС“Р Р…Р С‘Р С”Р В°РЎвЂ Р С‘РЎРЏ РЎРѓРЎР‰РЎРѓ РЎРѓРЎР‰РЎР‚Р Р†РЎР‰РЎР‚Р В°", "error");
     } finally {
-        hideSaving(btn, "Изпрати съобщение");
+        hideSaving(btn, "Р ВР В·Р С—РЎР‚Р В°РЎвЂљР С‘ РЎРѓРЎР‰Р С•Р В±РЎвЂ°Р ВµР Р…Р С‘Р Вµ");
     }
 }
 
 async function loadSuperAdminEntrances() {
     const tbody = document.getElementById("superAdminEntrancesList");
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ...</td></tr>';
 
     const result = await apiCall('getRegistryList');
     if (result && result.success && Array.isArray(result.registry)) {
         tbody.innerHTML = '';
         const select = document.getElementById("superExceptionRegistry");
-        if (select) select.innerHTML = '<option value="">-- Избери вход --</option>';
+        if (select) select.innerHTML = '<option value="">-- Р ВР В·Р В±Р ВµРЎР‚Р С‘ Р Р†РЎвЂ¦Р С•Р Т‘ --</option>';
 
         result.registry.forEach(ent => {
             if (select) select.appendChild(new Option(ent.name + " (" + ent.id + ")", ent.id));
@@ -1524,28 +1524,28 @@ async function loadSuperAdminEntrances() {
                 <td style="padding: 8px;"><b>${ent.name}</b></td>
                 <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
                 <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
-                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : (ent.validUntil || '---')}
+                    ${ent.validUntil === '2000-01-01' ? 'Р вЂР В»Р С•Р С”Р С‘РЎР‚Р В°Р Р…' : (ent.validUntil || '---')}
                 </td>
                 <td style="padding: 8px;">
                     <span class="status-badge" style="background:${ent.validUntil === '2000-01-01' ? '#fa5252' : '#4ade80'}; color:white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
-                        ${ent.validUntil === '2000-01-01' ? 'Спрян' : 'Активен'}
+                        ${ent.validUntil === '2000-01-01' ? 'Р РЋР С—РЎР‚РЎРЏР Р…' : 'Р С’Р С”РЎвЂљР С‘Р Р†Р ВµР Р…'}
                     </span>
                 </td>
                 <td style="padding: 8px;">
-                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
+                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 Р Т‘Р Р….</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Р РЋР С—РЎР‚Р С‘</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Р вЂР ВµР В·РЎРѓРЎР‚Р С•РЎвЂЎР ВµР Р…</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Грешка при зареждане.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ.</td></tr>';
     }
 }
 
 window.manageSub = async function (targetId, subAction) {
-    if (!confirm(`Сигурни ли сте, че искате да промените достъпа на ID: ${targetId}?`)) return;
+    if (!confirm(`Р РЋР С‘Р С–РЎС“РЎР‚Р Р…Р С‘ Р В»Р С‘ РЎРѓРЎвЂљР Вµ, РЎвЂЎР Вµ Р С‘РЎРѓР С”Р В°РЎвЂљР Вµ Р Т‘Р В° Р С—РЎР‚Р С•Р СР ВµР Р…Р С‘РЎвЂљР Вµ Р Т‘Р С•РЎРѓРЎвЂљРЎР‰Р С—Р В° Р Р…Р В° ID: ${targetId}?`)) return;
 
     const result = await apiCall('updateSubscription', {
         superPin: sessionStorage.getItem("superAdminAuth"),
@@ -1554,10 +1554,10 @@ window.manageSub = async function (targetId, subAction) {
     });
 
     if (result && result.success) {
-        showToast("Правата са обновени успешно!", "success");
+        showToast("Р СџРЎР‚Р В°Р Р†Р В°РЎвЂљР В° РЎРѓР В° Р С•Р В±Р Р…Р С•Р Р†Р ВµР Р…Р С‘ РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С•!", "success");
         loadSuperAdminEntrances();
     } else {
-        showToast(result?.error || "Грешка при обновяване", "error");
+        showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р С•Р В±Р Р…Р С•Р Р†РЎРЏР Р†Р В°Р Р…Р Вµ", "error");
     }
 }
 
@@ -1569,12 +1569,12 @@ window.submitNewClient = async function () {
     const aptCount = document.getElementById("newAptCount").value.trim();
 
     if (!city || !block || !entrance || !email || !aptCount) {
-        showToast("Моля, попълнете всички полета", "error");
+        showToast("Р СљР С•Р В»РЎРЏ, Р С—Р С•Р С—РЎР‰Р В»Р Р…Р ВµРЎвЂљР Вµ Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘ Р С—Р С•Р В»Р ВµРЎвЂљР В°", "error");
         return;
     }
 
     const btn = document.getElementById("createClientBtn");
-    btn.textContent = "Генериране (Изчакайте до 15 сек)...";
+    btn.textContent = "Р вЂњР ВµР Р…Р ВµРЎР‚Р С‘РЎР‚Р В°Р Р…Р Вµ (Р ВР В·РЎвЂЎР В°Р С”Р В°Р в„–РЎвЂљР Вµ Р Т‘Р С• 15 РЎРѓР ВµР С”)...";
 
     const result = await apiCall('createClient', {
         superPin: sessionStorage.getItem("superAdminAuth"),
@@ -1585,10 +1585,10 @@ window.submitNewClient = async function () {
         apartmentsCount: aptCount
     });
 
-    btn.textContent = "Създай Клиент & Генерирай Таблици";
+    btn.textContent = "Р РЋРЎР‰Р В·Р Т‘Р В°Р в„– Р С™Р В»Р С‘Р ВµР Р…РЎвЂљ & Р вЂњР ВµР Р…Р ВµРЎР‚Р С‘РЎР‚Р В°Р в„– Р СћР В°Р В±Р В»Р С‘РЎвЂ Р С‘";
 
     if (result && result.success) {
-        showToast("✅ Клиентът е създаден успешно! Имейлът е изпратен.", "success");
+        showToast("РІСљвЂ¦ Р С™Р В»Р С‘Р ВµР Р…РЎвЂљРЎР‰РЎвЂљ Р Вµ РЎРѓРЎР‰Р В·Р Т‘Р В°Р Т‘Р ВµР Р… РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С•! Р ВР СР ВµР в„–Р В»РЎР‰РЎвЂљ Р Вµ Р С‘Р В·Р С—РЎР‚Р В°РЎвЂљР ВµР Р….", "success");
         document.getElementById("newCity").value = "";
         document.getElementById("newBlock").value = "";
         document.getElementById("newEntrance").value = "";
@@ -1598,7 +1598,7 @@ window.submitNewClient = async function () {
         // Refresh dropdowns if necessary by refreshing page
         setTimeout(() => location.reload(), 3000);
     } else {
-        showToast(result?.error || "Грешка при създаване", "error");
+        showToast(result?.error || "Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ РЎРѓРЎР‰Р В·Р Т‘Р В°Р Р†Р В°Р Р…Р Вµ", "error");
     }
 }
 
@@ -1608,9 +1608,9 @@ window.runSystemBackup = async function () {
     const linkA = document.getElementById("backupFolderLink");
 
     btn.disabled = true;
-    btn.textContent = "Архивиране (Моля, изчакайте)...";
+    btn.textContent = "Р С’РЎР‚РЎвЂ¦Р С‘Р Р†Р С‘РЎР‚Р В°Р Р…Р Вµ (Р СљР С•Р В»РЎРЏ, Р С‘Р В·РЎвЂЎР В°Р С”Р В°Р в„–РЎвЂљР Вµ)...";
     statusDiv.style.display = "block";
-    statusDiv.innerHTML = "⏳ Обикаляне на всички входове и копиране на таблици...";
+    statusDiv.innerHTML = "РІРЏС– Р С›Р В±Р С‘Р С”Р В°Р В»РЎРЏР Р…Р Вµ Р Р…Р В° Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘ Р Р†РЎвЂ¦Р С•Р Т‘Р С•Р Р†Р Вµ Р С‘ Р С”Р С•Р С—Р С‘РЎР‚Р В°Р Р…Р Вµ Р Р…Р В° РЎвЂљР В°Р В±Р В»Р С‘РЎвЂ Р С‘...";
     statusDiv.style.color = "#666";
 
     const result = await apiCall('runBackup', {
@@ -1618,18 +1618,18 @@ window.runSystemBackup = async function () {
     });
 
     btn.disabled = false;
-    btn.textContent = "📦 Създай Ръчен Архив Сега";
+    btn.textContent = "СЂСџвЂњВ¦ Р РЋРЎР‰Р В·Р Т‘Р В°Р в„– Р В РЎР‰РЎвЂЎР ВµР Р… Р С’РЎР‚РЎвЂ¦Р С‘Р Р† Р РЋР ВµР С–Р В°";
 
     if (result && result.success) {
-        statusDiv.innerHTML = "✅ " + result.message;
+        statusDiv.innerHTML = "РІСљвЂ¦ " + result.message;
         statusDiv.style.color = "green";
         if (result.folderUrl) {
             linkA.href = result.folderUrl;
-            // Показваме и временен линк директно в статуса за удобство
-            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Виж новия архив тук ➔</a>`;
+            // Р СџР С•Р С”Р В°Р В·Р Р†Р В°Р СР Вµ Р С‘ Р Р†РЎР‚Р ВµР СР ВµР Р…Р ВµР Р… Р В»Р С‘Р Р…Р С” Р Т‘Р С‘РЎР‚Р ВµР С”РЎвЂљР Р…Р С• Р Р† РЎРѓРЎвЂљР В°РЎвЂљРЎС“РЎРѓР В° Р В·Р В° РЎС“Р Т‘Р С•Р В±РЎРѓРЎвЂљР Р†Р С•
+            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Р вЂ™Р С‘Р В¶ Р Р…Р С•Р Р†Р С‘РЎРЏ Р В°РЎР‚РЎвЂ¦Р С‘Р Р† РЎвЂљРЎС“Р С” РІС›вЂќ</a>`;
         }
     } else {
-        statusDiv.innerHTML = "❌ Грешка: " + (result?.error || "Проблем при архивиране");
+        statusDiv.innerHTML = "РІСњРЉ Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В°: " + (result?.error || "Р СџРЎР‚Р С•Р В±Р В»Р ВµР С Р С—РЎР‚Р С‘ Р В°РЎР‚РЎвЂ¦Р С‘Р Р†Р С‘РЎР‚Р В°Р Р…Р Вµ");
         statusDiv.style.color = "red";
     }
 }
@@ -1637,7 +1637,7 @@ window.runSystemBackup = async function () {
 async function loadSuperExceptions() {
     const list = document.getElementById("superAdminExceptionsList");
     if (!list) return;
-    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ...</td></tr>';
 
     const result = await apiCall('getSuperExceptions', {
         superPin: sessionStorage.getItem("superAdminAuth")
@@ -1649,15 +1649,15 @@ async function loadSuperExceptions() {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="padding:6px;">${ex.targetId}</td>
-                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Всички' : ex.apartment}</td>
+                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Р вЂ™РЎРѓР С‘РЎвЂЎР С”Р С‘' : ex.apartment}</td>
                 <td style="padding:6px;">${ex.price} EUR</td>
                 <td style="padding:6px;">${ex.validUntil}</td>
-                <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">✕</button></td>
+                <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">РІСљвЂў</button></td>
             `;
             list.appendChild(tr);
         });
     } else {
-        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">Няма активни изключения.</td></tr>';
+        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">Р СњРЎРЏР СР В° Р В°Р С”РЎвЂљР С‘Р Р†Р Р…Р С‘ Р С‘Р В·Р С”Р В»РЎР‹РЎвЂЎР ВµР Р…Р С‘РЎРЏ.</td></tr>';
     }
 }
 
@@ -1668,7 +1668,7 @@ window.addSuperException = async function () {
     const validUntil = document.getElementById("superExceptionDate").value;
 
     if (!targetId || price === "") {
-        showToast("Изберете вход и ценова стойност!", "error");
+        showToast("Р ВР В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р Р†РЎвЂ¦Р С•Р Т‘ Р С‘ РЎвЂ Р ВµР Р…Р С•Р Р†Р В° РЎРѓРЎвЂљР С•Р в„–Р Р…Р С•РЎРѓРЎвЂљ!", "error");
         return;
     }
 
@@ -1681,31 +1681,31 @@ window.addSuperException = async function () {
     });
 
     if (res && res.success) {
-        showToast("Специалната цена е добавена!", "success");
+        showToast("Р РЋР С—Р ВµРЎвЂ Р С‘Р В°Р В»Р Р…Р В°РЎвЂљР В° РЎвЂ Р ВµР Р…Р В° Р Вµ Р Т‘Р С•Р В±Р В°Р Р†Р ВµР Р…Р В°!", "success");
         document.getElementById("superExceptionApt").value = "";
         document.getElementById("superExceptionPrice").value = "";
         loadSuperExceptions();
     } else {
-        showToast(res?.error || "Възникна грешка", "error");
+        showToast(res?.error || "Р вЂ™РЎР‰Р В·Р Р…Р С‘Р С”Р Р…Р В° Р С–РЎР‚Р ВµРЎв‚¬Р С”Р В°", "error");
     }
 }
 
 window.deleteSuperException = async function (rowIdx) {
-    if (!confirm("Сигурни ли сте, че искате да премахнете това изключение?")) return;
+    if (!confirm("Р РЋР С‘Р С–РЎС“РЎР‚Р Р…Р С‘ Р В»Р С‘ РЎРѓРЎвЂљР Вµ, РЎвЂЎР Вµ Р С‘РЎРѓР С”Р В°РЎвЂљР Вµ Р Т‘Р В° Р С—РЎР‚Р ВµР СР В°РЎвЂ¦Р Р…Р ВµРЎвЂљР Вµ РЎвЂљР С•Р Р†Р В° Р С‘Р В·Р С”Р В»РЎР‹РЎвЂЎР ВµР Р…Р С‘Р Вµ?")) return;
     const res = await apiCall('deleteSuperException', {
         superPin: sessionStorage.getItem("superAdminAuth"),
         rowIdx: rowIdx
     });
     if (res && res.success) {
-        showToast("Изключението е премахнато", "success");
+        showToast("Р ВР В·Р С”Р В»РЎР‹РЎвЂЎР ВµР Р…Р С‘Р ВµРЎвЂљР С• Р Вµ Р С—РЎР‚Р ВµР СР В°РЎвЂ¦Р Р…Р В°РЎвЂљР С•", "success");
         loadSuperExceptions();
     } else {
-        showToast("Грешка при изтриване", "error");
+        showToast("Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р С‘Р В·РЎвЂљРЎР‚Р С‘Р Р†Р В°Р Р…Р Вµ", "error");
     }
 }
 
 // ==============================================
-// ⚖️ ЗУЕС МЕНИДЖЪР ЛОГИКА
+// РІС™вЂ“РїС‘РЏ Р вЂ”Р Р€Р вЂўР РЋ Р СљР вЂўР СњР ВР вЂќР вЂ“Р Р„Р В  Р вЂєР С›Р вЂњР ВР С™Р С’
 // ==============================================
 
 window.switchZuesSubTab = function (subId) {
@@ -1722,21 +1722,21 @@ window.switchZuesSubTab = function (subId) {
 }
 
 // ==============================================
-// 📋 ЦЯЛА ДОМОВА КНИГА
+// СЂСџвЂњвЂ№ Р В¦Р Р‡Р вЂєР С’ Р вЂќР С›Р СљР С›Р вЂ™Р С’ Р С™Р СњР ВР вЂњР С’
 // ==============================================
 
-let _fullBookData = []; // кеш за търсене
+let _fullBookData = []; // Р С”Р ВµРЎв‚¬ Р В·Р В° РЎвЂљРЎР‰РЎР‚РЎРѓР ВµР Р…Р Вµ
 
 window.loadFullBook = async function () {
     const tbody = document.getElementById("fullBookBody");
     const status = document.getElementById("fullBookStatus");
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">⏳ Зареждане...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">РІРЏС– Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ...</td></tr>';
     if (status) status.textContent = "";
 
     const result = await apiCall('getFullBook', { pin: getStoredPin() });
 
     if (!result || !result.success) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">❌ Грешка при зареждане</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">РІСњРЉ Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ</td></tr>';
         return;
     }
 
@@ -1744,31 +1744,31 @@ window.loadFullBook = async function () {
     renderBookTable(_fullBookData);
 
     if (status) {
-        const filled = _fullBookData.filter(r => r["Собственик"] && r["Собственик"].trim() !== "").length;
-        status.textContent = `Общо: ${_fullBookData.length} апартамента | Попълнени: ${filled} | Непопълнени: ${_fullBookData.length - filled}`;
+        const filled = _fullBookData.filter(r => r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"] && r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"].trim() !== "").length;
+        status.textContent = `Р С›Р В±РЎвЂ°Р С•: ${_fullBookData.length} Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР В° | Р СџР С•Р С—РЎР‰Р В»Р Р…Р ВµР Р…Р С‘: ${filled} | Р СњР ВµР С—Р С•Р С—РЎР‰Р В»Р Р…Р ВµР Р…Р С‘: ${_fullBookData.length - filled}`;
     }
 }
 
 function renderBookTable(rows) {
     const tbody = document.getElementById("fullBookBody");
     if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Няма данни в книгата.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Р СњРЎРЏР СР В° Р Т‘Р В°Р Р…Р Р…Р С‘ Р Р† Р С”Р Р…Р С‘Р С–Р В°РЎвЂљР В°.</td></tr>';
         return;
     }
 
     tbody.innerHTML = rows.map((r, idx) => {
-        const hasMissing = !r["Собственик"] || r["Собственик"].trim() === "";
+        const hasMissing = !r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"] || r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"].trim() === "";
         const bg = hasMissing ? "background:#fffbf0;" : (idx % 2 === 0 ? "" : "background:#fafbfd;");
-        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">⚠️</span>' : '';
+        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">РІС™В РїС‘РЏ</span>' : '';
 
-        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["Апартамент"] || ""}'; loadBookData();">
-            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["Апартамент"] || "—"}${missingMark}</td>
-            <td style="padding:9px 12px;">${r["Собственик"] || '<span style="color:#ccc;">непопълнено</span>'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Имейл"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Обитатели"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Предназначение"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Дата вписване"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Домашни любимци"] || '—'}</td>
+        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["Р С’Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ"] || ""}'; loadBookData();">
+            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["Р С’Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ"] || "РІР‚вЂќ"}${missingMark}</td>
+            <td style="padding:9px 12px;">${r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"] || '<span style="color:#ccc;">Р Р…Р ВµР С—Р С•Р С—РЎР‰Р В»Р Р…Р ВµР Р…Р С•</span>'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р ВР СР ВµР в„–Р В»"] || 'РІР‚вЂќ'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘"] || 'РІР‚вЂќ'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ"] || 'РІР‚вЂќ'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ"] || 'РІР‚вЂќ'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘"] || 'РІР‚вЂќ'}</td>
         </tr>`;
     }).join('');
 }
@@ -1784,29 +1784,29 @@ window.filterBookTable = function () {
     );
     renderBookTable(filtered);
     const status = document.getElementById("fullBookStatus");
-    if (status) status.textContent = `Намерени: ${filtered.length} от ${_fullBookData.length} апартамента`;
+    if (status) status.textContent = `Р СњР В°Р СР ВµРЎР‚Р ВµР Р…Р С‘: ${filtered.length} Р С•РЎвЂљ ${_fullBookData.length} Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР В°`;
 }
 
 window.printFullBook = function () {
     if (!_fullBookData || _fullBookData.length === 0) {
-        showToast("Заредете книгата преди печат!", "error");
+        showToast("Р вЂ”Р В°РЎР‚Р ВµР Т‘Р ВµРЎвЂљР Вµ Р С”Р Р…Р С‘Р С–Р В°РЎвЂљР В° Р С—РЎР‚Р ВµР Т‘Р С‘ Р С—Р ВµРЎвЂЎР В°РЎвЂљ!", "error");
         return;
     }
 
     const rows = _fullBookData.map((r, idx) => `
         <tr style="${idx % 2 === 0 ? '' : 'background:#f9f9f9;'}">
-            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["Апартамент"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Собственик"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["Имейл"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Обитатели"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Предназначение"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Дата вписване"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Домашни любимци"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["Р С’Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["Р ВР СР ВµР в„–Р В»"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ"] || "РІР‚вЂќ"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘"] || "РІР‚вЂќ"}</td>
         </tr>`).join('');
 
     const html = `<!DOCTYPE html><html><head>
         <meta charset="UTF-8">
-        <title>Домова книга — Чл. 7 от ЗУЕС</title>
+        <title>Р вЂќР С•Р СР С•Р Р†Р В° Р С”Р Р…Р С‘Р С–Р В° РІР‚вЂќ Р В§Р В». 7 Р С•РЎвЂљ Р вЂ”Р Р€Р вЂўР РЋ</title>
         <style>
             body { font-family: Arial, sans-serif; font-size: 13px; padding: 30px; color: #222; }
             h2 { text-align: center; margin-bottom: 4px; }
@@ -1816,19 +1816,19 @@ window.printFullBook = function () {
             @media print { button { display: none; } }
         </style>
     </head><body>
-        <h2>📋 ДОМОВА КНИГА — Книга на етажната собственост (Чл. 7 от ЗУЕС)</h2>
-        <p class="subtitle">Дата на извличане: ${new Date().toLocaleDateString('bg-BG')} г. | Общо апартаменти: ${_fullBookData.length}</p>
+        <h2>СЂСџвЂњвЂ№ Р вЂќР С›Р СљР С›Р вЂ™Р С’ Р С™Р СњР ВР вЂњР С’ РІР‚вЂќ Р С™Р Р…Р С‘Р С–Р В° Р Р…Р В° Р ВµРЎвЂљР В°Р В¶Р Р…Р В°РЎвЂљР В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ (Р В§Р В». 7 Р С•РЎвЂљ Р вЂ”Р Р€Р вЂўР РЋ)</h2>
+        <p class="subtitle">Р вЂќР В°РЎвЂљР В° Р Р…Р В° Р С‘Р В·Р Р†Р В»Р С‘РЎвЂЎР В°Р Р…Р Вµ: ${new Date().toLocaleDateString('bg-BG')} Р С–. | Р С›Р В±РЎвЂ°Р С• Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР С‘: ${_fullBookData.length}</p>
         <table>
             <thead><tr>
-                <th>Апт.</th><th>Собственик/ци</th><th>Имейл</th>
-                <th>Обитатели</th><th>Предназн.</th><th>Дата вписване</th><th>Домашни</th>
+                <th>Р С’Р С—РЎвЂљ.</th><th>Р РЋР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”/РЎвЂ Р С‘</th><th>Р ВР СР ВµР в„–Р В»</th>
+                <th>Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘</th><th>Р СџРЎР‚Р ВµР Т‘Р Р…Р В°Р В·Р Р….</th><th>Р вЂќР В°РЎвЂљР В° Р Р†Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ</th><th>Р вЂќР С•Р СР В°РЎв‚¬Р Р…Р С‘</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>
         <div style="margin-top:30px; font-size:11px; color:#888; text-align:right;">
-            Управлявано от системата за управление на ЕС
+            Р Р€Р С—РЎР‚Р В°Р Р†Р В»РЎРЏР Р†Р В°Р Р…Р С• Р С•РЎвЂљ РЎРѓР С‘РЎРѓРЎвЂљР ВµР СР В°РЎвЂљР В° Р В·Р В° РЎС“Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Р Р…Р В° Р вЂўР РЋ
         </div>
-        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">🖨️ Печат</button>
+        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">СЂСџвЂ“РЃРїС‘РЏ Р СџР ВµРЎвЂЎР В°РЎвЂљ</button>
     </body></html>`;
 
     const win = window.open('', '_blank');
@@ -1840,7 +1840,7 @@ window.printFullBook = function () {
 window.populateAttendanceTable = async function () {
     const list = document.getElementById("meeting-attendance-list");
     if (!list) return;
-    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">⏳ Зареждане на данни...</td></tr>';
+    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">РІРЏС– Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р Т‘Р В°Р Р…Р Р…Р С‘...</td></tr>';
 
     try {
         const result = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
@@ -1865,7 +1865,7 @@ window.populateAttendanceTable = async function () {
         });
         calculateQuorum();
     } catch (e) {
-        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Грешка при зареждане на идеалните части.</td></tr>';
+        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Р вЂњРЎР‚Р ВµРЎв‚¬Р С”Р В° Р С—РЎР‚Р С‘ Р В·Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ Р Р…Р В° Р С‘Р Т‘Р ВµР В°Р В»Р Р…Р С‘РЎвЂљР Вµ РЎвЂЎР В°РЎРѓРЎвЂљР С‘.</td></tr>';
     }
 }
 
@@ -1881,35 +1881,35 @@ window.calculateQuorum = function () {
 
     if (s) {
         if (total >= 67) {
-            s.innerText = "✅ Има кворум (над 67%)";
+            s.innerText = "РІСљвЂ¦ Р ВР СР В° Р С”Р Р†Р С•РЎР‚РЎС“Р С (Р Р…Р В°Р Т‘ 67%)";
             s.style.color = "green";
         } else if (total >= 51) {
-            s.innerText = "🔶 Кворум за отложено събрание (над 51%)";
+            s.innerText = "СЂСџвЂќВ¶ Р С™Р Р†Р С•РЎР‚РЎС“Р С Р В·Р В° Р С•РЎвЂљР В»Р С•Р В¶Р ВµР Р…Р С• РЎРѓРЎР‰Р В±РЎР‚Р В°Р Р…Р С‘Р Вµ (Р Р…Р В°Р Т‘ 51%)";
             s.style.color = "orange";
         } else {
-            s.innerText = "❌ Няма кворум (необходими 67%)";
+            s.innerText = "РІСњРЉ Р СњРЎРЏР СР В° Р С”Р Р†Р С•РЎР‚РЎС“Р С (Р Р…Р ВµР С•Р В±РЎвЂ¦Р С•Р Т‘Р С‘Р СР С‘ 67%)";
             s.style.color = "red";
         }
     }
 }
 
 window.printAttendanceList = function () {
-    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const agenda = document.getElementById("meetingAgenda").value || "Р вЂњР ВµР Р…Р ВµРЎР‚Р В°Р В»Р ВµР Р… Р Т‘Р Р…Р ВµР Р†Р ВµР Р… РЎР‚Р ВµР Т‘";
     const now = new Date();
 
     let html = `
         <div style="font-family: Arial, sans-serif; padding: 40px; line-height: 1.6;">
-            <h2 style="text-align:center;">ПРИСЪСТВЕН СПИСЪК</h2>
-            <p style="text-align:center;">на собствениците/обитателите в етажна собственост</p>
-            <p><strong>Дата:</strong> ${now.toLocaleDateString('bg-BG')} г.</p>
-            <p><strong>Дневен ред:</strong> ${agenda}</p>
+            <h2 style="text-align:center;">Р СџР В Р ВР РЋР Р„Р РЋР СћР вЂ™Р вЂўР Сњ Р РЋР СџР ВР РЋР Р„Р С™</h2>
+            <p style="text-align:center;">Р Р…Р В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘РЎвЂ Р С‘РЎвЂљР Вµ/Р С•Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘РЎвЂљР Вµ Р Р† Р ВµРЎвЂљР В°Р В¶Р Р…Р В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ</p>
+            <p><strong>Р вЂќР В°РЎвЂљР В°:</strong> ${now.toLocaleDateString('bg-BG')} Р С–.</p>
+            <p><strong>Р вЂќР Р…Р ВµР Р†Р ВµР Р… РЎР‚Р ВµР Т‘:</strong> ${agenda}</p>
             <table border="1" style="width:100%; border-collapse: collapse; margin-top:20px;">
                 <thead>
                     <tr style="background:#eee;">
-                        <th style="padding:8px;">Апт.</th>
-                        <th style="padding:8px;">Представени Ид.части %</th>
-                        <th style="padding:8px;">Име на присъстващия / Пълномощник</th>
-                        <th style="padding:8px;">Подпис</th>
+                        <th style="padding:8px;">Р С’Р С—РЎвЂљ.</th>
+                        <th style="padding:8px;">Р СџРЎР‚Р ВµР Т‘РЎРѓРЎвЂљР В°Р Р†Р ВµР Р…Р С‘ Р ВР Т‘.РЎвЂЎР В°РЎРѓРЎвЂљР С‘ %</th>
+                        <th style="padding:8px;">Р ВР СР Вµ Р Р…Р В° Р С—РЎР‚Р С‘РЎРѓРЎР‰РЎРѓРЎвЂљР Р†Р В°РЎвЂ°Р С‘РЎРЏ / Р СџРЎР‰Р В»Р Р…Р С•Р СР С•РЎвЂ°Р Р…Р С‘Р С”</th>
+                        <th style="padding:8px;">Р СџР С•Р Т‘Р С—Р С‘РЎРѓ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1933,8 +1933,8 @@ window.printAttendanceList = function () {
                 </tbody>
             </table>
             <div style="margin-top:30px;">
-                <p>Председател на събранието: ____________________</p>
-                <p>Протоколчик: ____________________</p>
+                <p>Р СџРЎР‚Р ВµР Т‘РЎРѓР ВµР Т‘Р В°РЎвЂљР ВµР В» Р Р…Р В° РЎРѓРЎР‰Р В±РЎР‚Р В°Р Р…Р С‘Р ВµРЎвЂљР С•: ____________________</p>
+                <p>Р СџРЎР‚Р С•РЎвЂљР С•Р С”Р С•Р В»РЎвЂЎР С‘Р С”: ____________________</p>
             </div>
         </div>
     `;
@@ -1946,27 +1946,27 @@ window.printAttendanceList = function () {
 }
 
 window.generateMeetingMinutes = function () {
-    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const agenda = document.getElementById("meetingAgenda").value || "Р вЂњР ВµР Р…Р ВµРЎР‚Р В°Р В»Р ВµР Р… Р Т‘Р Р…Р ВµР Р†Р ВµР Р… РЎР‚Р ВµР Т‘";
     const quorum = document.getElementById("quorum-percent").innerText;
     const now = new Date();
 
     let html = `
         <div style="font-family: Times New Roman, serif; padding: 50px; line-height: 1.5; color: #000;">
-            <h2 style="text-align:center; text-decoration: underline;">ПРОТОКОЛ №____</h2>
-            <h3 style="text-align:center;">от Общо събрание на собствениците</h3>
-            <p>Днес, ${now.toLocaleDateString('bg-BG')} г., се проведе общо събрание на етажната собственост.</p>
-            <p><strong>Представени идеални части:</strong> ${quorum}</p>
-            <p><strong>Дневен ред:</strong></p>
+            <h2 style="text-align:center; text-decoration: underline;">Р СџР В Р С›Р СћР С›Р С™Р С›Р вЂє РІвЂћвЂ“____</h2>
+            <h3 style="text-align:center;">Р С•РЎвЂљ Р С›Р В±РЎвЂ°Р С• РЎРѓРЎР‰Р В±РЎР‚Р В°Р Р…Р С‘Р Вµ Р Р…Р В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘РЎвЂ Р С‘РЎвЂљР Вµ</h3>
+            <p>Р вЂќР Р…Р ВµРЎРѓ, ${now.toLocaleDateString('bg-BG')} Р С–., РЎРѓР Вµ Р С—РЎР‚Р С•Р Р†Р ВµР Т‘Р Вµ Р С•Р В±РЎвЂ°Р С• РЎРѓРЎР‰Р В±РЎР‚Р В°Р Р…Р С‘Р Вµ Р Р…Р В° Р ВµРЎвЂљР В°Р В¶Р Р…Р В°РЎвЂљР В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ.</p>
+            <p><strong>Р СџРЎР‚Р ВµР Т‘РЎРѓРЎвЂљР В°Р Р†Р ВµР Р…Р С‘ Р С‘Р Т‘Р ВµР В°Р В»Р Р…Р С‘ РЎвЂЎР В°РЎРѓРЎвЂљР С‘:</strong> ${quorum}</p>
+            <p><strong>Р вЂќР Р…Р ВµР Р†Р ВµР Р… РЎР‚Р ВµР Т‘:</strong></p>
             <p>${agenda}</p>
             <hr>
-            <p><strong>ХОД НА СЪБРАНИЕТО И ПРИЕТИ РЕШЕНИЯ:</strong></p>
+            <p><strong>Р ТђР С›Р вЂќ Р СњР С’ Р РЋР Р„Р вЂР В Р С’Р СњР ВР вЂўР СћР С› Р В Р СџР В Р ВР вЂўР СћР В Р В Р вЂўР РЃР вЂўР СњР ВР Р‡:</strong></p>
             <div style="min-height: 300px; border: 1px dashed #ccc; padding: 10px;">
-                <em>[Тук опишете дискусиите и гласуванията за всяка точка...]</em>
+                <em>[Р СћРЎС“Р С” Р С•Р С—Р С‘РЎв‚¬Р ВµРЎвЂљР Вµ Р Т‘Р С‘РЎРѓР С”РЎС“РЎРѓР С‘Р С‘РЎвЂљР Вµ Р С‘ Р С–Р В»Р В°РЎРѓРЎС“Р Р†Р В°Р Р…Р С‘РЎРЏРЎвЂљР В° Р В·Р В° Р Р†РЎРѓРЎРЏР С”Р В° РЎвЂљР С•РЎвЂЎР С”Р В°...]</em>
             </div>
-            <p style="margin-top:40px;">Протоколът е съставен съгласно Чл. 16 от ЗУЕС.</p>
+            <p style="margin-top:40px;">Р СџРЎР‚Р С•РЎвЂљР С•Р С”Р С•Р В»РЎР‰РЎвЂљ Р Вµ РЎРѓРЎР‰РЎРѓРЎвЂљР В°Р Р†Р ВµР Р… РЎРѓРЎР‰Р С–Р В»Р В°РЎРѓР Р…Р С• Р В§Р В». 16 Р С•РЎвЂљ Р вЂ”Р Р€Р вЂўР РЋ.</p>
             <div style="display:flex; justify-content: space-between; margin-top:50px;">
-                <div>Председател: ......................</div>
-                <div>Протоколчик: ......................</div>
+                <div>Р СџРЎР‚Р ВµР Т‘РЎРѓР ВµР Т‘Р В°РЎвЂљР ВµР В»: ......................</div>
+                <div>Р СџРЎР‚Р С•РЎвЂљР С•Р С”Р С•Р В»РЎвЂЎР С‘Р С”: ......................</div>
             </div>
         </div>
     `;
@@ -1979,35 +1979,35 @@ window.generateMeetingMinutes = function () {
 window.printOwnerDeclaration = async function () {
     const apt = document.getElementById("docAptSelect").value;
     if (!apt) {
-        showToast("Моля, изберете апартамент", "warning");
+        showToast("Р СљР С•Р В»РЎРЏ, Р С‘Р В·Р В±Р ВµРЎР‚Р ВµРЎвЂљР Вµ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ", "warning");
         return;
     }
 
-    // Зареждаме данните от Книгата (ако са налични)
+    // Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р СР Вµ Р Т‘Р В°Р Р…Р Р…Р С‘РЎвЂљР Вµ Р С•РЎвЂљ Р С™Р Р…Р С‘Р С–Р В°РЎвЂљР В° (Р В°Р С”Р С• РЎРѓР В° Р Р…Р В°Р В»Р С‘РЎвЂЎР Р…Р С‘)
     const result = await apiCall('getBookData', { apartment: apt });
     const data = result?.data || {};
 
     let html = `
         <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6;">
-            <h2 style="text-align:center;">ДЕКЛАРАЦИЯ</h2>
-            <p style="text-align:center;">по Чл. 47, ал. 2 от Закона за управление на етажната собственост</p>
+            <h2 style="text-align:center;">Р вЂќР вЂўР С™Р вЂєР С’Р В Р С’Р В¦Р ВР Р‡</h2>
+            <p style="text-align:center;">Р С—Р С• Р В§Р В». 47, Р В°Р В». 2 Р С•РЎвЂљ Р вЂ”Р В°Р С”Р С•Р Р…Р В° Р В·Р В° РЎС“Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Р Р…Р В° Р ВµРЎвЂљР В°Р В¶Р Р…Р В°РЎвЂљР В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ</p>
             <br>
-            <p>До Управителния съвет / Управителя на ЕС</p>
-            <p><strong>ОТНОСНО:</strong> Вписване на данни в Книгата на етажната собственост</p>
+            <p>Р вЂќР С• Р Р€Р С—РЎР‚Р В°Р Р†Р С‘РЎвЂљР ВµР В»Р Р…Р С‘РЎРЏ РЎРѓРЎР‰Р Р†Р ВµРЎвЂљ / Р Р€Р С—РЎР‚Р В°Р Р†Р С‘РЎвЂљР ВµР В»РЎРЏ Р Р…Р В° Р вЂўР РЋ</p>
+            <p><strong>Р С›Р СћР СњР С›Р РЋР СњР С›:</strong> Р вЂ™Р С—Р С‘РЎРѓР Р†Р В°Р Р…Р Вµ Р Р…Р В° Р Т‘Р В°Р Р…Р Р…Р С‘ Р Р† Р С™Р Р…Р С‘Р С–Р В°РЎвЂљР В° Р Р…Р В° Р ВµРЎвЂљР В°Р В¶Р Р…Р В°РЎвЂљР В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С•РЎРѓРЎвЂљ</p>
             <br>
-            <p>Долуподписаният/ата: <strong>${data.Owner || '..........................................................'}</strong></p>
-            <p>В качеството ми на собственик/ползвател на самостоятелен обект <strong>№ ${apt}</strong></p>
+            <p>Р вЂќР С•Р В»РЎС“Р С—Р С•Р Т‘Р С—Р С‘РЎРѓР В°Р Р…Р С‘РЎРЏРЎвЂљ/Р В°РЎвЂљР В°: <strong>${data.Owner || '..........................................................'}</strong></p>
+            <p>Р вЂ™ Р С”Р В°РЎвЂЎР ВµРЎРѓРЎвЂљР Р†Р С•РЎвЂљР С• Р СР С‘ Р Р…Р В° РЎРѓР С•Р В±РЎРѓРЎвЂљР Р†Р ВµР Р…Р С‘Р С”/Р С—Р С•Р В»Р В·Р Р†Р В°РЎвЂљР ВµР В» Р Р…Р В° РЎРѓР В°Р СР С•РЎРѓРЎвЂљР С•РЎРЏРЎвЂљР ВµР В»Р ВµР Р… Р С•Р В±Р ВµР С”РЎвЂљ <strong>РІвЂћвЂ“ ${apt}</strong></p>
             <br>
-            <p><strong>ДЕКЛАРИРАМ СЛЕДНИТЕ ОБСТОЯТЕЛСТВА:</strong></p>
-            <p>1. Членове на моето домакинство / Обитатели: <br><em>${data.Occupants || '..........................................................'}</em></p>
-            <p>2. Притежавани домашни любимци: <em>${data.Pets || 'Няма'}</em></p>
-            <p>3. Използвам обекта за: <em>${data.Purpose || 'Жилищни нужди'}</em></p>
+            <p><strong>Р вЂќР вЂўР С™Р вЂєР С’Р В Р ВР В Р С’Р Сљ Р РЋР вЂєР вЂўР вЂќР СњР ВР СћР вЂў Р С›Р вЂР РЋР СћР С›Р Р‡Р СћР вЂўР вЂєР РЋР СћР вЂ™Р С’:</strong></p>
+            <p>1. Р В§Р В»Р ВµР Р…Р С•Р Р†Р Вµ Р Р…Р В° Р СР С•Р ВµРЎвЂљР С• Р Т‘Р С•Р СР В°Р С”Р С‘Р Р…РЎРѓРЎвЂљР Р†Р С• / Р С›Р В±Р С‘РЎвЂљР В°РЎвЂљР ВµР В»Р С‘: <br><em>${data.Occupants || '..........................................................'}</em></p>
+            <p>2. Р СџРЎР‚Р С‘РЎвЂљР ВµР В¶Р В°Р Р†Р В°Р Р…Р С‘ Р Т‘Р С•Р СР В°РЎв‚¬Р Р…Р С‘ Р В»РЎР‹Р В±Р С‘Р СРЎвЂ Р С‘: <em>${data.Pets || 'Р СњРЎРЏР СР В°'}</em></p>
+            <p>3. Р ВР В·Р С—Р С•Р В»Р В·Р Р†Р В°Р С Р С•Р В±Р ВµР С”РЎвЂљР В° Р В·Р В°: <em>${data.Purpose || 'Р вЂ“Р С‘Р В»Р С‘РЎвЂ°Р Р…Р С‘ Р Р…РЎС“Р В¶Р Т‘Р С‘'}</em></p>
             <br>
-            <p>Известно ми е, че за декларирани неверни данни нося наказателна отговорност по чл. 313 от Наказателния кодекс.</p>
+            <p>Р ВР В·Р Р†Р ВµРЎРѓРЎвЂљР Р…Р С• Р СР С‘ Р Вµ, РЎвЂЎР Вµ Р В·Р В° Р Т‘Р ВµР С”Р В»Р В°РЎР‚Р С‘РЎР‚Р В°Р Р…Р С‘ Р Р…Р ВµР Р†Р ВµРЎР‚Р Р…Р С‘ Р Т‘Р В°Р Р…Р Р…Р С‘ Р Р…Р С•РЎРѓРЎРЏ Р Р…Р В°Р С”Р В°Р В·Р В°РЎвЂљР ВµР В»Р Р…Р В° Р С•РЎвЂљР С–Р С•Р Р†Р С•РЎР‚Р Р…Р С•РЎРѓРЎвЂљ Р С—Р С• РЎвЂЎР В». 313 Р С•РЎвЂљ Р СњР В°Р С”Р В°Р В·Р В°РЎвЂљР ВµР В»Р Р…Р С‘РЎРЏ Р С”Р С•Р Т‘Р ВµР С”РЎРѓ.</p>
             <br><br>
             <div style="display:flex; justify-content: space-between;">
-                <div>Дата: ......................</div>
-                <div>Декларатор: ......................</div>
+                <div>Р вЂќР В°РЎвЂљР В°: ......................</div>
+                <div>Р вЂќР ВµР С”Р В»Р В°РЎР‚Р В°РЎвЂљР С•РЎР‚: ......................</div>
             </div>
         </div>
     `;
@@ -2019,13 +2019,13 @@ window.printOwnerDeclaration = async function () {
 }
 
 // ==============================================
-// МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)
+// Р СљР вЂўР РЋР вЂўР В§Р вЂўР Сњ Р В¤Р ВР СњР С’Р СњР РЋР С›Р вЂ™ Р С›Р СћР В§Р вЂўР Сћ (Р В§Р В». 23 Р вЂ”Р Р€Р вЂўР РЋ)
 // ==============================================
 
 window.openMonthlyReport = function () {
     switchPage('monthly-report');
     const d = new Date();
-    // По подразбиране предходния месец (защото отчетите се правят за завършен период)
+    // Р СџР С• Р С—Р С•Р Т‘РЎР‚Р В°Р В·Р В±Р С‘РЎР‚Р В°Р Р…Р Вµ Р С—РЎР‚Р ВµР Т‘РЎвЂ¦Р С•Р Т‘Р Р…Р С‘РЎРЏ Р СР ВµРЎРѓР ВµРЎвЂ  (Р В·Р В°РЎвЂ°Р С•РЎвЂљР С• Р С•РЎвЂљРЎвЂЎР ВµРЎвЂљР С‘РЎвЂљР Вµ РЎРѓР Вµ Р С—РЎР‚Р В°Р Р†РЎРЏРЎвЂљ Р В·Р В° Р В·Р В°Р Р†РЎР‰РЎР‚РЎв‚¬Р ВµР Р… Р С—Р ВµРЎР‚Р С‘Р С•Р Т‘)
     const lastMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1);
     const periodStr = String(lastMonth.getMonth() + 1).padStart(2, '0') + "." + lastMonth.getFullYear();
     document.getElementById("reportPeriodInput").value = periodStr;
@@ -2035,31 +2035,31 @@ window.openMonthlyReport = function () {
 window.generateReport = async function () {
     const period = document.getElementById("reportPeriodInput").value.trim();
     if (!period) {
-        showToast("Моля, въведете период!", "error");
+        showToast("Р СљР С•Р В»РЎРЏ, Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р С—Р ВµРЎР‚Р С‘Р С•Р Т‘!", "error");
         return;
     }
 
     const btn = document.querySelector("#view-monthly-report .btn-primary");
-    showSaving(btn, "Зареждане...");
+    showSaving(btn, "Р вЂ”Р В°РЎР‚Р ВµР В¶Р Т‘Р В°Р Р…Р Вµ...");
 
     try {
         const result = await apiCall('getMonthlyReport', { period: period });
         if (result && result.success && result.data) {
             const d = result.data;
-            document.getElementById("report-title-period").textContent = `за месец ${period} г.`;
+            document.getElementById("report-title-period").textContent = `Р В·Р В° Р СР ВµРЎРѓР ВµРЎвЂ  ${period} Р С–.`;
             document.getElementById("report-gen-date").textContent = new Date().toLocaleDateString('bg-BG');
 
             const tableBody = document.getElementById("report-invoiced-rows");
             tableBody.innerHTML = "";
 
             const labels = {
-                elevator: "Разходи за асансьор",
-                subscription: "Други абонаменти",
-                light: "Електрическа енергия - общи части",
-                security: "Охрана / Консиерж",
-                cleaning: "Хигиена и почистване",
-                podrajka: "Поддръжка на общи части",
-                remont: 'Фонд \u201eРемонт и обновяване\u201c'
+                elevator: "Р В Р В°Р В·РЎвЂ¦Р С•Р Т‘Р С‘ Р В·Р В° Р В°РЎРѓР В°Р Р…РЎРѓРЎРЉР С•РЎР‚",
+                subscription: "Р вЂќРЎР‚РЎС“Р С–Р С‘ Р В°Р В±Р С•Р Р…Р В°Р СР ВµР Р…РЎвЂљР С‘",
+                light: "Р вЂўР В»Р ВµР С”РЎвЂљРЎР‚Р С‘РЎвЂЎР ВµРЎРѓР С”Р В° Р ВµР Р…Р ВµРЎР‚Р С–Р С‘РЎРЏ - Р С•Р В±РЎвЂ°Р С‘ РЎвЂЎР В°РЎРѓРЎвЂљР С‘",
+                security: "Р С›РЎвЂ¦РЎР‚Р В°Р Р…Р В° / Р С™Р С•Р Р…РЎРѓР С‘Р ВµРЎР‚Р В¶",
+                cleaning: "Р ТђР С‘Р С–Р С‘Р ВµР Р…Р В° Р С‘ Р С—Р С•РЎвЂЎР С‘РЎРѓРЎвЂљР Р†Р В°Р Р…Р Вµ",
+                podrajka: "Р СџР С•Р Т‘Р Т‘РЎР‚РЎР‰Р В¶Р С”Р В° Р Р…Р В° Р С•Р В±РЎвЂ°Р С‘ РЎвЂЎР В°РЎРѓРЎвЂљР С‘",
+                remont: 'Р В¤Р С•Р Р…Р Т‘ \u201eР В Р ВµР СР С•Р Р…РЎвЂљ Р С‘ Р С•Р В±Р Р…Р С•Р Р†РЎРЏР Р†Р В°Р Р…Р Вµ\u201c'
             };
 
             for (let key in labels) {
@@ -2076,10 +2076,33 @@ window.generateReport = async function () {
 
             document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
             document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
+            // --- Р”РћР‘РђР’РЇРќР• РќРђ РџРђР РђРњР•РўР Р Р—Рђ РџР•Р РРћР”Рђ (Р›РћР“РРљРђ, РЎРўРђРўРРЎРўРРљРђ) ---
+            const statsBoxId = "monthly-report-stats-box";
+            let statsSect = document.getElementById(statsBoxId);
+            if (!statsSect) {
+                statsSect = document.createElement("div");
+                statsSect.id = statsBoxId;
+                statsSect.style.marginTop = "25px";
+                statsSect.style.padding = "20px";
+                statsSect.style.background = "#fff8f0";
+                statsSect.style.border = "1px solid #feebc8";
+                statsSect.style.borderRadius = "10px";
+                document.getElementById("report-content").appendChild(statsSect);
+            }
+            statsSect.innerHTML = `
+                <h4 style="margin: 0 0 12px; font-size: 13px; color: #c05621; text-transform: uppercase;">📊 Параметри за периода:</h4>
+                <table style="width: 100%; font-size: 14px; color: #4a5568; border-collapse: collapse;">
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Логика на разпределение:</td><td style="text-align: right; font-weight: 700; color: #2d3748;">${d.logic || "Равно"}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Общо обитатели:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalOccupants || 0}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Участници в асансьора (брой):</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalParticipation || 0}</td></tr>
+                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Активни чипове за мес.:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalChips || 0}</td></tr>
+                    <tr><td style="padding: 5px 0;">Общо идеални части:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalIdealParts || 0}%</td></tr>
+                </table>
+            `;
 
             document.getElementById("report-content").style.display = "block";
         } else {
-            showToast(result?.error || "Няма данни за този период.", "error");
+            showToast(result?.error || "Р СњРЎРЏР СР В° Р Т‘Р В°Р Р…Р Р…Р С‘ Р В·Р В° РЎвЂљР С•Р В·Р С‘ Р С—Р ВµРЎР‚Р С‘Р С•Р Т‘.", "error");
             document.getElementById("report-content").style.display = "none";
         }
     } catch (e) {
@@ -2093,10 +2116,10 @@ window.printReport = function () {
     const printContents = document.getElementById('report-print-area').innerHTML;
     const originalContents = document.body.innerHTML;
 
-    // Временна смяна на тялото за принтиране (или по-добре чрез CSS media print)
-    // Тъй като това е SPA, print() ще хване всичко. Използваме прост метод:
+    // Р вЂ™РЎР‚Р ВµР СР ВµР Р…Р Р…Р В° РЎРѓР СРЎРЏР Р…Р В° Р Р…Р В° РЎвЂљРЎРЏР В»Р С•РЎвЂљР С• Р В·Р В° Р С—РЎР‚Р С‘Р Р…РЎвЂљР С‘РЎР‚Р В°Р Р…Р Вµ (Р С‘Р В»Р С‘ Р С—Р С•-Р Т‘Р С•Р В±РЎР‚Р Вµ РЎвЂЎРЎР‚Р ВµР В· CSS media print)
+    // Р СћРЎР‰Р в„– Р С”Р В°РЎвЂљР С• РЎвЂљР С•Р Р†Р В° Р Вµ SPA, print() РЎвЂ°Р Вµ РЎвЂ¦Р Р†Р В°Р Р…Р Вµ Р Р†РЎРѓР С‘РЎвЂЎР С”Р С•. Р ВР В·Р С—Р С•Р В»Р В·Р Р†Р В°Р СР Вµ Р С—РЎР‚Р С•РЎРѓРЎвЂљ Р СР ВµРЎвЂљР С•Р Т‘:
     const printWindow = window.open('', '', 'height=800,width=800');
-    printWindow.document.write('<html><head><title>Месечен отчет - ' + document.getElementById("reportPeriodInput").value + '</title>');
+    printWindow.document.write('<html><head><title>Р СљР ВµРЎРѓР ВµРЎвЂЎР ВµР Р… Р С•РЎвЂљРЎвЂЎР ВµРЎвЂљ - ' + document.getElementById("reportPeriodInput").value + '</title>');
     printWindow.document.write('<style>body{font-family: Arial, sans-serif; padding: 40px;} table{width:100%; border-collapse:collapse;} td{padding:10px 0;} tr.total{font-weight:bold; border-top:2px solid black;}</style>');
     printWindow.document.write('</head><body>');
     printWindow.document.write(printContents);
@@ -2105,9 +2128,9 @@ window.printReport = function () {
     printWindow.print();
 }
 
-// Помощна функция за смяна на страниците
+// Р СџР С•Р СР С•РЎвЂ°Р Р…Р В° РЎвЂћРЎС“Р Р…Р С”РЎвЂ Р С‘РЎРЏ Р В·Р В° РЎРѓР СРЎРЏР Р…Р В° Р Р…Р В° РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р С‘РЎвЂ Р С‘РЎвЂљР Вµ
 window.switchPage = function (pageId) {
-    // Всички панели
+    // Р вЂ™РЎРѓР С‘РЎвЂЎР С”Р С‘ Р С—Р В°Р Р…Р ВµР В»Р С‘
     const panels = ['view-selector', 'view-entrance-home', 'view-monthly-report'];
     panels.forEach(id => {
         const el = document.getElementById(id);
@@ -2141,7 +2164,7 @@ async function checkRemontEligibility() {
 
         if (input) {
             input.disabled = !allHaveParts;
-            input.placeholder = allHaveParts ? "Обща сума за входа" : "Деактивирано (липсват Ид. части за всички)";
+            input.placeholder = allHaveParts ? "Р С›Р В±РЎвЂ°Р В° РЎРѓРЎС“Р СР В° Р В·Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р В°" : "Р вЂќР ВµР В°Р С”РЎвЂљР С‘Р Р†Р С‘РЎР‚Р В°Р Р…Р С• (Р В»Р С‘Р С—РЎРѓР Р†Р В°РЎвЂљ Р ВР Т‘. РЎвЂЎР В°РЎРѓРЎвЂљР С‘ Р В·Р В° Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘)";
             if(!allHaveParts) input.value = "";
         }
         
@@ -2149,14 +2172,15 @@ async function checkRemontEligibility() {
             warn.style.display = allHaveParts ? "none" : "block";
             if (!allHaveParts) {
                 if (missing.length > 0 && missing.length <= 15) {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за:</b> ${missing.join(", ")}`;
+                    warn.innerHTML = `РІС™В РїС‘РЏ Р вЂ”Р В° Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ Р С”РЎР‰Р С РЎвЂћР С•Р Р…Р Т‘ РЎР‚Р ВµР СР С•Р Р…РЎвЂљ Р С—РЎР‰РЎР‚Р Р†Р С• Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р ВР Т‘. РЎвЂЎР В°РЎРѓРЎвЂљ (%) Р В·Р В° <b>Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘</b> Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР С‘.<br><b>Р вЂєР С‘Р С—РЎРѓР Р†Р В°РЎвЂљ Р В·Р В°:</b> ${missing.join(", ")}`;
                 } else if (missing.length > 15) {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за ${missing.length} апартамента.</b>`;
+                    warn.innerHTML = `РІС™В РїС‘РЏ Р вЂ”Р В° Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ Р С”РЎР‰Р С РЎвЂћР С•Р Р…Р Т‘ РЎР‚Р ВµР СР С•Р Р…РЎвЂљ Р С—РЎР‰РЎР‚Р Р†Р С• Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р ВР Т‘. РЎвЂЎР В°РЎРѓРЎвЂљ (%) Р В·Р В° <b>Р Р†РЎРѓР С‘РЎвЂЎР С”Р С‘</b> Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР С‘.<br><b>Р вЂєР С‘Р С—РЎРѓР Р†Р В°РЎвЂљ Р В·Р В° ${missing.length} Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљР В°.</b>`;
                 } else {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.`;
+                    warn.innerHTML = `РІС™В РїС‘РЏ Р вЂ”Р В° Р Р…Р В°РЎвЂЎР С‘РЎРѓР В»Р ВµР Р…Р С‘РЎРЏ Р С”РЎР‰Р С РЎвЂћР С•Р Р…Р Т‘ РЎР‚Р ВµР СР С•Р Р…РЎвЂљ Р С—РЎР‰РЎР‚Р Р†Р С• Р Р†РЎР‰Р Р†Р ВµР Т‘Р ВµРЎвЂљР Вµ Р ВР Т‘. РЎвЂЎР В°РЎРѓРЎвЂљ (%) Р В·Р В° Р Р†РЎРѓР ВµР С”Р С‘ Р В°Р С—Р В°РЎР‚РЎвЂљР В°Р СР ВµР Р…РЎвЂљ Р Р† MASTER.`;
                 }
             }
         }
     } catch(e) {}
 }
+
 
