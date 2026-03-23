@@ -2088,8 +2088,9 @@ window.generateReport = async function () {
                 statsSect.style.background = "#fff8f0";
                 statsSect.style.border = "1px solid #feebc8";
                 statsSect.style.borderRadius = "10px";
-                document.getElementById("report-content").appendChild(statsSect);
             }
+            // Винаги го добавяме наново, за да сме сигурни, че е вътре в самия отчет (преди подписите):
+            document.getElementById("report-total-collected").parentNode.parentNode.appendChild(statsSect);
             statsSect.innerHTML = `
                 <h4 style="margin: 0 0 12px; font-size: 13px; color: #c05621; text-transform: uppercase;">📊 Параметри за периода:</h4>
                 <table style="width: 100%; font-size: 14px; color: #4a5568; border-collapse: collapse;">
