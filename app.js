@@ -2077,29 +2077,61 @@ window.generateReport = async function () {
             document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
             document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
 
-            // --- ДОБАВЯНЕ НА СТАТИСТИКА ЗА ПЕРИОДА (ПАРАМЕТРИ) ---
+            // --- ДОБАВЯНЕ НА СТАТИСТИКА ЗА ПЕРИОДА (ПАРАМЕТРИ ПЕРСОНАЛНО) ---
             const statsBoxId = "monthly-report-stats-box";
             let statsSect = document.getElementById(statsBoxId);
             if (!statsSect) {
                 statsSect = document.createElement("div");
                 statsSect.id = statsBoxId;
-                statsSect.style.marginTop = "25px";
-                statsSect.style.padding = "20px";
-                statsSect.style.background = "#fff8f0";
-                statsSect.style.border = "1px solid #feebc8";
-                statsSect.style.borderRadius = "10px";
+                statsSect.style.marginTop = "30px";
+                statsSect.style.paddingTop = "15px";
+                statsSect.style.borderTop = "1px solid #eee";
             }
             // Винаги го добавяме наново, за да сме сигурни, че е вътре в самия отчет (преди подписите):
             document.getElementById("report-total-collected").parentNode.parentNode.appendChild(statsSect);
+
+            let aptRowsHTML = "";
+            let summaryTotalDue = 0;
+            if (d.apartments && d.apartments.length > 0) {
+                d.apartments.forEach(a => {
+                    summaryTotalDue += a.due;
+                    aptRowsHTML += `
+                        <tr style="text-align: center; border-bottom: 1px dashed #eee;">
+                            <td style="padding: 6px 0;"><strong>${a.apt}</strong></td>
+                            <td style="padding: 6px 0;">${a.occupants}</td>
+                            <td style="padding: 6px 0;">${a.chips}</td>
+                            <td style="padding: 6px 0;">${a.participation}</td>
+                            <td style="padding: 6px 0;">${a.idealParts}%</td>
+                            <td style="padding: 6px 0; font-weight: bold;">${a.due.toFixed(2)} EUR</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                aptRowsHTML = `<tr><td colspan="6" style="padding: 10px; text-align: center;">Няма налични детайлни данни</td></tr>`;
+            }
+
             statsSect.innerHTML = `
-                <h4 style="margin: 0 0 12px; font-size: 13px; color: #c05621; text-transform: uppercase;">📊 Параметри за периода:</h4>
-                <table style="width: 100%; font-size: 14px; color: #4a5568; border-collapse: collapse;">
-                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Логика на разпределение:</td><td style="text-align: right; font-weight: 700; color: #2d3748;">${d.logic || 'Равно'}</td></tr>
-                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Общо обитатели:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalOccupants || 0}</td></tr>
-                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Участници в асансьора (брой):</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalParticipation || 0}</td></tr>
-                    <tr><td style="padding: 5px 0; border-bottom: 1px dashed #eee;">Активни чипове за месеца:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalChips || 0}</td></tr>
-                    <tr><td style="padding: 5px 0;">Общо идеални части:</td><td style="text-align: right; font-weight: 700;">${d.stats?.totalIdealParts || 0}%</td></tr>
-                </table>
+                <div style="page-break-inside: avoid;">
+                    <h4 style="margin: 0 0 5px; font-size: 14px; text-transform: uppercase;">
+                        III. Подробни параметри по апартаменти
+                    </h4>
+                    <p style="font-size: 11px; margin-bottom: 15px; color: #555;">Логика на разпределение (Асансьор): <strong>${d.logic || 'Равно'}</strong></p>
+                    <table style="width: 100%; font-size: 12px; color: #333; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 1px solid #ccc; text-align: center; font-weight: normal;">
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Ап.</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Обитатели</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Чипове</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Участие Асан.</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Ид. Части</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Начислено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${aptRowsHTML}
+                        </tbody>
+                    </table>
+                </div>
             `;
 
             document.getElementById("report-content").style.display = "block";
