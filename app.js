@@ -718,6 +718,32 @@ function initChart(data) {
 // APARTMENT DATA
 // ==============================================
 
+async function loadApartmentFromFirebase(routeKey, apartmentId) {
+  const { collection, getDocs, query, where } = window.fb;
+  const db = window.db;
+
+  const q = query(
+    collection(db, "apartments"),
+    where("buildingId", "==", routeKey),
+    where("apartmentId", "==", apartmentId)
+  );
+
+  const snapshot = await getDocs(q);
+
+  let result = null;
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    result = {
+      saldo: Number(data.balance || 0),
+      periods: [] // временно празно
+    };
+  });
+
+  return result || { saldo: 0, periods: [] }; // Добавено fall-back за липсващ апартамент, за да не гърми UI
+}
+
 async function loadApartmentData(apartment) {
     resetApartmentData();
 
@@ -733,7 +759,7 @@ async function loadApartmentData(apartment) {
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
     document.getElementById("payment-reference-box").style.display = "block";
 
-    const result = await apiCall('apartment', { apartment: apartment });
+    const result = await loadApartmentFromFirebase(currentRouteKey, apartment);
 
     if (result && result.error && result.showMessage) {
         document.getElementById("saldo").textContent = "Скрит";
@@ -767,7 +793,7 @@ async function loadApartmentData(apartment) {
 
         const tBody = document.getElementById("tableBody");
         if (result.periods && Array.isArray(result.periods)) {
-            result.periods.forEach((r, idx) => {
+            (result.periods || []).forEach((r, idx) => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                 <td>${r.period}</td>
