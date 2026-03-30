@@ -36,16 +36,28 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="app.js" defer></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "XXX",
+            authDomain: "XXX",
+            projectId: "domoupravitel-c3726"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.fb = { collection, getDocs, query, where };
+    </script>
 </head>
 
 <body class="light-theme">
     <div class="version-tag">v0.1.6</div>
 
-    <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <div class="loading-text">Зареждане на данни...</div>
-    </div>
+    <!-- LOADING OVERLAY REMOVED FOR SPEED -->
 
     <!-- ADMIN OVERLAY -->
     <div id="adminOverlay" class="admin-overlay" onclick="if(event.target===this)closeAdmin()">
@@ -814,7 +826,7 @@
             <!-- Integrated Contact Section (Mobile Responsive) -->
             <div id="contact-section" class="registration-container glass-panel hidden" style="margin: 30px auto; max-width: 700px; width: 95%;">
                 <div class="reg-header">
-                    <h3 style="font-family: var(--font-head); font-size: 1.2rem; margin: 0;">✉️ Форма за контакт</h3>
+                    <h3 style="font-family: var(--font-head); font-size: 0.8rem; margin: 0;">✉️ Форма за контакт</h3>
                     <button class="btn-close" onclick="toggleContactForm()">✕</button>
                 </div>
                 <div class="iframe-wrapper">
@@ -834,7 +846,7 @@
             <!-- Integrated Registration Section (Mobile Responsive) -->
             <div id="registration-section" class="registration-container glass-panel hidden" style="margin: 30px auto; max-width: 700px; width: 95%;">
                 <div class="reg-header">
-                    <h3 style="font-family: var(--font-head); font-size: 1.2rem; margin: 0;">📝 Регистрация / Запитване</h3>
+                    <h3 style="font-family: var(--font-head); font-size: 0.8rem; margin: 0;">📝 Регистрация / Запитване</h3>
                     <button class="btn-close" onclick="toggleRegistrationForm()">✕</button>
                 </div>
                 <div class="iframe-wrapper">

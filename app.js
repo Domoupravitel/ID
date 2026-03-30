@@ -166,7 +166,7 @@ async function apiCall(action, params = {}) {
 // ==============================================
 
 window.activeLoadingRequests = 0;
-window.showLoading = function () {
+window.showLoading = function () { return;
     window.activeLoadingRequests++;
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.add("active");
@@ -179,7 +179,7 @@ window.showLoading = function () {
         if (loader) loader.classList.remove("active");
     }, 15000);
 }
-window.hideLoading = function () {
+window.hideLoading = function () { return;
     window.activeLoadingRequests--;
     if (window.activeLoadingRequests > 0) return;
     window.activeLoadingRequests = 0;
@@ -516,9 +516,49 @@ window.enterEntrance = async function () {
 // Check URL params on load
 // (Moved logic to main DOMContentLoaded at the top)
 
+async function loadDashboardFromFirebase(routeKey) {
+  const { collection, getDocs, query, where } = window.fb;
+  const db = window.db;
+
+  const q = query(
+    collection(db, "apartments"),
+    where("buildingId", "==", routeKey)
+  );
+
+  const snapshot = await getDocs(q);
+
+  let totalDebt = 0;
+  let totalBalance = 0;
+
+  const apartments = [];
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const balance = Number(data.balance || 0);
+
+    apartments.push({
+      id: data.apartmentId,
+      balance
+    });
+
+    if (balance > 0) totalDebt += balance;
+    else totalBalance += Math.abs(balance);
+  });
+
+  return {
+    success: true,
+    dashboard: {
+      totalDebts: totalDebt.toFixed(2),
+      totalBalance: totalBalance.toFixed(2),
+      totalTargetFund: 0,
+      trendData: []
+    }
+  };
+}
+
 async function loadDashboardData() {
     try {
-        const result = await apiCall('getDashboardData');
+        const result = await loadDashboardFromFirebase(currentRouteKey);
         if (result && result.success && result.dashboard) {
             const d = result.dashboard;
             const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
