@@ -2155,7 +2155,11 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
         participation: r.participation || 'Да',
         idealParts: r.idealParts || 0,
         due: Number(r.due || 0)
-      }))
+      })).sort((a, b) => {
+        const numA = parseInt(a.apt.replace(/[^0-9]/g, '')) || 0;
+        const numB = parseInt(b.apt.replace(/[^0-9]/g, '')) || 0;
+        return numA - numB;
+      })
     }
   };
 }
