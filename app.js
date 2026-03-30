@@ -2098,6 +2098,68 @@ window.openMonthlyReport = function () {
     document.getElementById("report-content").style.display = "none";
 }
 
+async function loadMonthlyReportFromFirebase(routeKey, period) {
+  const { collection, getDocs, query, where } = window.fb;
+  const db = window.db;
+
+  const q = query(
+    collection(db, "monthlyReports"),
+    where("buildingId", "==", routeKey),
+    where("period", "==", period)
+  );
+
+  const snapshot = await getDocs(q);
+
+  let totalInvoiced = 0;
+  let totalCollected = 0;
+
+  const rows = [];
+  
+  let invoicedCounts = {
+      elevator: 0, subscription: 0, light: 0,
+      security: 0, cleaning: 0, podrajka: 0, remont: 0
+  };
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+
+    const due = Number(d.due || 0);
+    const paid = Number(d.paid || 0);
+
+    totalInvoiced += due;
+    totalCollected += paid;
+
+    invoicedCounts.elevator += Number(d.elevator || 0);
+    invoicedCounts.subscription += Number(d.subscription || 0);
+    invoicedCounts.light += Number(d.light || 0);
+    invoicedCounts.security += Number(d.security || 0);
+    invoicedCounts.cleaning += Number(d.cleaning || 0);
+    invoicedCounts.podrajka += Number(d.podrajka || 0);
+    invoicedCounts.remont += Number(d.remont || 0);
+
+    rows.push(d);
+  });
+  
+  invoicedCounts.total = totalInvoiced;
+
+  return {
+    success: true,
+    data: {
+      invoiced: invoicedCounts,
+      collected: totalCollected,
+      logic: rows[0] ? (rows[0].logic || 'Равно') : 'Равно', // Взимаме логиката от първия запис
+      apartments: rows.map(r => ({
+        apt: r.apartmentId || r.apt || '?',
+        occupants: r.occupants || 0,
+        chips: r.chips || 0,
+        participation: r.participation || 'Да',
+        idealParts: r.idealParts || 0,
+        due: Number(r.due || 0)
+      }))
+    }
+  };
+}
+
 window.generateReport = async function () {
     const period = document.getElementById("reportPeriodInput").value.trim();
     if (!period) {
@@ -2109,7 +2171,7 @@ window.generateReport = async function () {
     showSaving(btn, "Зареждане...");
 
     try {
-        const result = await apiCall('getMonthlyReport', { period: period });
+        const result = await loadMonthlyReportFromFirebase(currentRouteKey, period);
         if (result && result.success && result.data) {
             const d = result.data;
             document.getElementById("report-title-period").textContent = `за месец ${period} г.`;
