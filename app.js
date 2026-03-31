@@ -1,4 +1,4 @@
-// ==============================================
+﻿// ==============================================
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
@@ -471,6 +471,13 @@ window.enterEntrance = async function () {
     if (result && !result.error && Array.isArray(result)) {
         apartmentList = result;
 
+        // Сортиране по номер на апартамент
+        apartmentList.sort((a, b) => {
+            const numA = parseInt(a.replace(/\D/g, '')) || 0;
+            const numB = parseInt(b.replace(/\D/g, '')) || 0;
+            return numA - numB;
+        });
+
         // Обновяваме заглавието на входа
         if (configResult && configResult.info && configResult.info.entranceName) {
             document.getElementById('entrance-title').textContent = configResult.info.entranceName;
@@ -573,7 +580,7 @@ async function loadDashboardData() {
             // Показваме събраното спрямо общото начислено
             const collected = parseFloat(d.totalBalance) || 0;
             const target = parseFloat(d.totalTargetFund) || 0;
-            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (от ${target.toFixed(2)} ${cur})`;
+            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur}`;
 
             // Trends status text update
             const debtsTrendEl = document.getElementById('dash-debts-trend');
@@ -739,6 +746,7 @@ async function loadApartmentFromFirebase(routeKey, apartmentId) {
   snapApt.forEach(doc => {
     const data = doc.data();
     result.saldo = Number(data.balance || 0);
+    result.targetFund = Number(data.targetFund || 0);
   });
 
   const qPeriods = query(
@@ -802,6 +810,7 @@ async function loadApartmentData(apartment) {
 
     if (result && !result.error) {
         const saldoVal = Number(result.saldo || 0);
+        const targetFund = Number(result.targetFund || 0);
         const sEl = document.getElementById("saldo");
         const sCard = document.getElementById("saldoCard");
 
@@ -2382,3 +2391,46 @@ async function checkRemontEligibility() {
     } catch(e) {}
 }
 
+
+
+window.forceFirebaseSync = async function() {
+    const btn = document.getElementById('forceSyncBtn');
+    if (!btn) return;
+    showSaving(btn, 'Синхронизиране... (отнема 5-15 сек)');
+    try {
+        const result = await apiCall('forceDataSync', { pin: getStoredPin() });
+        if (result && result.success) {
+            showToast('Синхронизацията приключи успешно!', 'success');
+            refreshCurrentView();
+        } else {
+            showToast(result?.error || 'роблем при синхронизацията.', 'error');
+        }
+    } catch(e) {
+        showToast('решка при комуникация със сървъра', 'error');
+    } finally {
+        hideSaving(btn, 'зпрати данните към приложението');
+    }
+}
+
+
+// ==============================================
+// FORCE FIREBASE SYNC (Manual Trigger)
+// ==============================================
+window.forceFirebaseSync = async function() {
+    const btn = document.getElementById("forceSyncBtn");
+    if (!btn) return;
+    showSaving(btn, "Синхронизиране... (отнема 5-15 сек)");
+    try {
+        const result = await apiCall("forceDataSync", { pin: getStoredPin() });
+        if (result && result.success) {
+            showToast("Синхронизацията приключи успешно!", "success");
+            refreshCurrentView();
+        } else {
+            showToast(result?.error || "Проблем при синхронизацията.", "error");
+        }
+    } catch(e) {
+        showToast("Грешка при комуникация със сървъра", "error");
+    } finally {
+        hideSaving(btn, "Изпрати данните към приложението");
+    }
+}

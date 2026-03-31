@@ -517,6 +517,18 @@
 
                 <div class="admin-divider" style="margin-top: 20px;"></div>
 
+                <!-- Sync Manual Edits Section -->
+                <div class="admin-section" style="background: rgba(46, 204, 113, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(46, 204, 113, 0.2); margin-top: 15px;">
+                    <h3 style="color: #27ae60; margin-bottom: 8px;">🔄 Синхронизиране на ръчни промени</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                        Ако сте нанесли <strong>ръчни корекции или нови начисления директно в Google Sheets таблицата</strong>, 
+                        натиснете бутона по-долу, за да изпратите данните към приложението веднага.
+                    </p>
+                    <button class="admin-btn primary" id="forceSyncBtn" onclick="forceFirebaseSync()" style="background-color: #27ae60; border-color: #27ae60;">
+                        Изпрати данните към приложението
+                    </button>
+                </div>
+
                 <!-- Platform Subscription Section for Domoupraviteli -->
                 <div class="admin-section"
                     style="background: rgba(0, 122, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,122,255,0.2); margin-top: 15px;">
