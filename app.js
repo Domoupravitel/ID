@@ -529,20 +529,25 @@ async function loadDashboardFromFirebase(routeKey) {
 
   let totalDebt = 0;
   let totalBalance = 0;
+  let totalTargetFund = 0;
 
   const apartments = [];
 
   snapshot.forEach(doc => {
     const data = doc.data();
     const balance = Number(data.balance || 0);
+    const targetFund = Number(data.targetFund || 0);
 
     apartments.push({
       id: data.apartmentId,
-      balance
+      balance,
+      targetFund
     });
 
     if (balance > 0) totalDebt += balance;
     else totalBalance += Math.abs(balance);
+    
+    totalTargetFund += targetFund;
   });
 
   return {
@@ -550,7 +555,7 @@ async function loadDashboardFromFirebase(routeKey) {
     dashboard: {
       totalDebts: totalDebt.toFixed(2),
       totalBalance: totalBalance.toFixed(2),
-      totalTargetFund: 0,
+      totalTargetFund: totalTargetFund.toFixed(2),
       trendData: []
     }
   };
@@ -722,26 +727,54 @@ async function loadApartmentFromFirebase(routeKey, apartmentId) {
   const { collection, getDocs, query, where } = window.fb;
   const db = window.db;
 
-  const q = query(
+  const qApt = query(
     collection(db, "apartments"),
     where("buildingId", "==", routeKey),
     where("apartmentId", "==", apartmentId)
   );
+  const snapApt = await getDocs(qApt);
 
-  const snapshot = await getDocs(q);
+  let result = { saldo: 0, periods: [], aptNotice: "" };
 
-  let result = null;
-
-  snapshot.forEach(doc => {
+  snapApt.forEach(doc => {
     const data = doc.data();
-
-    result = {
-      saldo: Number(data.balance || 0),
-      periods: [] // временно празно
-    };
+    result.saldo = Number(data.balance || 0);
   });
 
-  return result || { saldo: 0, periods: [] }; // Добавено fall-back за липсващ апартамент, за да не гърми UI
+  const qPeriods = query(
+    collection(db, "monthlyReports"),
+    where("buildingId", "==", routeKey),
+    where("apartmentId", "==", apartmentId)
+  );
+  const snapPeriods = await getDocs(qPeriods);
+
+  const rawPeriods = [];
+  snapPeriods.forEach(doc => {
+    rawPeriods.push(doc.data());
+  });
+
+  rawPeriods.sort((a, b) => {
+    const [mA, yA] = (a.period || "").split(".");
+    const [mB, yB] = (b.period || "").split(".");
+    const dA = new Date(yA, mA - 1);
+    const dB = new Date(yB, mB - 1);
+    return dA - dB;
+  });
+
+  result.periods = rawPeriods.map(p => ({
+    period: p.period,
+    elevator: Number(p.elevator || 0),
+    subscription: Number(p.subscription || 0),
+    light: Number(p.light || 0),
+    security: Number(p.security || 0),
+    cleaning: Number(p.cleaning || 0),
+    podrajka: Number(p.podrajka || 0),
+    remont: Number(p.remont || 0),
+    due: Number(p.due || 0),
+    paid: Number(p.paid || 0)
+  }));
+
+  return result;
 }
 
 async function loadApartmentData(apartment) {
