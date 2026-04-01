@@ -464,11 +464,15 @@ window.enterEntrance = async function () {
             if (adminNoticeInput) adminNoticeInput.value = "";
         }
     } else {
-        // РЎРєСЂРёРІР°РјРµ РІСЃРёС‡РєРѕ, Р°РєРѕ РЅСЏРјР° РёРЅС„Рѕ
-        document.getElementById('payment-details-box').style.display = 'none';
-        document.getElementById('admin-mailto-link').style.display = 'none';
-        document.getElementById('btn-electric-link').style.display = 'none';
-        document.getElementById('btn-subscription-link').style.display = 'none';
+        // РЎРєСЂРёРІР°РјРµ РІСЃРёС‡РєРѕ (Safe Check)
+        const el1 = document.getElementById('payment-details-box');
+        if (el1) el1.style.display = 'none';
+        const el2 = document.getElementById('admin-mailto-link');
+        if (el2) el2.style.display = 'none';
+        const el3 = document.getElementById('btn-electric-link');
+        if (el3) el3.style.display = 'none';
+        const el4 = document.getElementById('btn-subscription-link');
+        if (el4) el4.style.display = 'none';
     }
 
     // РћР‘Р РђР‘РћРўРљРђ РќРђ РЎРџРРЎРЄРљРђ РЎ РђРџРђР РўРђРњР•РќРўР Р РЎРњРЇРќРђ РќРђ РР—Р“Р›Р•Р”Рђ
