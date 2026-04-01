@@ -2,7 +2,7 @@
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
-// Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
+// РўСѓРє С‚СЂСЏР±РІР° РґР° СЃРµ РїРѕСЃС‚Р°РІРё Р»РёРЅРєР° РѕС‚ Google Apps Script, СЃР»РµРґ РєР°С‚Рѕ СЃРµ СЂР°Р·РіСЉСЂРЅРµ (Deploy -> Web App)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDypJEQt07rcjZZ0FDDzV_o2QoTfDBaA3p2CGNi99cGT5FeSrJGY-wYGYuB5UO6BZ8jA/exec";
 
 let currentRouteKey = "";
@@ -14,7 +14,7 @@ let _currentIdealParts = {};
 // ==============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Възстановяване на запазени данни, ако има такива
+    // Р’СЉР·СЃС‚Р°РЅРѕРІСЏРІР°РЅРµ РЅР° Р·Р°РїР°Р·РµРЅРё РґР°РЅРЅРё, Р°РєРѕ РёРјР° С‚Р°РєРёРІР°
     const savedEmail = localStorage.getItem("savedAdminEmail");
     const savedId = localStorage.getItem("savedAccessId");
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.key === 'Enter') verifyPin();
     });
 
-    // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
+    // --- РђРІС‚РѕРјР°С‚РёС‡РЅРѕ РІР»РёР·Р°РЅРµ (Parsing ID and Apartment from Hash or Query) ---
     // (use the already declared urlParams)
     let idValue = urlParams.get('id');
     let aptValue = urlParams.get('apt');
@@ -89,13 +89,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
+    // Р—Р°СЂРµР¶РґР°РјРµ РїСѓР±Р»РёС‡РЅРёС‚Рµ РЅР°СЃС‚СЂРѕР№РєРё (Р‘СѓС‚РѕРЅ Р·Р° СЂРµРіРёСЃС‚СЂР°С†РёСЏ Рё С‚.РЅ.)
     loadPublicSettings();
 
-    // Ако сме се върнали от ръководството, отваряме админ панела автоматично
+    // РђРєРѕ СЃРјРµ СЃРµ РІСЉСЂРЅР°Р»Рё РѕС‚ СЂСЉРєРѕРІРѕРґСЃС‚РІРѕС‚Рѕ, РѕС‚РІР°СЂСЏРјРµ Р°РґРјРёРЅ РїР°РЅРµР»Р° Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ
     if (sessionStorage.getItem('shouldOpenAdmin') === 'true') {
         sessionStorage.removeItem('shouldOpenAdmin');
-        // Даваме малко време на enterEntrance да приключи ако е в ход
+        // Р”Р°РІР°РјРµ РјР°Р»РєРѕ РІСЂРµРјРµ РЅР° enterEntrance РґР° РїСЂРёРєР»СЋС‡Рё Р°РєРѕ Рµ РІ С…РѕРґ
         setTimeout(() => {
             if (currentRouteKey) openAdmin();
         }, 800);
@@ -139,11 +139,11 @@ async function loadPublicSettings() {
 async function apiCall(action, params = {}) {
     showLoading();
 
-    // Ако SCRIPT_URL не съдържа истински google script URL, връщаме грешка
+    // РђРєРѕ SCRIPT_URL РЅРµ СЃСЉРґСЉСЂР¶Р° РёСЃС‚РёРЅСЃРєРё google script URL, РІСЂСЉС‰Р°РјРµ РіСЂРµС€РєР°
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) {
         hideLoading();
-        console.error("Моля, сложете реалния SCRIPT_URL в app.js");
-        showToast("Грешка: Липсва връзка с Google Script (API)", "error");
+        console.error("РњРѕР»СЏ, СЃР»РѕР¶РµС‚Рµ СЂРµР°Р»РЅРёСЏ SCRIPT_URL РІ app.js");
+        showToast("Р“СЂРµС€РєР°: Р›РёРїСЃРІР° РІСЂСЉР·РєР° СЃ Google Script (API)", "error");
         return { error: 'No Script URL configured' };
     }
 
@@ -160,7 +160,7 @@ async function apiCall(action, params = {}) {
     } catch (error) {
         hideLoading();
         console.error("API Call failed:", error);
-        showToast("Проблем с връзката към сървъра", "error");
+        showToast("РџСЂРѕР±Р»РµРј СЃ РІСЂСЉР·РєР°С‚Р° РєСЉРј СЃСЉСЂРІСЉСЂР°", "error");
         return { error: error.toString() };
     }
 }
@@ -175,7 +175,7 @@ window.showLoading = function () { return;
     const loader = document.getElementById("loadingOverlay");
     if (loader) loader.classList.add("active");
 
-    // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
+    // Safety timeout: Р°РєРѕ РЅРµС‰Рѕ Р·Р°Р±РёРµ, СЃРєСЂРёРІР°РјРµ Р»РѕСѓРґСЉСЂР° СЃР»РµРґ 15 СЃРµРєСѓРЅРґРё
     clearTimeout(window.loaderSafetyTimeout);
     window.loaderSafetyTimeout = setTimeout(() => {
         window.activeLoadingRequests = 0;
@@ -194,7 +194,7 @@ window.hideLoading = function () { return;
 
 window.normalizeAptName = function (name) {
     if (!name) return "";
-    return name.toString().toUpperCase().replace(/А/g, "A").replace(/\s+/g, "");
+    return name.toString().toUpperCase().replace(/Рђ/g, "A").replace(/\s+/g, "");
 }
 
 function resetApartmentData() {
@@ -218,8 +218,8 @@ window.showToast = function (msg, type) {
     toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
 }
 
-// --- SAVING STATE (Задача 8: визуална индикация при запис) ---
-window.showSaving = function (btn, text = "⏳ Записване...") {
+// --- SAVING STATE (Р—Р°РґР°С‡Р° 8: РІРёР·СѓР°Р»РЅР° РёРЅРґРёРєР°С†РёСЏ РїСЂРё Р·Р°РїРёСЃ) ---
+window.showSaving = function (btn, text = "вЏі Р—Р°РїРёСЃРІР°РЅРµ...") {
     if (!btn) return;
     btn._originalText = btn.innerHTML;
     btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;">
@@ -231,7 +231,7 @@ window.showSaving = function (btn, text = "⏳ Записване...") {
 }
 window.hideSaving = function (btn, originalText) {
     if (!btn) return;
-    btn.innerHTML = originalText || btn._originalText || "Запази";
+    btn.innerHTML = originalText || btn._originalText || "Р—Р°РїР°Р·Рё";
     btn.disabled = false;
     btn.style.opacity = "";
 }
@@ -248,7 +248,7 @@ window.refreshCurrentView = function () {
 window.toggleContactForm = function() {
     const section = document.getElementById('contact-section');
     if (section.classList.contains('hidden')) {
-        // Затваряме формата за регистрация, ако е отворена
+        // Р—Р°С‚РІР°СЂСЏРјРµ С„РѕСЂРјР°С‚Р° Р·Р° СЂРµРіРёСЃС‚СЂР°С†РёСЏ, Р°РєРѕ Рµ РѕС‚РІРѕСЂРµРЅР°
         document.getElementById('registration-section').classList.add('hidden');
         
         section.classList.remove('hidden');
@@ -263,11 +263,11 @@ window.toggleContactForm = function() {
 window.toggleRegistrationForm = function() {
     const section = document.getElementById('registration-section');
     if (section.classList.contains('hidden')) {
-        // Затваряме формата за контакт, ако е отворена
+        // Р—Р°С‚РІР°СЂСЏРјРµ С„РѕСЂРјР°С‚Р° Р·Р° РєРѕРЅС‚Р°РєС‚, Р°РєРѕ Рµ РѕС‚РІРѕСЂРµРЅР°
         document.getElementById('contact-section').classList.add('hidden');
         
         section.classList.remove('hidden');
-        // Плавно скролване до формата, за да я види потребителят веднага
+        // РџР»Р°РІРЅРѕ СЃРєСЂРѕР»РІР°РЅРµ РґРѕ С„РѕСЂРјР°С‚Р°, Р·Р° РґР° СЏ РІРёРґРё РїРѕС‚СЂРµР±РёС‚РµР»СЏС‚ РІРµРґРЅР°РіР°
         setTimeout(() => {
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
@@ -298,7 +298,7 @@ window.exitEntrance = function () {
     
     // Smooth reset the apartment dropdown
     const select = document.getElementById("apartmentSelect");
-    if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
+    if (select) select.innerHTML = '<option value="">РР·Р±РµСЂРё Р°РїР°СЂС‚Р°РјРµРЅС‚</option>';
 };
 
 window.enterEntrance = async function () {
@@ -313,26 +313,26 @@ window.enterEntrance = async function () {
     }
 
     if (!accessId) {
-        showToast("Моля, въведете вашето ID за достъп!", "error");
+        showToast("РњРѕР»СЏ, РІСЉРІРµРґРµС‚Рµ РІР°С€РµС‚Рѕ ID Р·Р° РґРѕСЃС‚СЉРї!", "error");
         return false;
     }
 
-    // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
+    // Р—Р°РїР°Р·РІР°РјРµ РІ Р±СЂР°СѓР·СЉСЂР° (localStorage), Р·Р° РЅРµ Р·Р°С‚СЂСѓРґРЅСЏРІР°РјРµ РґРѕРјРѕСѓРїСЂР°РІРёС‚РµР»СЏ СЃР»РµРґРІР°С‰РёСЏ РїСЉС‚
     localStorage.setItem("savedAccessId", accessId);
 
-    // Задаваме го като текущ ключ за API заявките
+    // Р—Р°РґР°РІР°РјРµ РіРѕ РєР°С‚Рѕ С‚РµРєСѓС‰ РєР»СЋС‡ Р·Р° API Р·Р°СЏРІРєРёС‚Рµ
     currentRouteKey = accessId;
 
-    // Сменяме бутона за индикация
+    // РЎРјРµРЅСЏРјРµ Р±СѓС‚РѕРЅР° Р·Р° РёРЅРґРёРєР°С†РёСЏ
     const btn = document.querySelector("#view-selector .btn-primary");
     const originalText = btn.textContent;
-    btn.textContent = "Зареждане...";
+    btn.textContent = "Р—Р°СЂРµР¶РґР°РЅРµ...";
     btn.disabled = true;
 
-    // Зареждаме списъка с апартаменти
-    // Обединена заявка по-долу
+    // Р—Р°СЂРµР¶РґР°РјРµ СЃРїРёСЃСЉРєР° СЃ Р°РїР°СЂС‚Р°РјРµРЅС‚Рё
+    // РћР±РµРґРёРЅРµРЅР° Р·Р°СЏРІРєР° РїРѕ-РґРѕР»Сѓ
 
-    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
+    // Р—Р°СЂРµР¶РґР°РјРµ Рё РєРѕРЅС„РёРіСѓСЂР°С†РёСЏС‚Р° Р·Р° РІС…РѕРґР° (РџР»Р°С‰Р°РЅРµ Рё С‚.РЅ.)
     const [result, configResult] = await Promise.all([
         apiCall('list', { list: 'apartments' }),
         apiCall('getEntranceInfo')
@@ -343,36 +343,36 @@ window.enterEntrance = async function () {
 
         if (info.isHardBlocked) {
             hideLoading();
-            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            showToast(`вљ пёЏ Р”РѕСЃС‚СЉРїСЉС‚ Рµ РЅР°РїСЉР»РЅРѕ СЃРїСЂСЏРЅ РїРѕСЂР°РґРё РЅР°Рґ 3 РјРµСЃРµС†Р° РЅРµРїР»Р°С‚РµРЅ Р°Р±РѕРЅР°РјРµРЅС‚. (РџСЂРё РїСЂРµРІРѕРґ Р·Р°РґСЉР»Р¶РёС‚РµР»РЅРѕ РїРѕСЃРѕС‡РµС‚Рµ ID: ${currentRouteKey})`, "error");
             btn.textContent = originalText;
             btn.disabled = false;
             return false; // PREVENT ENTRY
         }
 
-        // Възстановяваме бутона веднага щом приключат заявките
+        // Р’СЉР·СЃС‚Р°РЅРѕРІСЏРІР°РјРµ Р±СѓС‚РѕРЅР° РІРµРґРЅР°РіР° С‰РѕРј РїСЂРёРєР»СЋС‡Р°С‚ Р·Р°СЏРІРєРёС‚Рµ
         btn.textContent = originalText;
         btn.disabled = false;
 
-        // Запазваме цените в сесията
+        // Р—Р°РїР°Р·РІР°РјРµ С†РµРЅРёС‚Рµ РІ СЃРµСЃРёСЏС‚Р°
         if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
+        // РРЅСЃС‚СЂСѓРєС†РёРё Р·Р° РїР»Р°С‰Р°РЅРµ вЂ” Р·Р°РїР°Р·РІР°РјРµ Р·Р° РїРѕ-РєСЉСЃРЅРѕ, РЅРѕ РќР• РїРѕРєР°Р·РІР°РјРµ РІРµРґРЅР°РіР° РїСЂРё РІР»РёР·Р°РЅРµ
         if (info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = info.paymentInfo;
             document.getElementById('masterPaymentText').value = info.paymentInfo;
-            // Съхраняваме в session за използване при избор на апартамент
+            // РЎСЉС…СЂР°РЅСЏРІР°РјРµ РІ session Р·Р° РёР·РїРѕР»Р·РІР°РЅРµ РїСЂРё РёР·Р±РѕСЂ РЅР° Р°РїР°СЂС‚Р°РјРµРЅС‚
             sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
             sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
         }
-        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
+        // Р’РёРЅР°РіРё СЃРєСЂРёРІР°РјРµ РїСЂРё РІР»РёР·Р°РЅРµ вЂ” С‰Рµ СЃРµ РїРѕРєР°Р¶Рµ СЃР°РјРѕ РїСЂРё РёР·Р±СЂР°РЅ Р°РїР°СЂС‚Р°РјРµРЅС‚ СЃ РґСЉР»Рі
         document.getElementById('payment-details-box').style.display = 'none';
 
-        // Имейл за връзка
+        // РРјРµР№Р» Р·Р° РІСЂСЉР·РєР°
         const adminMailBtn = document.getElementById('admin-mailto-link');
         if (adminMailBtn) {
             if (info.adminEmail) {
@@ -383,7 +383,7 @@ window.enterEntrance = async function () {
             }
         }
 
-        // Външни линкове
+        // Р’СЉРЅС€РЅРё Р»РёРЅРєРѕРІРµ
         if (info.linkElectric) {
             document.getElementById('btn-electric-link').href = info.linkElectric;
             document.getElementById('btn-electric-link').style.display = 'inline-block';
@@ -400,7 +400,7 @@ window.enterEntrance = async function () {
             document.getElementById('btn-subscription-link').style.display = 'none';
         }
 
-        // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
+        // --- РР—Р§РРЎР›РЇР’РђРќР• РќРђ РђР‘РћРќРђРњР•РќРў РљРЄРњ РџР›РђРўР¤РћР РњРђРўРђ ---
         let totalMonthly = 0;
         const basePrice = parseFloat(info.pricePerApt) || 0;
         const aptCount = (result && Array.isArray(result)) ? result.length : 0;
@@ -428,10 +428,10 @@ window.enterEntrance = async function () {
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
         if (totalMonthly === 0 && aptCount > 0) {
-            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
+            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">рџЋЃ Р‘Р•Р—РџР›РђРўРќРћ</span>';
         }
 
-        // --- ГЛОБАЛНО СЪОБЩЕНИЕ ОТ СУПЕР АДМИН ---
+        // --- Р“Р›РћР‘РђР›РќРћ РЎРЄРћР‘Р©Р•РќРР• РћРў РЎРЈРџР•Р  РђР”РњРРќ ---
         const newsBanner = document.getElementById("adminGlobalNews");
         const newsText = document.getElementById("adminGlobalNewsText");
         if (info.globalMessage && info.globalMessage.trim() !== "") {
@@ -441,7 +441,7 @@ window.enterEntrance = async function () {
             newsBanner.style.display = "none";
         }
 
-        // --- СЪОБЩЕНИЕ ОТ ДОМОУПРАВИТЕЛЯ (КЪМ ЖИВУЩИТЕ) ---
+        // --- РЎРЄРћР‘Р©Р•РќРР• РћРў Р”РћРњРћРЈРџР РђР’РРўР•Р›РЇ (РљРЄРњ Р–РР’РЈР©РРўР•) ---
         const userNoticeBanner = document.getElementById("userEntranceNotice");
         const userNoticeText = document.getElementById("userEntranceNoticeText");
         const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
@@ -464,61 +464,61 @@ window.enterEntrance = async function () {
             if (adminNoticeInput) adminNoticeInput.value = "";
         }
     } else {
-        // Скриваме всичко, ако няма инфо
+        // РЎРєСЂРёРІР°РјРµ РІСЃРёС‡РєРѕ, Р°РєРѕ РЅСЏРјР° РёРЅС„Рѕ
         document.getElementById('payment-details-box').style.display = 'none';
         document.getElementById('admin-mailto-link').style.display = 'none';
         document.getElementById('btn-electric-link').style.display = 'none';
         document.getElementById('btn-subscription-link').style.display = 'none';
     }
 
-    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
+    // РћР‘Р РђР‘РћРўРљРђ РќРђ РЎРџРРЎРЄРљРђ РЎ РђРџРђР РўРђРњР•РќРўР Р РЎРњРЇРќРђ РќРђ РР—Р“Р›Р•Р”Рђ
     if (result && !result.error && Array.isArray(result)) {
         apartmentList = result;
 
-        // Сортиране по номер на апартамент
+        // РЎРѕСЂС‚РёСЂР°РЅРµ РїРѕ РЅРѕРјРµСЂ РЅР° Р°РїР°СЂС‚Р°РјРµРЅС‚
         apartmentList.sort((a, b) => {
             const numA = parseInt(a.replace(/\D/g, '')) || 0;
             const numB = parseInt(b.replace(/\D/g, '')) || 0;
             return numA - numB;
         });
 
-        // Обновяваме заглавието на входа
+        // РћР±РЅРѕРІСЏРІР°РјРµ Р·Р°РіР»Р°РІРёРµС‚Рѕ РЅР° РІС…РѕРґР°
         if (configResult && configResult.info && configResult.info.entranceName) {
             document.getElementById('entrance-title').textContent = configResult.info.entranceName;
         } else {
-            document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
+            document.getElementById('entrance-title').textContent = `Р•С‚Р°Р¶РЅР° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚ - ID ${currentRouteKey}`;
         }
 
-        // Превключваме екрана
+        // РџСЂРµРІРєР»СЋС‡РІР°РјРµ РµРєСЂР°РЅР°
         document.getElementById('view-selector').classList.remove('active');
         document.getElementById('view-selector').classList.add('hidden');
         document.getElementById('view-entrance-home').classList.remove('hidden');
         document.getElementById('view-entrance-home').classList.add('active');
 
-        // Пълним падащото меню
+        // РџСЉР»РЅРёРј РїР°РґР°С‰РѕС‚Рѕ РјРµРЅСЋ
         const select = document.getElementById("apartmentSelect");
-        select.innerHTML = '<option value="">Избери апартамент</option>';
+        select.innerHTML = '<option value="">РР·Р±РµСЂРё Р°РїР°СЂС‚Р°РјРµРЅС‚</option>';
         apartmentList.forEach(a => {
             const opt = document.createElement("option");
             opt.value = opt.textContent = a;
             select.appendChild(opt);
         });
 
-        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
+        // РџР Р•Р—РђРљР›Р®Р§Р’РђРњР• HASH Р—Рђ РЎРРќРҐР РћРќРР—РђР¦РРЇ (Р±РµР· Р·Р°С†РёРєР»СЏРЅРµ)
         const targetHash = "#" + encodeURIComponent(currentRouteKey);
         if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
             window.location.hash = targetHash;
         }
 
-        // Зареждаме дашборда
+        // Р—Р°СЂРµР¶РґР°РјРµ РґР°С€Р±РѕСЂРґР°
         loadDashboardData();
         return true;
     } else {
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
-            showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
+            showToast("Р“СЂРµС€РєР° РїСЂРё РІСЂСЉР·РєР° (Failed to fetch). РџСЂРѕРІРµСЂРµС‚Рµ РёРЅС‚РµСЂРЅРµС‚ РІСЂСЉР·РєР°С‚Р° СЃРё.", "error");
         } else {
-            showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
+            showToast(`Р“СЂРµС€РµРЅ РІС…РѕРґ: ${currentRouteKey} РЅРµ Рµ РЅР°РјРµСЂРµРЅ РІ Р±Р°Р·Р°С‚Р°.`, "error");
         }
         return false;
     }
@@ -586,7 +586,7 @@ async function loadDashboardData() {
 
             document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
             
-            // Показваме събраното спрямо общото начислено
+            // РџРѕРєР°Р·РІР°РјРµ СЃСЉР±СЂР°РЅРѕС‚Рѕ СЃРїСЂСЏРјРѕ РѕР±С‰РѕС‚Рѕ РЅР°С‡РёСЃР»РµРЅРѕ
             const collected = parseFloat(d.totalBalance) || 0;
             const target = parseFloat(d.totalTargetFund) || 0;
             document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur}`;
@@ -596,144 +596,24 @@ async function loadDashboardData() {
             const balanceTrendEl = document.getElementById('dash-balance-trend');
 
             if (debtsTrendEl) {
-                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
+                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "РР·РёСЃРєРІР° СЃРµ Р·Р°РїР»Р°С‰Р°РЅРµ" : "Р’СЃРёС‡РєРѕ Рµ РёР·РїР»Р°С‚РµРЅРѕ";
             }
             if (balanceTrendEl) {
-                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Наличен фонд" : "Очаква събиране";
+                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "РќР°Р»РёС‡РµРЅ С„РѕРЅРґ" : "РћС‡Р°РєРІР° СЃСЉР±РёСЂР°РЅРµ";
             }
 
-            if (d.trendData && d.trendData.length > 0) {
-                // Ensure Chart.js is loaded before calling initChart
-                if (typeof Chart !== 'undefined') {
-                    initChart(d.trendData);
-                } else {
-                    console.warn("Chart.js is not loaded yet.");
-                    setTimeout(() => { if (typeof Chart !== 'undefined') initChart(d.trendData); }, 1000);
-                }
-            } else {
-                console.log("No trend data available for dashboard chart.");
-            }
         } else {
-            const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
+            const errMsg = result?.error || "РќРµСѓСЃРїРµС€РЅРѕ Р·Р°СЂРµР¶РґР°РЅРµ РЅР° РѕР±РѕР±С‰РµРЅРёС‚Рµ РґР°РЅРЅРё.";
             console.error("Dashboard data load failed:", errMsg);
             // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
-            document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
-            document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
+            document.getElementById('dash-debts-trend').textContent = "Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ";
+            document.getElementById('dash-balance-trend').textContent = "Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ";
         }
     } catch (err) {
         console.error("Critical error in loadDashboardData:", err);
     }
 }
 
-let myChart = null;
-function initChart(data) {
-    const ctx = document.getElementById('trendChart').getContext('2d');
-
-    if (myChart) {
-        myChart.destroy();
-    }
-
-    const labels = data.map(i => i.period);
-
-    myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Асансьор',
-                    data: data.map(i => i.elevator),
-                    borderColor: '#3b6edc',
-                    backgroundColor: 'rgba(59, 110, 220, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Абонамент',
-                    data: data.map(i => i.subscription),
-                    borderColor: '#ff9500',
-                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Осветление',
-                    data: data.map(i => i.light),
-                    borderColor: '#34c759',
-                    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Почистване',
-                    data: data.map(i => i.cleaning),
-                    borderColor: '#5856d6',
-                    backgroundColor: 'rgba(88, 86, 214, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Поддръжка',
-                    data: data.map(i => i.podrajka),
-                    borderColor: '#ff2d55',
-                    backgroundColor: 'rgba(255, 45, 85, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Фонд ремонт',
-                    data: data.map(i => i.remont),
-                    borderColor: '#8e8e93',
-                    backgroundColor: 'rgba(142, 142, 147, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        boxWidth: 12,
-                        font: { size: 11 }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
 
 // ==============================================
 // APARTMENT DATA
@@ -797,7 +677,7 @@ async function loadApartmentFromFirebase(routeKey, apartmentId) {
 async function loadApartmentData(apartment) {
     resetApartmentData();
 
-    // Скриваме инструкциите за плащане докато не знаем дали има дълг
+    // РЎРєСЂРёРІР°РјРµ РёРЅСЃС‚СЂСѓРєС†РёРёС‚Рµ Р·Р° РїР»Р°С‰Р°РЅРµ РґРѕРєР°С‚Рѕ РЅРµ Р·РЅР°РµРј РґР°Р»Рё РёРјР° РґСЉР»Рі
     document.getElementById('payment-details-box').style.display = 'none';
 
     // Update URL Hash for persistence
@@ -805,15 +685,15 @@ async function loadApartmentData(apartment) {
         window.location.hash = `${encodeURIComponent(currentRouteKey)}/${encodeURIComponent(apartment)}`;
     }
 
-    // Показваме кода за плащане веднага
+    // РџРѕРєР°Р·РІР°РјРµ РєРѕРґР° Р·Р° РїР»Р°С‰Р°РЅРµ РІРµРґРЅР°РіР°
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
     document.getElementById("payment-reference-box").style.display = "block";
 
     const result = await loadApartmentFromFirebase(currentRouteKey, apartment);
 
     if (result && result.error && result.showMessage) {
-        document.getElementById("saldo").textContent = "Скрит";
-        showToast("Информацията за салдото Ви, не се показва поради неплатен абонамент", "error");
+        document.getElementById("saldo").textContent = "РЎРєСЂРёС‚";
+        showToast("РРЅС„РѕСЂРјР°С†РёСЏС‚Р° Р·Р° СЃР°Р»РґРѕС‚Рѕ Р’Рё, РЅРµ СЃРµ РїРѕРєР°Р·РІР° РїРѕСЂР°РґРё РЅРµРїР»Р°С‚РµРЅ Р°Р±РѕРЅР°РјРµРЅС‚", "error");
         return;
     }
 
@@ -830,7 +710,7 @@ async function loadApartmentData(apartment) {
         else if (saldoVal < 0) sCard.classList.add("saldo-negative");
         else sCard.classList.add("saldo-zero");
 
-        // --- ИНСТРУКЦИИ ЗА ПЛАЩАНЕ — показват се само при дълг ---
+        // --- РРќРЎРўР РЈРљР¦РР Р—Рђ РџР›РђР©РђРќР• вЂ” РїРѕРєР°Р·РІР°С‚ СЃРµ СЃР°РјРѕ РїСЂРё РґСЉР»Рі ---
         const payBox = document.getElementById('payment-details-box');
         if (saldoVal > 0) {
             const storedPayInfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
@@ -861,10 +741,10 @@ async function loadApartmentData(apartment) {
                 tBody.appendChild(tr);
             });
         } else {
-            tBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Няма налични данни за избрания апартамент.</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">РќСЏРјР° РЅР°Р»РёС‡РЅРё РґР°РЅРЅРё Р·Р° РёР·Р±СЂР°РЅРёСЏ Р°РїР°СЂС‚Р°РјРµРЅС‚.</td></tr>';
         }
 
-        // --- ПЕРСОНАЛНО СЪОБЩЕНИЕ ЗА АПАРТАМЕНТА ---
+        // --- РџР•Р РЎРћРќРђР›РќРћ РЎРЄРћР‘Р©Р•РќРР• Р—Рђ РђРџРђР РўРђРњР•РќРўРђ ---
         const aptNoticeBanner = document.getElementById("individualAptNotice");
         const aptNoticeText = document.getElementById("individualAptNoticeText");
         if (result.aptNotice && result.aptNotice.trim() !== "") {
@@ -874,7 +754,7 @@ async function loadApartmentData(apartment) {
             aptNoticeBanner.style.display = "none";
         }
     } else {
-        showToast("Грешка при зареждане на данните", "error");
+        showToast("Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ РЅР° РґР°РЅРЅРёС‚Рµ", "error");
     }
 }
 
@@ -903,7 +783,7 @@ window.verifyPin = async function () {
     const err = document.getElementById("pinError");
 
     if (!email || !pin) {
-        err.textContent = "Моля, въведете имейл и парола.";
+        err.textContent = "РњРѕР»СЏ, РІСЉРІРµРґРµС‚Рµ РёРјРµР№Р» Рё РїР°СЂРѕР»Р°.";
         return;
     }
 
@@ -915,7 +795,7 @@ window.verifyPin = async function () {
         err.textContent = "";
         showAdminContent();
     } else {
-        err.textContent = result?.error || "Грешен PIN код.";
+        err.textContent = result?.error || "Р“СЂРµС€РµРЅ PIN РєРѕРґ.";
     }
 }
 
@@ -930,7 +810,7 @@ function populateAdminDropdowns() {
     ["adminApt", "adminEmailApt", "masterUchApt", "masterObApt", "masterChApt", "masterIdApt", "masterBookApt", "docAptSelect", "masterInfoApt", "emailAptTarget"].forEach(id => {
         const sel = document.getElementById(id);
         if (sel && sel.options.length <= 1) {
-            sel.innerHTML = '<option value="">Избери апартамент</option>';
+            sel.innerHTML = '<option value="">РР·Р±РµСЂРё Р°РїР°СЂС‚Р°РјРµРЅС‚</option>';
             apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
         }
     });
@@ -944,7 +824,7 @@ window.submitPayment = async function () {
     const amount = document.getElementById("adminAmount").value.trim();
 
     if (!apt || !period || !amount) {
-        showToast("Попълнете всички полета за плащане!", "error");
+        showToast("РџРѕРїСЉР»РЅРµС‚Рµ РІСЃРёС‡РєРё РїРѕР»РµС‚Р° Р·Р° РїР»Р°С‰Р°РЅРµ!", "error");
         return;
     }
 
@@ -956,11 +836,11 @@ window.submitPayment = async function () {
     });
 
     if (result && result.success) {
-        showToast("✅ Успешно добавено плащане.", "success");
+        showToast("вњ… РЈСЃРїРµС€РЅРѕ РґРѕР±Р°РІРµРЅРѕ РїР»Р°С‰Р°РЅРµ.", "success");
         document.getElementById("adminAmount").value = "";
         refreshCurrentView();
     } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        showToast(result?.error || "Р’СЉР·РЅРёРєРЅР° РіСЂРµС€РєР°", "error");
     }
 }
 
@@ -974,10 +854,10 @@ window.submitCharges = async function () {
     const podrajka = document.getElementById("chargesPodrajka").value.trim();
     const remont = document.getElementById("chargesRemont").value.trim();
 
-    if (!period) { showToast("Периодът е задължителен!", "error"); return; }
+    if (!period) { showToast("РџРµСЂРёРѕРґСЉС‚ Рµ Р·Р°РґСЉР»Р¶РёС‚РµР»РµРЅ!", "error"); return; }
     
     const btn = document.getElementById("chargesBtn");
-    showSaving(btn, "Записване...");
+    showSaving(btn, "Р—Р°РїРёСЃРІР°РЅРµ...");
 
     const result = await apiCall('addCharges', {
         pin: getStoredPin(),
@@ -985,12 +865,12 @@ window.submitCharges = async function () {
         security: security, cleaning: cleaning, podrajka: podrajka, remont: remont
     });
 
-    hideSaving(btn, "Запиши начисления");
+    hideSaving(btn, "Р—Р°РїРёС€Рё РЅР°С‡РёСЃР»РµРЅРёСЏ");
     if (result && result.success) {
-        showToast("✅ Успешно записани начисления.", "success");
+        showToast("вњ… РЈСЃРїРµС€РЅРѕ Р·Р°РїРёСЃР°РЅРё РЅР°С‡РёСЃР»РµРЅРёСЏ.", "success");
         refreshCurrentView();
     } else {
-        showToast(result?.error || "Възникна грешка", "error");
+        showToast(result?.error || "Р’СЉР·РЅРёРєРЅР° РіСЂРµС€РєР°", "error");
     }
 }
 
@@ -999,7 +879,7 @@ window.loadCurrentEmail = async function () {
     if (!apt) { document.getElementById("currentEmailBox").style.display = "none"; return; }
     const result = await apiCall('getEmail', { apartment: apt });
     if (result && typeof result.email !== 'undefined') {
-        document.getElementById("currentEmail").textContent = result.email || "Няма записан";
+        document.getElementById("currentEmail").textContent = result.email || "РќСЏРјР° Р·Р°РїРёСЃР°РЅ";
         document.getElementById("currentEmailBox").style.display = "block";
     }
 }
@@ -1007,10 +887,10 @@ window.loadCurrentEmail = async function () {
 window.submitEmail = async function () {
     const apt = document.getElementById("adminEmailApt").value;
     const email = document.getElementById("adminEmail").value.trim();
-    if (!apt || !email) { showToast("Изберете апартамент и имейл!", "error"); return; }
+    if (!apt || !email) { showToast("РР·Р±РµСЂРµС‚Рµ Р°РїР°СЂС‚Р°РјРµРЅС‚ Рё РёРјРµР№Р»!", "error"); return; }
     const result = await apiCall('addEmail', { pin: getStoredPin(), apartment: apt, email: email });
     if (result && result.success) {
-        showToast("Имейлът е обновен.", "success");
+        showToast("РРјРµР№Р»СЉС‚ Рµ РѕР±РЅРѕРІРµРЅ.", "success");
         loadCurrentEmail();
     }
 }
@@ -1037,7 +917,7 @@ window.loginSuperAdmin = async function () {
         sessionStorage.setItem("superAdminAuth", pin);
         showSuperAdminDashboard();
     } else {
-        document.getElementById("superPinError").textContent = result.error || "Грешна парола.";
+        document.getElementById("superPinError").textContent = result.error || "Р“СЂРµС€РЅР° РїР°СЂРѕР»Р°.";
     }
 }
 
@@ -1068,7 +948,7 @@ async function showSuperAdminDashboard() {
 
 window.saveSuperSettings = async function () {
     const btn = document.getElementById("saveSuperSettingsBtn");
-    showSaving(btn, "Запазване...");
+    showSaving(btn, "Р—Р°РїР°Р·РІР°РЅРµ...");
     try {
         const getV = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
         const reqData = {
@@ -1085,31 +965,14 @@ window.saveSuperSettings = async function () {
             settings: JSON.stringify(reqData)
         });
         if (result && result.success) {
-            showToast("✅ Настройките са запазени!", "success");
+            showToast("вњ… РќР°СЃС‚СЂРѕР№РєРёС‚Рµ СЃР° Р·Р°РїР°Р·РµРЅРё!", "success");
         } else {
-            showToast(result.error || "Грешка при запис", "error");
+            showToast(result.error || "Р“СЂРµС€РєР° РїСЂРё Р·Р°РїРёСЃ", "error");
         }
     } catch (e) { console.error(e); } finally {
-        hideSaving(btn, "Запази настройките");
+        hideSaving(btn, "Р—Р°РїР°Р·Рё РЅР°СЃС‚СЂРѕР№РєРёС‚Рµ");
     }
 }
-
-
-        });
-
-        if (result && result.success) {
-            showToast("✅ Настройките са запазени успешно!", "success");
-        } else {
-            showToast(result.error || "Грешка при запазване", "error");
-        }
-    } catch (e) {
-        console.error(e);
-        showToast("Възникна грешка при запазване", "error");
-    } finally {
-        hideSaving(btn, "Запази настройките");
-    }
-}
-
 window.submitMasterNotice = async function () {
     const notice = document.getElementById("masterEntranceNotice").value.trim();
     showLoading();
@@ -1123,7 +986,7 @@ window.submitMasterNotice = async function () {
     hideLoading();
 
     if (result && result.success) {
-        showToast("Съобщението е запазено!", "success");
+        showToast("РЎСЉРѕР±С‰РµРЅРёРµС‚Рѕ Рµ Р·Р°РїР°Р·РµРЅРѕ!", "success");
         // Update local displays
         const banners = ["userEntranceNotice", "userEntranceNoticeHome"];
         const texts = ["userEntranceNoticeText", "userEntranceNoticeTextHome"];
@@ -1139,12 +1002,12 @@ window.submitMasterNotice = async function () {
                 if (t) t.innerHTML = formatted;
             });
 
-            // Изпращаме имейл до всички живущи с регистриран имейл
+            // РР·РїСЂР°С‰Р°РјРµ РёРјРµР№Р» РґРѕ РІСЃРёС‡РєРё Р¶РёРІСѓС‰Рё СЃ СЂРµРіРёСЃС‚СЂРёСЂР°РЅ РёРјРµР№Р»
             if (notice !== "") {
                 apiCall('sendNoticeEmail', { pin: getStoredPin(), notice: notice })
                     .then(emailResult => {
                         if (emailResult && emailResult.success) {
-                            showToast(`📧 Имейлът е изпратен до ${emailResult.sent || 0} апартамента.`, "success");
+                            showToast(`рџ“§ РРјРµР№Р»СЉС‚ Рµ РёР·РїСЂР°С‚РµРЅ РґРѕ ${emailResult.sent || 0} Р°РїР°СЂС‚Р°РјРµРЅС‚Р°.`, "success");
                         }
                     })
                     .catch(() => { });
@@ -1156,19 +1019,19 @@ window.submitMasterNotice = async function () {
             });
         }
     } else {
-        showToast(result?.error || "Грешка при запис", "error");
+        showToast(result?.error || "Р“СЂРµС€РєР° РїСЂРё Р·Р°РїРёСЃ", "error");
     }
 }
 
-// Изпращане на индивидуален имейл до конкретен апартамент
+// РР·РїСЂР°С‰Р°РЅРµ РЅР° РёРЅРґРёРІРёРґСѓР°Р»РµРЅ РёРјРµР№Р» РґРѕ РєРѕРЅРєСЂРµС‚РµРЅ Р°РїР°СЂС‚Р°РјРµРЅС‚
 window.sendAptEmail = async function () {
     const apt = document.getElementById("emailAptTarget").value;
     const subject = document.getElementById("emailAptSubject").value.trim();
     const body = document.getElementById("emailAptBody").value.trim();
 
-    if (!apt) { showToast("Изберете апартамент!", "error"); return; }
-    if (!subject) { showToast("Попълнете тема на имейла!", "error"); return; }
-    if (!body) { showToast("Попълнете текст на имейла!", "error"); return; }
+    if (!apt) { showToast("РР·Р±РµСЂРµС‚Рµ Р°РїР°СЂС‚Р°РјРµРЅС‚!", "error"); return; }
+    if (!subject) { showToast("РџРѕРїСЉР»РЅРµС‚Рµ С‚РµРјР° РЅР° РёРјРµР№Р»Р°!", "error"); return; }
+    if (!body) { showToast("РџРѕРїСЉР»РЅРµС‚Рµ С‚РµРєСЃС‚ РЅР° РёРјРµР№Р»Р°!", "error"); return; }
 
     showLoading();
     const result = await apiCall('sendAptEmail', {
@@ -1180,11 +1043,11 @@ window.sendAptEmail = async function () {
     hideLoading();
 
     if (result && result.success) {
-        showToast("✅ Имейлът е изпратен успешно!", "success");
+        showToast("вњ… РРјРµР№Р»СЉС‚ Рµ РёР·РїСЂР°С‚РµРЅ СѓСЃРїРµС€РЅРѕ!", "success");
         document.getElementById("emailAptSubject").value = "";
         document.getElementById("emailAptBody").value = "";
     } else {
-        showToast(result?.error || "Грешка при изпращане", "error");
+        showToast(result?.error || "Р“СЂРµС€РєР° РїСЂРё РёР·РїСЂР°С‰Р°РЅРµ", "error");
     }
 }
 
@@ -1192,7 +1055,7 @@ window.saveGlobalMessage = async function () {
     const btn = document.getElementById("saveGlobalMessageBtn");
     const msg = document.getElementById("superGlobalMessage").value.trim();
 
-    showSaving(btn, "Изпращане...");
+    showSaving(btn, "РР·РїСЂР°С‰Р°РЅРµ...");
 
     try {
         const result = await apiCall('updateGlobalMessage', {
@@ -1201,26 +1064,26 @@ window.saveGlobalMessage = async function () {
         });
 
         if (result && result.success) {
-            showToast("✅ Съобщението е изпратено до всички!", "success");
+            showToast("вњ… РЎСЉРѕР±С‰РµРЅРёРµС‚Рѕ Рµ РёР·РїСЂР°С‚РµРЅРѕ РґРѕ РІСЃРёС‡РєРё!", "success");
         } else {
-            showToast(result.error || "Грешка при изпращане", "error");
+            showToast(result.error || "Р“СЂРµС€РєР° РїСЂРё РёР·РїСЂР°С‰Р°РЅРµ", "error");
         }
     } catch (e) {
-        showToast("Проблем при комуникация със сървъра", "error");
+        showToast("РџСЂРѕР±Р»РµРј РїСЂРё РєРѕРјСѓРЅРёРєР°С†РёСЏ СЃСЉСЃ СЃСЉСЂРІСЉСЂР°", "error");
     } finally {
-        hideSaving(btn, "Изпрати съобщение");
+        hideSaving(btn, "РР·РїСЂР°С‚Рё СЃСЉРѕР±С‰РµРЅРёРµ");
     }
 }
 
 async function loadSuperAdminEntrances() {
     const tbody = document.getElementById("superAdminEntrancesList");
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р—Р°СЂРµР¶РґР°РЅРµ...</td></tr>';
 
     const result = await apiCall('getRegistryList');
     if (result && result.success && Array.isArray(result.registry)) {
         tbody.innerHTML = '';
         const select = document.getElementById("superExceptionRegistry");
-        if (select) select.innerHTML = '<option value="">-- Избери вход --</option>';
+        if (select) select.innerHTML = '<option value="">-- РР·Р±РµСЂРё РІС…РѕРґ --</option>';
 
         result.registry.forEach(ent => {
             if (select) select.appendChild(new Option(ent.name + " (" + ent.id + ")", ent.id));
@@ -1229,28 +1092,28 @@ async function loadSuperAdminEntrances() {
                 <td style="padding: 8px;"><b>${ent.name}</b></td>
                 <td style="padding: 8px; font-family: monospace;">${ent.id}</td>
                 <td style="padding: 8px; color: ${ent.validUntil === '2000-01-01' ? 'red' : 'inherit'};">
-                    ${ent.validUntil === '2000-01-01' ? 'Блокиран' : (ent.validUntil || '---')}
+                    ${ent.validUntil === '2000-01-01' ? 'Р‘Р»РѕРєРёСЂР°РЅ' : (ent.validUntil || '---')}
                 </td>
                 <td style="padding: 8px;">
                     <span class="status-badge" style="background:${ent.validUntil === '2000-01-01' ? '#fa5252' : '#4ade80'}; color:white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
-                        ${ent.validUntil === '2000-01-01' ? 'Спрян' : 'Активен'}
+                        ${ent.validUntil === '2000-01-01' ? 'РЎРїСЂСЏРЅ' : 'РђРєС‚РёРІРµРЅ'}
                     </span>
                 </td>
                 <td style="padding: 8px;">
-                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
-                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
+                    <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 РґРЅ.</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">РЎРїСЂРё</button>
+                    <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Р‘РµР·СЃСЂРѕС‡РµРЅ</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Грешка при зареждане.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ.</td></tr>';
     }
 }
 
 window.manageSub = async function (targetId, subAction) {
-    if (!confirm(`Сигурни ли сте, че искате да промените достъпа на ID: ${targetId}?`)) return;
+    if (!confirm(`РЎРёРіСѓСЂРЅРё Р»Рё СЃС‚Рµ, С‡Рµ РёСЃРєР°С‚Рµ РґР° РїСЂРѕРјРµРЅРёС‚Рµ РґРѕСЃС‚СЉРїР° РЅР° ID: ${targetId}?`)) return;
 
     const result = await apiCall('updateSubscription', {
         superPin: sessionStorage.getItem("superAdminAuth"),
@@ -1259,10 +1122,10 @@ window.manageSub = async function (targetId, subAction) {
     });
 
     if (result && result.success) {
-        showToast("Правата са обновени успешно!", "success");
+        showToast("РџСЂР°РІР°С‚Р° СЃР° РѕР±РЅРѕРІРµРЅРё СѓСЃРїРµС€РЅРѕ!", "success");
         loadSuperAdminEntrances();
     } else {
-        showToast(result?.error || "Грешка при обновяване", "error");
+        showToast(result?.error || "Р“СЂРµС€РєР° РїСЂРё РѕР±РЅРѕРІСЏРІР°РЅРµ", "error");
     }
 }
 
@@ -1274,12 +1137,12 @@ window.submitNewClient = async function () {
     const aptCount = document.getElementById("newAptCount").value.trim();
 
     if (!city || !block || !entrance || !email || !aptCount) {
-        showToast("Моля, попълнете всички полета", "error");
+        showToast("РњРѕР»СЏ, РїРѕРїСЉР»РЅРµС‚Рµ РІСЃРёС‡РєРё РїРѕР»РµС‚Р°", "error");
         return;
     }
 
     const btn = document.getElementById("createClientBtn");
-    btn.textContent = "Генериране (Изчакайте до 15 сек)...";
+    btn.textContent = "Р“РµРЅРµСЂРёСЂР°РЅРµ (РР·С‡Р°РєР°Р№С‚Рµ РґРѕ 15 СЃРµРє)...";
 
     const result = await apiCall('createClient', {
         superPin: sessionStorage.getItem("superAdminAuth"),
@@ -1290,10 +1153,10 @@ window.submitNewClient = async function () {
         apartmentsCount: aptCount
     });
 
-    btn.textContent = "Създай Клиент & Генерирай Таблици";
+    btn.textContent = "РЎСЉР·РґР°Р№ РљР»РёРµРЅС‚ & Р“РµРЅРµСЂРёСЂР°Р№ РўР°Р±Р»РёС†Рё";
 
     if (result && result.success) {
-        showToast("✅ Клиентът е създаден успешно! Имейлът е изпратен.", "success");
+        showToast("вњ… РљР»РёРµРЅС‚СЉС‚ Рµ СЃСЉР·РґР°РґРµРЅ СѓСЃРїРµС€РЅРѕ! РРјРµР№Р»СЉС‚ Рµ РёР·РїСЂР°С‚РµРЅ.", "success");
         document.getElementById("newCity").value = "";
         document.getElementById("newBlock").value = "";
         document.getElementById("newEntrance").value = "";
@@ -1303,7 +1166,7 @@ window.submitNewClient = async function () {
         // Refresh dropdowns if necessary by refreshing page
         setTimeout(() => location.reload(), 3000);
     } else {
-        showToast(result?.error || "Грешка при създаване", "error");
+        showToast(result?.error || "Р“СЂРµС€РєР° РїСЂРё СЃСЉР·РґР°РІР°РЅРµ", "error");
     }
 }
 
@@ -1313,9 +1176,9 @@ window.runSystemBackup = async function () {
     const linkA = document.getElementById("backupFolderLink");
 
     btn.disabled = true;
-    btn.textContent = "Архивиране (Моля, изчакайте)...";
+    btn.textContent = "РђСЂС…РёРІРёСЂР°РЅРµ (РњРѕР»СЏ, РёР·С‡Р°РєР°Р№С‚Рµ)...";
     statusDiv.style.display = "block";
-    statusDiv.innerHTML = "⏳ Обикаляне на всички входове и копиране на таблици...";
+    statusDiv.innerHTML = "вЏі РћР±РёРєР°Р»СЏРЅРµ РЅР° РІСЃРёС‡РєРё РІС…РѕРґРѕРІРµ Рё РєРѕРїРёСЂР°РЅРµ РЅР° С‚Р°Р±Р»РёС†Рё...";
     statusDiv.style.color = "#666";
 
     const result = await apiCall('runBackup', {
@@ -1323,18 +1186,18 @@ window.runSystemBackup = async function () {
     });
 
     btn.disabled = false;
-    btn.textContent = "📦 Създай Ръчен Архив Сега";
+    btn.textContent = "рџ“¦ РЎСЉР·РґР°Р№ Р СЉС‡РµРЅ РђСЂС…РёРІ РЎРµРіР°";
 
     if (result && result.success) {
-        statusDiv.innerHTML = "✅ " + result.message;
+        statusDiv.innerHTML = "вњ… " + result.message;
         statusDiv.style.color = "green";
         if (result.folderUrl) {
             linkA.href = result.folderUrl;
-            // Показваме и временен линк директно в статуса за удобство
-            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Виж новия архив тук ➔</a>`;
+            // РџРѕРєР°Р·РІР°РјРµ Рё РІСЂРµРјРµРЅРµРЅ Р»РёРЅРє РґРёСЂРµРєС‚РЅРѕ РІ СЃС‚Р°С‚СѓСЃР° Р·Р° СѓРґРѕР±СЃС‚РІРѕ
+            statusDiv.innerHTML += `<br><a href="${result.folderUrl}" target="_blank" style="color:var(--primary); font-weight:bold;">Р’РёР¶ РЅРѕРІРёСЏ Р°СЂС…РёРІ С‚СѓРє вћ”</a>`;
         }
     } else {
-        statusDiv.innerHTML = "❌ Грешка: " + (result?.error || "Проблем при архивиране");
+        statusDiv.innerHTML = "вќЊ Р“СЂРµС€РєР°: " + (result?.error || "РџСЂРѕР±Р»РµРј РїСЂРё Р°СЂС…РёРІРёСЂР°РЅРµ");
         statusDiv.style.color = "red";
     }
 }
@@ -1342,7 +1205,7 @@ window.runSystemBackup = async function () {
 async function loadSuperExceptions() {
     const list = document.getElementById("superAdminExceptionsList");
     if (!list) return;
-    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Р—Р°СЂРµР¶РґР°РЅРµ...</td></tr>';
 
     const result = await apiCall('getSuperExceptions', {
         superPin: sessionStorage.getItem("superAdminAuth")
@@ -1354,15 +1217,15 @@ async function loadSuperExceptions() {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="padding:6px;">${ex.targetId}</td>
-                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Всички' : ex.apartment}</td>
+                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Р’СЃРёС‡РєРё' : ex.apartment}</td>
                 <td style="padding:6px;">${ex.price} EUR</td>
                 <td style="padding:6px;">${ex.validUntil}</td>
-                <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">✕</button></td>
+                <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">вњ•</button></td>
             `;
             list.appendChild(tr);
         });
     } else {
-        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">Няма активни изключения.</td></tr>';
+        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">РќСЏРјР° Р°РєС‚РёРІРЅРё РёР·РєР»СЋС‡РµРЅРёСЏ.</td></tr>';
     }
 }
 
@@ -1373,7 +1236,7 @@ window.addSuperException = async function () {
     const validUntil = document.getElementById("superExceptionDate").value;
 
     if (!targetId || price === "") {
-        showToast("Изберете вход и ценова стойност!", "error");
+        showToast("РР·Р±РµСЂРµС‚Рµ РІС…РѕРґ Рё С†РµРЅРѕРІР° СЃС‚РѕР№РЅРѕСЃС‚!", "error");
         return;
     }
 
@@ -1386,31 +1249,31 @@ window.addSuperException = async function () {
     });
 
     if (res && res.success) {
-        showToast("Специалната цена е добавена!", "success");
+        showToast("РЎРїРµС†РёР°Р»РЅР°С‚Р° С†РµРЅР° Рµ РґРѕР±Р°РІРµРЅР°!", "success");
         document.getElementById("superExceptionApt").value = "";
         document.getElementById("superExceptionPrice").value = "";
         loadSuperExceptions();
     } else {
-        showToast(res?.error || "Възникна грешка", "error");
+        showToast(res?.error || "Р’СЉР·РЅРёРєРЅР° РіСЂРµС€РєР°", "error");
     }
 }
 
 window.deleteSuperException = async function (rowIdx) {
-    if (!confirm("Сигурни ли сте, че искате да премахнете това изключение?")) return;
+    if (!confirm("РЎРёРіСѓСЂРЅРё Р»Рё СЃС‚Рµ, С‡Рµ РёСЃРєР°С‚Рµ РґР° РїСЂРµРјР°С…РЅРµС‚Рµ С‚РѕРІР° РёР·РєР»СЋС‡РµРЅРёРµ?")) return;
     const res = await apiCall('deleteSuperException', {
         superPin: sessionStorage.getItem("superAdminAuth"),
         rowIdx: rowIdx
     });
     if (res && res.success) {
-        showToast("Изключението е премахнато", "success");
+        showToast("РР·РєР»СЋС‡РµРЅРёРµС‚Рѕ Рµ РїСЂРµРјР°С…РЅР°С‚Рѕ", "success");
         loadSuperExceptions();
     } else {
-        showToast("Грешка при изтриване", "error");
+        showToast("Р“СЂРµС€РєР° РїСЂРё РёР·С‚СЂРёРІР°РЅРµ", "error");
     }
 }
 
 // ==============================================
-// ⚖️ ЗУЕС МЕНИДЖЪР ЛОГИКА
+// вљ–пёЏ Р—РЈР•РЎ РњР•РќРР”Р–РЄР  Р›РћР“РРљРђ
 // ==============================================
 
 window.switchZuesSubTab = function (subId) {
@@ -1427,21 +1290,21 @@ window.switchZuesSubTab = function (subId) {
 }
 
 // ==============================================
-// 📋 ЦЯЛА ДОМОВА КНИГА
+// рџ“‹ Р¦РЇР›Рђ Р”РћРњРћР’Рђ РљРќРР“Рђ
 // ==============================================
 
-let _fullBookData = []; // кеш за търсене
+let _fullBookData = []; // РєРµС€ Р·Р° С‚СЉСЂСЃРµРЅРµ
 
 window.loadFullBook = async function () {
     const tbody = document.getElementById("fullBookBody");
     const status = document.getElementById("fullBookStatus");
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">⏳ Зареждане...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">вЏі Р—Р°СЂРµР¶РґР°РЅРµ...</td></tr>';
     if (status) status.textContent = "";
 
     const result = await apiCall('getFullBook', { pin: getStoredPin() });
 
     if (!result || !result.success) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">❌ Грешка при зареждане</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">вќЊ Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ</td></tr>';
         return;
     }
 
@@ -1449,31 +1312,31 @@ window.loadFullBook = async function () {
     renderBookTable(_fullBookData);
 
     if (status) {
-        const filled = _fullBookData.filter(r => r["Собственик"] && r["Собственик"].trim() !== "").length;
-        status.textContent = `Общо: ${_fullBookData.length} апартамента | Попълнени: ${filled} | Непопълнени: ${_fullBookData.length - filled}`;
+        const filled = _fullBookData.filter(r => r["РЎРѕР±СЃС‚РІРµРЅРёРє"] && r["РЎРѕР±СЃС‚РІРµРЅРёРє"].trim() !== "").length;
+        status.textContent = `РћР±С‰Рѕ: ${_fullBookData.length} Р°РїР°СЂС‚Р°РјРµРЅС‚Р° | РџРѕРїСЉР»РЅРµРЅРё: ${filled} | РќРµРїРѕРїСЉР»РЅРµРЅРё: ${_fullBookData.length - filled}`;
     }
 }
 
 function renderBookTable(rows) {
     const tbody = document.getElementById("fullBookBody");
     if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">Няма данни в книгата.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#aaa;">РќСЏРјР° РґР°РЅРЅРё РІ РєРЅРёРіР°С‚Р°.</td></tr>';
         return;
     }
 
     tbody.innerHTML = rows.map((r, idx) => {
-        const hasMissing = !r["Собственик"] || r["Собственик"].trim() === "";
+        const hasMissing = !r["РЎРѕР±СЃС‚РІРµРЅРёРє"] || r["РЎРѕР±СЃС‚РІРµРЅРёРє"].trim() === "";
         const bg = hasMissing ? "background:#fffbf0;" : (idx % 2 === 0 ? "" : "background:#fafbfd;");
-        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">⚠️</span>' : '';
+        const missingMark = hasMissing ? ' <span style="color:#e67e22; font-size:11px;">вљ пёЏ</span>' : '';
 
-        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["Апартамент"] || ""}'; loadBookData();">
-            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["Апартамент"] || "—"}${missingMark}</td>
-            <td style="padding:9px 12px;">${r["Собственик"] || '<span style="color:#ccc;">непопълнено</span>'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Имейл"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Обитатели"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Предназначение"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Дата вписване"] || '—'}</td>
-            <td style="padding:9px 12px; font-size:12px;">${r["Домашни любимци"] || '—'}</td>
+        return `<tr style="${bg} cursor:pointer;" onclick="switchZuesSubTab('z-book'); document.getElementById('masterBookApt').value='${r["РђРїР°СЂС‚Р°РјРµРЅС‚"] || ""}'; loadBookData();">
+            <td style="padding:9px 12px; font-weight:700; color:#3b6edc;">${r["РђРїР°СЂС‚Р°РјРµРЅС‚"] || "вЂ”"}${missingMark}</td>
+            <td style="padding:9px 12px;">${r["РЎРѕР±СЃС‚РІРµРЅРёРє"] || '<span style="color:#ccc;">РЅРµРїРѕРїСЉР»РЅРµРЅРѕ</span>'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["РРјРµР№Р»"] || 'вЂ”'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["РћР±РёС‚Р°С‚РµР»Рё"] || 'вЂ”'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["РџСЂРµРґРЅР°Р·РЅР°С‡РµРЅРёРµ"] || 'вЂ”'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р”Р°С‚Р° РІРїРёСЃРІР°РЅРµ"] || 'вЂ”'}</td>
+            <td style="padding:9px 12px; font-size:12px;">${r["Р”РѕРјР°С€РЅРё Р»СЋР±РёРјС†Рё"] || 'вЂ”'}</td>
         </tr>`;
     }).join('');
 }
@@ -1489,29 +1352,29 @@ window.filterBookTable = function () {
     );
     renderBookTable(filtered);
     const status = document.getElementById("fullBookStatus");
-    if (status) status.textContent = `Намерени: ${filtered.length} от ${_fullBookData.length} апартамента`;
+    if (status) status.textContent = `РќР°РјРµСЂРµРЅРё: ${filtered.length} РѕС‚ ${_fullBookData.length} Р°РїР°СЂС‚Р°РјРµРЅС‚Р°`;
 }
 
 window.printFullBook = function () {
     if (!_fullBookData || _fullBookData.length === 0) {
-        showToast("Заредете книгата преди печат!", "error");
+        showToast("Р—Р°СЂРµРґРµС‚Рµ РєРЅРёРіР°С‚Р° РїСЂРµРґРё РїРµС‡Р°С‚!", "error");
         return;
     }
 
     const rows = _fullBookData.map((r, idx) => `
         <tr style="${idx % 2 === 0 ? '' : 'background:#f9f9f9;'}">
-            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["Апартамент"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Собственик"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["Имейл"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Обитатели"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Предназначение"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Дата вписване"] || "—"}</td>
-            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Домашни любимци"] || "—"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-weight:600;">${r["РђРїР°СЂС‚Р°РјРµРЅС‚"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["РЎРѕР±СЃС‚РІРµРЅРёРє"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd; font-size:11px;">${r["РРјРµР№Р»"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["РћР±РёС‚Р°С‚РµР»Рё"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["РџСЂРµРґРЅР°Р·РЅР°С‡РµРЅРёРµ"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р”Р°С‚Р° РІРїРёСЃРІР°РЅРµ"] || "вЂ”"}</td>
+            <td style="padding:6px 8px; border:1px solid #ddd;">${r["Р”РѕРјР°С€РЅРё Р»СЋР±РёРјС†Рё"] || "вЂ”"}</td>
         </tr>`).join('');
 
     const html = `<!DOCTYPE html><html><head>
         <meta charset="UTF-8">
-        <title>Домова книга — Чл. 7 от ЗУЕС</title>
+        <title>Р”РѕРјРѕРІР° РєРЅРёРіР° вЂ” Р§Р». 7 РѕС‚ Р—РЈР•РЎ</title>
         <style>
             body { font-family: Arial, sans-serif; font-size: 13px; padding: 30px; color: #222; }
             h2 { text-align: center; margin-bottom: 4px; }
@@ -1521,19 +1384,19 @@ window.printFullBook = function () {
             @media print { button { display: none; } }
         </style>
     </head><body>
-        <h2>📋 ДОМОВА КНИГА — Книга на етажната собственост (Чл. 7 от ЗУЕС)</h2>
-        <p class="subtitle">Дата на извличане: ${new Date().toLocaleDateString('bg-BG')} г. | Общо апартаменти: ${_fullBookData.length}</p>
+        <h2>рџ“‹ Р”РћРњРћР’Рђ РљРќРР“Рђ вЂ” РљРЅРёРіР° РЅР° РµС‚Р°Р¶РЅР°С‚Р° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚ (Р§Р». 7 РѕС‚ Р—РЈР•РЎ)</h2>
+        <p class="subtitle">Р”Р°С‚Р° РЅР° РёР·РІР»РёС‡Р°РЅРµ: ${new Date().toLocaleDateString('bg-BG')} Рі. | РћР±С‰Рѕ Р°РїР°СЂС‚Р°РјРµРЅС‚Рё: ${_fullBookData.length}</p>
         <table>
             <thead><tr>
-                <th>Апт.</th><th>Собственик/ци</th><th>Имейл</th>
-                <th>Обитатели</th><th>Предназн.</th><th>Дата вписване</th><th>Домашни</th>
+                <th>РђРїС‚.</th><th>РЎРѕР±СЃС‚РІРµРЅРёРє/С†Рё</th><th>РРјРµР№Р»</th>
+                <th>РћР±РёС‚Р°С‚РµР»Рё</th><th>РџСЂРµРґРЅР°Р·РЅ.</th><th>Р”Р°С‚Р° РІРїРёСЃРІР°РЅРµ</th><th>Р”РѕРјР°С€РЅРё</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>
         <div style="margin-top:30px; font-size:11px; color:#888; text-align:right;">
-            Управлявано от системата за управление на ЕС
+            РЈРїСЂР°РІР»СЏРІР°РЅРѕ РѕС‚ СЃРёСЃС‚РµРјР°С‚Р° Р·Р° СѓРїСЂР°РІР»РµРЅРёРµ РЅР° Р•РЎ
         </div>
-        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">🖨️ Печат</button>
+        <br><button onclick="window.print()" style="padding:8px 20px; background:#1a1a2e; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px;">рџ–ЁпёЏ РџРµС‡Р°С‚</button>
     </body></html>`;
 
     const win = window.open('', '_blank');
@@ -1545,7 +1408,7 @@ window.printFullBook = function () {
 window.populateAttendanceTable = async function () {
     const list = document.getElementById("meeting-attendance-list");
     if (!list) return;
-    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">⏳ Зареждане на данни...</td></tr>';
+    list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">вЏі Р—Р°СЂРµР¶РґР°РЅРµ РЅР° РґР°РЅРЅРё...</td></tr>';
 
     try {
         const result = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
@@ -1570,7 +1433,7 @@ window.populateAttendanceTable = async function () {
         });
         calculateQuorum();
     } catch (e) {
-        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Грешка при зареждане на идеалните части.</td></tr>';
+        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding:10px;">Р“СЂРµС€РєР° РїСЂРё Р·Р°СЂРµР¶РґР°РЅРµ РЅР° РёРґРµР°Р»РЅРёС‚Рµ С‡Р°СЃС‚Рё.</td></tr>';
     }
 }
 
@@ -1586,35 +1449,35 @@ window.calculateQuorum = function () {
 
     if (s) {
         if (total >= 67) {
-            s.innerText = "✅ Има кворум (над 67%)";
+            s.innerText = "вњ… РРјР° РєРІРѕСЂСѓРј (РЅР°Рґ 67%)";
             s.style.color = "green";
         } else if (total >= 51) {
-            s.innerText = "🔶 Кворум за отложено събрание (над 51%)";
+            s.innerText = "рџ”¶ РљРІРѕСЂСѓРј Р·Р° РѕС‚Р»РѕР¶РµРЅРѕ СЃСЉР±СЂР°РЅРёРµ (РЅР°Рґ 51%)";
             s.style.color = "orange";
         } else {
-            s.innerText = "❌ Няма кворум (необходими 67%)";
+            s.innerText = "вќЊ РќСЏРјР° РєРІРѕСЂСѓРј (РЅРµРѕР±С…РѕРґРёРјРё 67%)";
             s.style.color = "red";
         }
     }
 }
 
 window.printAttendanceList = function () {
-    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const agenda = document.getElementById("meetingAgenda").value || "Р“РµРЅРµСЂР°Р»РµРЅ РґРЅРµРІРµРЅ СЂРµРґ";
     const now = new Date();
 
     let html = `
         <div style="font-family: Arial, sans-serif; padding: 40px; line-height: 1.6;">
-            <h2 style="text-align:center;">ПРИСЪСТВЕН СПИСЪК</h2>
-            <p style="text-align:center;">на собствениците/обитателите в етажна собственост</p>
-            <p><strong>Дата:</strong> ${now.toLocaleDateString('bg-BG')} г.</p>
-            <p><strong>Дневен ред:</strong> ${agenda}</p>
+            <h2 style="text-align:center;">РџР РРЎРЄРЎРўР’Р•Рќ РЎРџРРЎРЄРљ</h2>
+            <p style="text-align:center;">РЅР° СЃРѕР±СЃС‚РІРµРЅРёС†РёС‚Рµ/РѕР±РёС‚Р°С‚РµР»РёС‚Рµ РІ РµС‚Р°Р¶РЅР° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚</p>
+            <p><strong>Р”Р°С‚Р°:</strong> ${now.toLocaleDateString('bg-BG')} Рі.</p>
+            <p><strong>Р”РЅРµРІРµРЅ СЂРµРґ:</strong> ${agenda}</p>
             <table border="1" style="width:100%; border-collapse: collapse; margin-top:20px;">
                 <thead>
                     <tr style="background:#eee;">
-                        <th style="padding:8px;">Апт.</th>
-                        <th style="padding:8px;">Представени Ид.части %</th>
-                        <th style="padding:8px;">Име на присъстващия / Пълномощник</th>
-                        <th style="padding:8px;">Подпис</th>
+                        <th style="padding:8px;">РђРїС‚.</th>
+                        <th style="padding:8px;">РџСЂРµРґСЃС‚Р°РІРµРЅРё РРґ.С‡Р°СЃС‚Рё %</th>
+                        <th style="padding:8px;">РРјРµ РЅР° РїСЂРёСЃСЉСЃС‚РІР°С‰РёСЏ / РџСЉР»РЅРѕРјРѕС‰РЅРёРє</th>
+                        <th style="padding:8px;">РџРѕРґРїРёСЃ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1638,8 +1501,8 @@ window.printAttendanceList = function () {
                 </tbody>
             </table>
             <div style="margin-top:30px;">
-                <p>Председател на събранието: ____________________</p>
-                <p>Протоколчик: ____________________</p>
+                <p>РџСЂРµРґСЃРµРґР°С‚РµР» РЅР° СЃСЉР±СЂР°РЅРёРµС‚Рѕ: ____________________</p>
+                <p>РџСЂРѕС‚РѕРєРѕР»С‡РёРє: ____________________</p>
             </div>
         </div>
     `;
@@ -1651,27 +1514,27 @@ window.printAttendanceList = function () {
 }
 
 window.generateMeetingMinutes = function () {
-    const agenda = document.getElementById("meetingAgenda").value || "Генерален дневен ред";
+    const agenda = document.getElementById("meetingAgenda").value || "Р“РµРЅРµСЂР°Р»РµРЅ РґРЅРµРІРµРЅ СЂРµРґ";
     const quorum = document.getElementById("quorum-percent").innerText;
     const now = new Date();
 
     let html = `
         <div style="font-family: Times New Roman, serif; padding: 50px; line-height: 1.5; color: #000;">
-            <h2 style="text-align:center; text-decoration: underline;">ПРОТОКОЛ №____</h2>
-            <h3 style="text-align:center;">от Общо събрание на собствениците</h3>
-            <p>Днес, ${now.toLocaleDateString('bg-BG')} г., се проведе общо събрание на етажната собственост.</p>
-            <p><strong>Представени идеални части:</strong> ${quorum}</p>
-            <p><strong>Дневен ред:</strong></p>
+            <h2 style="text-align:center; text-decoration: underline;">РџР РћРўРћРљРћР› в„–____</h2>
+            <h3 style="text-align:center;">РѕС‚ РћР±С‰Рѕ СЃСЉР±СЂР°РЅРёРµ РЅР° СЃРѕР±СЃС‚РІРµРЅРёС†РёС‚Рµ</h3>
+            <p>Р”РЅРµСЃ, ${now.toLocaleDateString('bg-BG')} Рі., СЃРµ РїСЂРѕРІРµРґРµ РѕР±С‰Рѕ СЃСЉР±СЂР°РЅРёРµ РЅР° РµС‚Р°Р¶РЅР°С‚Р° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚.</p>
+            <p><strong>РџСЂРµРґСЃС‚Р°РІРµРЅРё РёРґРµР°Р»РЅРё С‡Р°СЃС‚Рё:</strong> ${quorum}</p>
+            <p><strong>Р”РЅРµРІРµРЅ СЂРµРґ:</strong></p>
             <p>${agenda}</p>
             <hr>
-            <p><strong>ХОД НА СЪБРАНИЕТО И ПРИЕТИ РЕШЕНИЯ:</strong></p>
+            <p><strong>РҐРћР” РќРђ РЎРЄР‘Р РђРќРР•РўРћ Р РџР РР•РўР Р Р•РЁР•РќРРЇ:</strong></p>
             <div style="min-height: 300px; border: 1px dashed #ccc; padding: 10px;">
-                <em>[Тук опишете дискусиите и гласуванията за всяка точка...]</em>
+                <em>[РўСѓРє РѕРїРёС€РµС‚Рµ РґРёСЃРєСѓСЃРёРёС‚Рµ Рё РіР»Р°СЃСѓРІР°РЅРёСЏС‚Р° Р·Р° РІСЃСЏРєР° С‚РѕС‡РєР°...]</em>
             </div>
-            <p style="margin-top:40px;">Протоколът е съставен съгласно Чл. 16 от ЗУЕС.</p>
+            <p style="margin-top:40px;">РџСЂРѕС‚РѕРєРѕР»СЉС‚ Рµ СЃСЉСЃС‚Р°РІРµРЅ СЃСЉРіР»Р°СЃРЅРѕ Р§Р». 16 РѕС‚ Р—РЈР•РЎ.</p>
             <div style="display:flex; justify-content: space-between; margin-top:50px;">
-                <div>Председател: ......................</div>
-                <div>Протоколчик: ......................</div>
+                <div>РџСЂРµРґСЃРµРґР°С‚РµР»: ......................</div>
+                <div>РџСЂРѕС‚РѕРєРѕР»С‡РёРє: ......................</div>
             </div>
         </div>
     `;
@@ -1684,35 +1547,35 @@ window.generateMeetingMinutes = function () {
 window.printOwnerDeclaration = async function () {
     const apt = document.getElementById("docAptSelect").value;
     if (!apt) {
-        showToast("Моля, изберете апартамент", "warning");
+        showToast("РњРѕР»СЏ, РёР·Р±РµСЂРµС‚Рµ Р°РїР°СЂС‚Р°РјРµРЅС‚", "warning");
         return;
     }
 
-    // Зареждаме данните от Книгата (ако са налични)
+    // Р—Р°СЂРµР¶РґР°РјРµ РґР°РЅРЅРёС‚Рµ РѕС‚ РљРЅРёРіР°С‚Р° (Р°РєРѕ СЃР° РЅР°Р»РёС‡РЅРё)
     const result = await apiCall('getBookData', { apartment: apt });
     const data = result?.data || {};
 
     let html = `
         <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6;">
-            <h2 style="text-align:center;">ДЕКЛАРАЦИЯ</h2>
-            <p style="text-align:center;">по Чл. 47, ал. 2 от Закона за управление на етажната собственост</p>
+            <h2 style="text-align:center;">Р”Р•РљР›РђР РђР¦РРЇ</h2>
+            <p style="text-align:center;">РїРѕ Р§Р». 47, Р°Р». 2 РѕС‚ Р—Р°РєРѕРЅР° Р·Р° СѓРїСЂР°РІР»РµРЅРёРµ РЅР° РµС‚Р°Р¶РЅР°С‚Р° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚</p>
             <br>
-            <p>До Управителния съвет / Управителя на ЕС</p>
-            <p><strong>ОТНОСНО:</strong> Вписване на данни в Книгата на етажната собственост</p>
+            <p>Р”Рѕ РЈРїСЂР°РІРёС‚РµР»РЅРёСЏ СЃСЉРІРµС‚ / РЈРїСЂР°РІРёС‚РµР»СЏ РЅР° Р•РЎ</p>
+            <p><strong>РћРўРќРћРЎРќРћ:</strong> Р’РїРёСЃРІР°РЅРµ РЅР° РґР°РЅРЅРё РІ РљРЅРёРіР°С‚Р° РЅР° РµС‚Р°Р¶РЅР°С‚Р° СЃРѕР±СЃС‚РІРµРЅРѕСЃС‚</p>
             <br>
-            <p>Долуподписаният/ата: <strong>${data.Owner || '..........................................................'}</strong></p>
-            <p>В качеството ми на собственик/ползвател на самостоятелен обект <strong>№ ${apt}</strong></p>
+            <p>Р”РѕР»СѓРїРѕРґРїРёСЃР°РЅРёСЏС‚/Р°С‚Р°: <strong>${data.Owner || '..........................................................'}</strong></p>
+            <p>Р’ РєР°С‡РµСЃС‚РІРѕС‚Рѕ РјРё РЅР° СЃРѕР±СЃС‚РІРµРЅРёРє/РїРѕР»Р·РІР°С‚РµР» РЅР° СЃР°РјРѕСЃС‚РѕСЏС‚РµР»РµРЅ РѕР±РµРєС‚ <strong>в„– ${apt}</strong></p>
             <br>
-            <p><strong>ДЕКЛАРИРАМ СЛЕДНИТЕ ОБСТОЯТЕЛСТВА:</strong></p>
-            <p>1. Членове на моето домакинство / Обитатели: <br><em>${data.Occupants || '..........................................................'}</em></p>
-            <p>2. Притежавани домашни любимци: <em>${data.Pets || 'Няма'}</em></p>
-            <p>3. Използвам обекта за: <em>${data.Purpose || 'Жилищни нужди'}</em></p>
+            <p><strong>Р”Р•РљР›РђР РР РђРњ РЎР›Р•Р”РќРРўР• РћР‘РЎРўРћРЇРўР•Р›РЎРўР’Рђ:</strong></p>
+            <p>1. Р§Р»РµРЅРѕРІРµ РЅР° РјРѕРµС‚Рѕ РґРѕРјР°РєРёРЅСЃС‚РІРѕ / РћР±РёС‚Р°С‚РµР»Рё: <br><em>${data.Occupants || '..........................................................'}</em></p>
+            <p>2. РџСЂРёС‚РµР¶Р°РІР°РЅРё РґРѕРјР°С€РЅРё Р»СЋР±РёРјС†Рё: <em>${data.Pets || 'РќСЏРјР°'}</em></p>
+            <p>3. РР·РїРѕР»Р·РІР°Рј РѕР±РµРєС‚Р° Р·Р°: <em>${data.Purpose || 'Р–РёР»РёС‰РЅРё РЅСѓР¶РґРё'}</em></p>
             <br>
-            <p>Известно ми е, че за декларирани неверни данни нося наказателна отговорност по чл. 313 от Наказателния кодекс.</p>
+            <p>РР·РІРµСЃС‚РЅРѕ РјРё Рµ, С‡Рµ Р·Р° РґРµРєР»Р°СЂРёСЂР°РЅРё РЅРµРІРµСЂРЅРё РґР°РЅРЅРё РЅРѕСЃСЏ РЅР°РєР°Р·Р°С‚РµР»РЅР° РѕС‚РіРѕРІРѕСЂРЅРѕСЃС‚ РїРѕ С‡Р». 313 РѕС‚ РќР°РєР°Р·Р°С‚РµР»РЅРёСЏ РєРѕРґРµРєСЃ.</p>
             <br><br>
             <div style="display:flex; justify-content: space-between;">
-                <div>Дата: ......................</div>
-                <div>Декларатор: ......................</div>
+                <div>Р”Р°С‚Р°: ......................</div>
+                <div>Р”РµРєР»Р°СЂР°С‚РѕСЂ: ......................</div>
             </div>
         </div>
     `;
@@ -1724,13 +1587,13 @@ window.printOwnerDeclaration = async function () {
 }
 
 // ==============================================
-// МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)
+// РњР•РЎР•Р§Р•Рќ Р¤РРќРђРќРЎРћР’ РћРўР§Р•Рў (Р§Р». 23 Р—РЈР•РЎ)
 // ==============================================
 
 window.openMonthlyReport = function () {
     switchPage('monthly-report');
     const d = new Date();
-    // По подразбиране предходния месец (защото отчетите се правят за завършен период)
+    // РџРѕ РїРѕРґСЂР°Р·Р±РёСЂР°РЅРµ РїСЂРµРґС…РѕРґРЅРёСЏ РјРµСЃРµС† (Р·Р°С‰РѕС‚Рѕ РѕС‚С‡РµС‚РёС‚Рµ СЃРµ РїСЂР°РІСЏС‚ Р·Р° Р·Р°РІСЉСЂС€РµРЅ РїРµСЂРёРѕРґ)
     const lastMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1);
     const periodStr = String(lastMonth.getMonth() + 1).padStart(2, '0') + "." + lastMonth.getFullYear();
     document.getElementById("reportPeriodInput").value = periodStr;
@@ -1786,12 +1649,12 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
     data: {
       invoiced: invoicedCounts,
       collected: totalCollected,
-      logic: rows[0] ? (rows[0].logic || 'Равно') : 'Равно', // Взимаме логиката от първия запис
+      logic: rows[0] ? (rows[0].logic || 'Р Р°РІРЅРѕ') : 'Р Р°РІРЅРѕ', // Р’Р·РёРјР°РјРµ Р»РѕРіРёРєР°С‚Р° РѕС‚ РїСЉСЂРІРёСЏ Р·Р°РїРёСЃ
       apartments: rows.map(r => ({
         apt: r.apartmentId || r.apt || '?',
         occupants: r.occupants || 0,
         chips: r.chips || 0,
-        participation: r.participation || 'Да',
+        participation: r.participation || 'Р”Р°',
         idealParts: r.idealParts || 0,
         due: Number(r.due || 0)
       })).sort((a, b) => {
@@ -1806,31 +1669,31 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
 window.generateReport = async function () {
     const period = document.getElementById("reportPeriodInput").value.trim();
     if (!period) {
-        showToast("Моля, въведете период!", "error");
+        showToast("РњРѕР»СЏ, РІСЉРІРµРґРµС‚Рµ РїРµСЂРёРѕРґ!", "error");
         return;
     }
 
     const btn = document.querySelector("#view-monthly-report .btn-primary");
-    showSaving(btn, "Зареждане...");
+    showSaving(btn, "Р—Р°СЂРµР¶РґР°РЅРµ...");
 
     try {
         const result = await loadMonthlyReportFromFirebase(currentRouteKey, period);
         if (result && result.success && result.data) {
             const d = result.data;
-            document.getElementById("report-title-period").textContent = `за месец ${period} г.`;
+            document.getElementById("report-title-period").textContent = `Р·Р° РјРµСЃРµС† ${period} Рі.`;
             document.getElementById("report-gen-date").textContent = new Date().toLocaleDateString('bg-BG');
 
             const tableBody = document.getElementById("report-invoiced-rows");
             tableBody.innerHTML = "";
 
             const labels = {
-                elevator: "Разходи за асансьор",
-                subscription: "Други абонаменти",
-                light: "Електрическа енергия - общи части",
-                security: "Охрана / Консиерж",
-                cleaning: "Хигиена и почистване",
-                podrajka: "Поддръжка на общи части",
-                remont: 'Фонд \u201eРемонт и обновяване\u201c'
+                elevator: "Р Р°Р·С…РѕРґРё Р·Р° Р°СЃР°РЅСЃСЊРѕСЂ",
+                subscription: "Р”СЂСѓРіРё Р°Р±РѕРЅР°РјРµРЅС‚Рё",
+                light: "Р•Р»РµРєС‚СЂРёС‡РµСЃРєР° РµРЅРµСЂРіРёСЏ - РѕР±С‰Рё С‡Р°СЃС‚Рё",
+                security: "РћС…СЂР°РЅР° / РљРѕРЅСЃРёРµСЂР¶",
+                cleaning: "РҐРёРіРёРµРЅР° Рё РїРѕС‡РёСЃС‚РІР°РЅРµ",
+                podrajka: "РџРѕРґРґСЂСЉР¶РєР° РЅР° РѕР±С‰Рё С‡Р°СЃС‚Рё",
+                remont: 'Р¤РѕРЅРґ \u201eР РµРјРѕРЅС‚ Рё РѕР±РЅРѕРІСЏРІР°РЅРµ\u201c'
             };
 
             for (let key in labels) {
@@ -1848,7 +1711,7 @@ window.generateReport = async function () {
             document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
             document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
 
-            // --- ДОБАВЯНЕ НА СТАТИСТИКА ЗА ПЕРИОДА (ПАРАМЕТРИ ПЕРСОНАЛНО) ---
+            // --- Р”РћР‘РђР’РЇРќР• РќРђ РЎРўРђРўРРЎРўРРљРђ Р—Рђ РџР•Р РРћР”Рђ (РџРђР РђРњР•РўР Р РџР•Р РЎРћРќРђР›РќРћ) ---
             const statsBoxId = "monthly-report-stats-box";
             let statsSect = document.getElementById(statsBoxId);
             if (!statsSect) {
@@ -1858,7 +1721,7 @@ window.generateReport = async function () {
                 statsSect.style.paddingTop = "15px";
                 statsSect.style.borderTop = "1px solid #eee";
             }
-            // Винаги го добавяме наново, за да сме сигурни, че е вътре в самия отчет (преди подписите):
+            // Р’РёРЅР°РіРё РіРѕ РґРѕР±Р°РІСЏРјРµ РЅР°РЅРѕРІРѕ, Р·Р° РґР° СЃРјРµ СЃРёРіСѓСЂРЅРё, С‡Рµ Рµ РІСЉС‚СЂРµ РІ СЃР°РјРёСЏ РѕС‚С‡РµС‚ (РїСЂРµРґРё РїРѕРґРїРёСЃРёС‚Рµ):
             document.getElementById("report-total-collected").parentNode.parentNode.appendChild(statsSect);
 
             let aptRowsHTML = "";
@@ -1878,24 +1741,24 @@ window.generateReport = async function () {
                     `;
                 });
             } else {
-                aptRowsHTML = `<tr><td colspan="6" style="padding: 10px; text-align: center;">Няма налични детайлни данни</td></tr>`;
+                aptRowsHTML = `<tr><td colspan="6" style="padding: 10px; text-align: center;">РќСЏРјР° РЅР°Р»РёС‡РЅРё РґРµС‚Р°Р№Р»РЅРё РґР°РЅРЅРё</td></tr>`;
             }
 
             statsSect.innerHTML = `
                 <div style="page-break-inside: avoid;">
                     <h4 style="margin: 0 0 5px; font-size: 14px; text-transform: uppercase;">
-                        III. Подробни параметри по апартаменти
+                        III. РџРѕРґСЂРѕР±РЅРё РїР°СЂР°РјРµС‚СЂРё РїРѕ Р°РїР°СЂС‚Р°РјРµРЅС‚Рё
                     </h4>
-                    <p style="font-size: 11px; margin-bottom: 15px; color: #555;">Логика на разпределение (Асансьор): <strong>${d.logic || 'Равно'}</strong></p>
+                    <p style="font-size: 11px; margin-bottom: 15px; color: #555;">Р›РѕРіРёРєР° РЅР° СЂР°Р·РїСЂРµРґРµР»РµРЅРёРµ (РђСЃР°РЅСЃСЊРѕСЂ): <strong>${d.logic || 'Р Р°РІРЅРѕ'}</strong></p>
                     <table style="width: 100%; font-size: 12px; color: #333; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 1px solid #ccc; text-align: center; font-weight: normal;">
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Ап.</th>
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Обитатели</th>
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Чипове</th>
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Участие Асан.</th>
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Ид. Части</th>
-                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Начислено</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">РђРї.</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">РћР±РёС‚Р°С‚РµР»Рё</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">Р§РёРїРѕРІРµ</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">РЈС‡Р°СЃС‚РёРµ РђСЃР°РЅ.</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">РРґ. Р§Р°СЃС‚Рё</th>
+                                <th style="padding: 8px 4px; border-bottom: 2px solid #ddd;">РќР°С‡РёСЃР»РµРЅРѕ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1907,13 +1770,13 @@ window.generateReport = async function () {
 
             document.getElementById("report-content").style.display = "block";
         } else {
-            showToast(result?.error || "Няма данни за този период.", "error");
+            showToast(result?.error || "РќСЏРјР° РґР°РЅРЅРё Р·Р° С‚РѕР·Рё РїРµСЂРёРѕРґ.", "error");
             document.getElementById("report-content").style.display = "none";
         }
     } catch (e) {
-        showToast("Грешка при генериране на отчета", "error");
+        showToast("Р“СЂРµС€РєР° РїСЂРё РіРµРЅРµСЂРёСЂР°РЅРµ РЅР° РѕС‚С‡РµС‚Р°", "error");
     } finally {
-        hideSaving(btn, "Покажи");
+        hideSaving(btn, "РџРѕРєР°Р¶Рё");
     }
 }
 
@@ -1921,10 +1784,10 @@ window.printReport = function () {
     const printContents = document.getElementById('report-print-area').innerHTML;
     const originalContents = document.body.innerHTML;
 
-    // Временна смяна на тялото за принтиране (или по-добре чрез CSS media print)
-    // Тъй като това е SPA, print() ще хване всичко. Използваме прост метод:
+    // Р’СЂРµРјРµРЅРЅР° СЃРјСЏРЅР° РЅР° С‚СЏР»РѕС‚Рѕ Р·Р° РїСЂРёРЅС‚РёСЂР°РЅРµ (РёР»Рё РїРѕ-РґРѕР±СЂРµ С‡СЂРµР· CSS media print)
+    // РўСЉР№ РєР°С‚Рѕ С‚РѕРІР° Рµ SPA, print() С‰Рµ С…РІР°РЅРµ РІСЃРёС‡РєРѕ. РР·РїРѕР»Р·РІР°РјРµ РїСЂРѕСЃС‚ РјРµС‚РѕРґ:
     const printWindow = window.open('', '', 'height=800,width=800');
-    printWindow.document.write('<html><head><title>Месечен отчет - ' + document.getElementById("reportPeriodInput").value + '</title>');
+    printWindow.document.write('<html><head><title>РњРµСЃРµС‡РµРЅ РѕС‚С‡РµС‚ - ' + document.getElementById("reportPeriodInput").value + '</title>');
     printWindow.document.write('<style>body{font-family: Arial, sans-serif; padding: 40px;} table{width:100%; border-collapse:collapse;} td{padding:10px 0;} tr.total{font-weight:bold; border-top:2px solid black;}</style>');
     printWindow.document.write('</head><body>');
     printWindow.document.write(printContents);
@@ -1933,9 +1796,9 @@ window.printReport = function () {
     printWindow.print();
 }
 
-// Помощна функция за смяна на страниците
+// РџРѕРјРѕС‰РЅР° С„СѓРЅРєС†РёСЏ Р·Р° СЃРјСЏРЅР° РЅР° СЃС‚СЂР°РЅРёС†РёС‚Рµ
 window.switchPage = function (pageId) {
-    // Всички панели
+    // Р’СЃРёС‡РєРё РїР°РЅРµР»Рё
     const panels = ['view-selector', 'view-entrance-home', 'view-monthly-report'];
     panels.forEach(id => {
         const el = document.getElementById(id);
@@ -1969,7 +1832,7 @@ async function checkRemontEligibility() {
 
         if (input) {
             input.disabled = !allHaveParts;
-            input.placeholder = allHaveParts ? "Обща сума за входа" : "Деактивирано (липсват Ид. части за всички)";
+            input.placeholder = allHaveParts ? "РћР±С‰Р° СЃСѓРјР° Р·Р° РІС…РѕРґР°" : "Р”РµР°РєС‚РёРІРёСЂР°РЅРѕ (Р»РёРїСЃРІР°С‚ РРґ. С‡Р°СЃС‚Рё Р·Р° РІСЃРёС‡РєРё)";
             if(!allHaveParts) input.value = "";
         }
         
@@ -1977,11 +1840,11 @@ async function checkRemontEligibility() {
             warn.style.display = allHaveParts ? "none" : "block";
             if (!allHaveParts) {
                 if (missing.length > 0 && missing.length <= 15) {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за:</b> ${missing.join(", ")}`;
+                    warn.innerHTML = `вљ пёЏ Р—Р° РЅР°С‡РёСЃР»РµРЅРёСЏ РєСЉРј С„РѕРЅРґ СЂРµРјРѕРЅС‚ РїСЉСЂРІРѕ РІСЉРІРµРґРµС‚Рµ РРґ. С‡Р°СЃС‚ (%) Р·Р° <b>РІСЃРёС‡РєРё</b> Р°РїР°СЂС‚Р°РјРµРЅС‚Рё.<br><b>Р›РёРїСЃРІР°С‚ Р·Р°:</b> ${missing.join(", ")}`;
                 } else if (missing.length > 15) {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за <b>всички</b> апартаменти.<br><b>Липсват за ${missing.length} апартамента.</b>`;
+                    warn.innerHTML = `вљ пёЏ Р—Р° РЅР°С‡РёСЃР»РµРЅРёСЏ РєСЉРј С„РѕРЅРґ СЂРµРјРѕРЅС‚ РїСЉСЂРІРѕ РІСЉРІРµРґРµС‚Рµ РРґ. С‡Р°СЃС‚ (%) Р·Р° <b>РІСЃРёС‡РєРё</b> Р°РїР°СЂС‚Р°РјРµРЅС‚Рё.<br><b>Р›РёРїСЃРІР°С‚ Р·Р° ${missing.length} Р°РїР°СЂС‚Р°РјРµРЅС‚Р°.</b>`;
                 } else {
-                    warn.innerHTML = `⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.`;
+                    warn.innerHTML = `вљ пёЏ Р—Р° РЅР°С‡РёСЃР»РµРЅРёСЏ РєСЉРј С„РѕРЅРґ СЂРµРјРѕРЅС‚ РїСЉСЂРІРѕ РІСЉРІРµРґРµС‚Рµ РРґ. С‡Р°СЃС‚ (%) Р·Р° РІСЃРµРєРё Р°РїР°СЂС‚Р°РјРµРЅС‚ РІ MASTER.`;
                 }
             }
         }
@@ -1993,19 +1856,19 @@ async function checkRemontEligibility() {
 window.forceFirebaseSync = async function() {
     const btn = document.getElementById('forceSyncBtn');
     if (!btn) return;
-    showSaving(btn, 'Синхронизиране... (отнема 5-15 сек)');
+    showSaving(btn, 'РЎРёРЅС…СЂРѕРЅРёР·РёСЂР°РЅРµ... (РѕС‚РЅРµРјР° 5-15 СЃРµРє)');
     try {
         const result = await apiCall('forceDataSync', { pin: getStoredPin() });
         if (result && result.success) {
-            showToast('Синхронизацията приключи успешно!', 'success');
+            showToast('РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏС‚Р° РїСЂРёРєР»СЋС‡Рё СѓСЃРїРµС€РЅРѕ!', 'success');
             refreshCurrentView();
         } else {
-            showToast(result?.error || 'роблем при синхронизацията.', 'error');
+            showToast(result?.error || 'СЂРѕР±Р»РµРј РїСЂРё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏС‚Р°.', 'error');
         }
     } catch(e) {
-        showToast('решка при комуникация със сървъра', 'error');
+        showToast('СЂРµС€РєР° РїСЂРё РєРѕРјСѓРЅРёРєР°С†РёСЏ СЃСЉСЃ СЃСЉСЂРІСЉСЂР°', 'error');
     } finally {
-        hideSaving(btn, 'зпрати данните към приложението');
+        hideSaving(btn, 'Р·РїСЂР°С‚Рё РґР°РЅРЅРёС‚Рµ РєСЉРј РїСЂРёР»РѕР¶РµРЅРёРµС‚Рѕ');
     }
 }
 
@@ -2016,18 +1879,18 @@ window.forceFirebaseSync = async function() {
 window.forceFirebaseSync = async function() {
     const btn = document.getElementById("forceSyncBtn");
     if (!btn) return;
-    showSaving(btn, "Синхронизиране... (отнема 5-15 сек)");
+    showSaving(btn, "РЎРёРЅС…СЂРѕРЅРёР·РёСЂР°РЅРµ... (РѕС‚РЅРµРјР° 5-15 СЃРµРє)");
     try {
         const result = await apiCall("forceDataSync", { pin: getStoredPin() });
         if (result && result.success) {
-            showToast("Синхронизацията приключи успешно!", "success");
+            showToast("РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏС‚Р° РїСЂРёРєР»СЋС‡Рё СѓСЃРїРµС€РЅРѕ!", "success");
             refreshCurrentView();
         } else {
-            showToast(result?.error || "Проблем при синхронизацията.", "error");
+            showToast(result?.error || "РџСЂРѕР±Р»РµРј РїСЂРё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏС‚Р°.", "error");
         }
     } catch(e) {
-        showToast("Грешка при комуникация със сървъра", "error");
+        showToast("Р“СЂРµС€РєР° РїСЂРё РєРѕРјСѓРЅРёРєР°С†РёСЏ СЃСЉСЃ СЃСЉСЂРІСЉСЂР°", "error");
     } finally {
-        hideSaving(btn, "Изпрати данните към приложението");
+        hideSaving(btn, "РР·РїСЂР°С‚Рё РґР°РЅРЅРёС‚Рµ РєСЉРј РїСЂРёР»РѕР¶РµРЅРёРµС‚Рѕ");
     }
 }
