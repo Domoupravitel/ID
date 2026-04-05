@@ -480,7 +480,7 @@ body {
 
 .admin-section {
   background: rgba(0, 0, 0, 0.02);
-  border: 4px solid #000 !important;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
