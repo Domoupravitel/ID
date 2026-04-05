@@ -1,4 +1,4 @@
-// ==============================================
+﻿// ==============================================
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
@@ -76,16 +76,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const select = document.getElementById("apartmentSelect");
             const targetApt = decodeURIComponent(aptValue);
             
-            if (apartmentList && apartmentList.length > 0) {
-                // Try to find matching apartment
-                const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
-                              apartmentList.find(a => a === targetApt);
-                
-                if (found) {
-                    select.value = found;
-                    loadApartmentData(found);
+            // Polling approach is safer than a fixed timeout
+            // removed attempts
+            // removed interval wrapper
+                if (apartmentList && apartmentList.length > 0) {
+                    // Try to find matching apartment
+                    const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
+                                  apartmentList.find(a => a === targetApt);
+                    
+                    if (found) {
+                        select.value = found;
+                        loadApartmentData(found);
+                    }
+                    // removed clearInterval
                 }
-            }
+                // removed attempts check
+            // removed interval closing braces
         }
     }
 
@@ -107,19 +113,9 @@ async function loadPublicSettings() {
         const res = await apiCall('getPublicSettings');
         const regLink = document.getElementById("regButtonLink");
         const regText = document.getElementById("regButtonText");
-        const regMsg = document.getElementById("regButtonMessage");
         
         if (res && res.success && regLink) {
-            if (res.showRegForm) {
-                regLink.style.display = "block";
-                if(regMsg) regMsg.style.display = "none";
-            } else {
-                regLink.style.display = "none";
-                if(regMsg) {
-                    regMsg.textContent = res.regFormMessage || "";
-                    regMsg.style.display = res.regFormMessage ? "block" : "none";
-                }
-            }
+            regLink.style.display = res.showRegForm ? "block" : "none";
             if (res.regFormText && regText) {
                 regText.textContent = res.regFormText;
             }
@@ -555,13 +551,8 @@ async function loadDashboardFromFirebase(routeKey) {
       targetFund
     });
 
-    if (balance > 0) {
-      totalDebt += balance;
-    } else if (balance < 0) {
-      const overpayment = Math.abs(balance);
-      const repairContribution = Math.min(overpayment, targetFund);
-      totalBalance += repairContribution;
-    }
+    if (balance > 0) totalDebt += balance;
+    else totalBalance += Math.abs(balance);
     
     totalTargetFund += targetFund;
   });
@@ -922,8 +913,78 @@ window.verifyPin = async function () {
 function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
+
+    // Първоначална подкана за MASTER настройки
+    const masterPromptKey = "hasSeenMasterPrompt_" + currentRouteKey;
+    if (!localStorage.getItem(masterPromptKey)) {
+        setTimeout(() => {
+            showToast("🎁 Добре дошли! Препоръчваме първо да посетите секция 'MASTER – Настройки', за да въведете началните параметри на входа.", "success");
+            localStorage.setItem(masterPromptKey, "true");
+        }, 1000);
+    }
+
+    const subCodeEl = document.getElementById("subscriptionCodeDisplay");
+    if (subCodeEl) {
+        subCodeEl.textContent = currentRouteKey;
+    }
+
+    // Попълваме цените, ако ги имаме запазени
+    const p1 = sessionStorage.getItem("pricePerApt_" + currentRouteKey);
+    const p2 = sessionStorage.getItem("lifetimePrice_" + currentRouteKey);
+    const curr = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+
+    if (p1 && p2) {
+        const aptCount = apartmentList ? apartmentList.length : 0;
+        const totalMonthly = (parseFloat(p1) * aptCount).toFixed(2);
+
+        const mPriceEl = document.getElementById("subMonthlyPrice");
+        const lPriceEl = document.getElementById("subLifetimePrice");
+
+        if (mPriceEl) mPriceEl.textContent = `${totalMonthly} ${curr}`;
+        if (lPriceEl) lPriceEl.textContent = `${p2} ${curr}`;
+    }
+
     populateAdminDropdowns();
     if(typeof checkRemontEligibility === 'function') checkRemontEligibility();
+}
+
+function autoFillCurrentPeriod() {
+    const d = new Date();
+    const currentPeriod = String(d.getMonth() + 1).padStart(2, '0') + "." + d.getFullYear();
+
+    const periodFields = [
+        "adminPeriod", "chargesPeriod",
+        "masterLogikaFrom", "masterUchFrom",
+        "masterObFrom", "masterChFrom", "masterIdFrom"
+    ];
+
+    periodFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.tagName === 'SELECT') {
+            // Populate if empty
+            if (el.options.length === 0) {
+                const year = d.getFullYear();
+                const monthNames = [
+                    "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+                    "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+                ];
+                
+                monthNames.forEach((name, index) => {
+                    const m = String(index + 1).padStart(2, '0');
+                    const val = `${m}.${year}`;
+                    const opt = new Option(`${name} ${year}`, val);
+                    el.appendChild(opt);
+                });
+            }
+            // Always try to set current period as default if no value is set
+            if (!el.getAttribute('data-init-done')) {
+                el.value = currentPeriod;
+                el.setAttribute('data-init-done', 'true');
+            }
+        } else if (el && !el.value) {
+            el.value = currentPeriod;
+        }
+    });
 }
 
 function populateAdminDropdowns() {
@@ -934,6 +995,18 @@ function populateAdminDropdowns() {
             apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
         }
     });
+
+    // ЗУЕС Валидация в реално време за обитатели
+    const obInput = document.getElementById("masterObVal");
+    if (obInput) {
+        obInput.addEventListener("change", (e) => {
+            if (e.target.value !== "" && parseInt(e.target.value) < 1) {
+                showToast("⚠️ Минималният брой е 1. „За самостоятелен обект, в който се пребивава не повече от 30 дни в годината, разходите за управление и поддръжка се заплащат в размера, определен за един обитател.“ (Чл. 51, ал. 1 от ЗУЕС)", "error");
+                e.target.value = 1;
+            }
+        });
+    }
+    autoFillCurrentPeriod();
 }
 
 const getStoredPin = () => sessionStorage.getItem("adminAuth_" + currentRouteKey);
@@ -948,6 +1021,9 @@ window.submitPayment = async function () {
         return;
     }
 
+    const btn = document.getElementById("payBtn");
+    showSaving(btn, "Записване...");
+
     const result = await apiCall('addPayment', {
         pin: getStoredPin(),
         apartment: apt,
@@ -955,12 +1031,94 @@ window.submitPayment = async function () {
         amount: amount
     });
 
+    hideSaving(btn, "Добави плащане");
+
     if (result && result.success) {
         showToast("✅ Успешно добавено плащане.", "success");
         document.getElementById("adminAmount").value = "";
         refreshCurrentView();
     } else {
         showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.loadBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) return;
+
+    // Clear fields first
+    const fields = ["Owner", "Email", "Occupants", "EntryDate", "Pets", "Purpose"];
+    fields.forEach(f => {
+        const el = document.getElementById("book-" + f);
+        if (el) el.value = "";
+    });
+
+    try {
+        const result = await apiCall('getBookData', { apartment: apt });
+        if (result && result.success && result.data) {
+            const d = result.data;
+            if (d["Собственик"]) document.getElementById("book-Owner").value = d["Собственик"];
+            if (d["Имейл"]) document.getElementById("book-Email").value = d["Имейл"];
+            if (d["Обитатели"]) document.getElementById("book-Occupants").value = d["Обитатели"];
+            if (d["Домашни любимци"]) document.getElementById("book-Pets").value = d["Домашни любимци"];
+            if (d["Предназначение"]) document.getElementById("book-Purpose").value = d["Предназначение"];
+
+            if (d["Дата вписване"]) {
+                try {
+                    const date = new Date(d["Дата вписване"]);
+                    if (!isNaN(date.getTime())) {
+                        document.getElementById("book-EntryDate").value = date.toISOString().split('T')[0];
+                    }
+                } catch (e) { }
+            }
+        }
+    } catch (e) {
+        showToast("Грешка при зареждане на данните", "error");
+    }
+}
+
+window.submitBookData = async function () {
+    const apt = document.getElementById("masterBookApt").value;
+    if (!apt) {
+        showToast("Моля, изберете апартамент!", "error");
+        return;
+    }
+
+    const mapping = [
+        { id: "book-Owner", key: "Собственик" },
+        { id: "book-Email", key: "Имейл" },
+        { id: "book-Occupants", key: "Обитатели" },
+        { id: "book-EntryDate", key: "Дата вписване" },
+        { id: "book-Pets", key: "Домашни любимци" },
+        { id: "book-Purpose", key: "Предназначение" }
+    ];
+
+    const updates = {};
+    mapping.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) updates[item.key] = el.value;
+    });
+
+    const btn = document.getElementById('book-save-btn');
+    showSaving(btn, "Записване...");
+
+    try {
+        const result = await apiCall('updateBookData', {
+            pin: getStoredPin(),
+            apartment: apt,
+            updates: JSON.stringify(updates)
+        });
+
+        if (result && result.success) {
+            showToast("✅ Книгата на ЕС е успешно обновена за " + apt, "success");
+        } else {
+            showToast(result?.error || "Грешка при запис", "error");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("Възникна грешка при записа", "error");
+    } finally {
+        hideSaving(btn, "Запиши Промените");
     }
 }
 
@@ -974,20 +1132,37 @@ window.submitCharges = async function () {
     const podrajka = document.getElementById("chargesPodrajka").value.trim();
     const remont = document.getElementById("chargesRemont").value.trim();
 
-    if (!period) { showToast("Периодът е задължителен!", "error"); return; }
-    
+    if (!period) {
+        showToast("Периодът е задължителен!", "error");
+        return;
+    }
+
     const btn = document.getElementById("chargesBtn");
     showSaving(btn, "Записване...");
 
     const result = await apiCall('addCharges', {
         pin: getStoredPin(),
-        period: period, elevator: elev, subscription: sub, light: light,
-        security: security, cleaning: cleaning, podrajka: podrajka, remont: remont
+        period: period,
+        elevator: elev,
+        subscription: sub,
+        light: light,
+        security: security,
+        cleaning: cleaning,
+        podrajka: podrajka,
+        remont: remont
     });
 
     hideSaving(btn, "Запиши начисления");
+
     if (result && result.success) {
         showToast("✅ Успешно записани начисления.", "success");
+        document.getElementById("chargesElevator").value = "";
+        document.getElementById("chargesSubscription").value = "";
+        document.getElementById("chargesLight").value = "";
+        document.getElementById("chargesSecurity").value = "";
+        document.getElementById("chargesCleaning").value = "";
+        document.getElementById("chargesPodrajka").value = "";
+        document.getElementById("chargesRemont").value = "";
         refreshCurrentView();
     } else {
         showToast(result?.error || "Възникна грешка", "error");
@@ -996,10 +1171,15 @@ window.submitCharges = async function () {
 
 window.loadCurrentEmail = async function () {
     const apt = document.getElementById("adminEmailApt").value;
-    if (!apt) { document.getElementById("currentEmailBox").style.display = "none"; return; }
+    if (!apt) {
+        document.getElementById("currentEmailBox").style.display = "none";
+        return;
+    }
+
     const result = await apiCall('getEmail', { apartment: apt });
     if (result && typeof result.email !== 'undefined') {
-        document.getElementById("currentEmail").textContent = result.email || "Няма записан";
+        const span = document.getElementById("currentEmail");
+        span.textContent = result.email ? result.email : "Няма записан";
         document.getElementById("currentEmailBox").style.display = "block";
     }
 }
@@ -1007,15 +1187,234 @@ window.loadCurrentEmail = async function () {
 window.submitEmail = async function () {
     const apt = document.getElementById("adminEmailApt").value;
     const email = document.getElementById("adminEmail").value.trim();
-    if (!apt || !email) { showToast("Изберете апартамент и имейл!", "error"); return; }
-    const result = await apiCall('addEmail', { pin: getStoredPin(), apartment: apt, email: email });
+
+    if (!apt || !email) {
+        showToast("Изберете апартамент и имейл!", "error");
+        return;
+    }
+
+    const btn = document.getElementById("emailBtn");
+    btn.textContent = "Записване...";
+
+    const result = await apiCall('addEmail', {
+        pin: getStoredPin(),
+        apartment: apt,
+        email: email
+    });
+
+    btn.textContent = "Запази имейл";
+
     if (result && result.success) {
         showToast("Имейлът е обновен.", "success");
-        loadCurrentEmail();
+        document.getElementById("adminEmail").value = "";
+        loadCurrentEmail(); // Refresh current email display
+    } else {
+        showToast(result?.error || "Възникна грешка", "error");
     }
 }
 
+window.switchMasterTab = function (tab, btn) {
+    document.querySelectorAll(".master-panel").forEach(p => p.style.display = "none");
+    document.querySelectorAll(".master-tab").forEach(b => {
+        b.classList.remove("active");
+        // Reset special styles for ZUES toggle
+        b.style.background = "";
+        b.style.color = "";
+        b.style.borderColor = "";
+    });
+
+    const pane = document.getElementById("master-tab-" + tab);
+    if (pane) pane.style.display = "block";
+    btn.classList.add("active");
+
+    if (tab === 'zues') {
+        // Синьо когато е активно
+        btn.style.background = "var(--primary)";
+        btn.style.color = "white";
+        btn.style.borderColor = "var(--primary)";
+        switchZuesSubTab('z-book');
+    }
+}
+
+window.submitMaster = async function (sheetName) {
+    // В зависимост от подаденото име (Логика, и т.н.) събираме стойностите
+    let val, fromP, toP, apt;
+
+    if (sheetName === 'Логика') {
+        val = document.getElementById('masterLogikaVal').value;
+        fromP = document.getElementById('masterLogikaFrom').value.trim();
+        toP = "12.2050"; 
+        apt = "";
+    } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
+        apt = document.getElementById('masterUchApt').value;
+        val = document.getElementById('masterUchVal').value;
+        fromP = document.getElementById('masterUchFrom').value.trim();
+        toP = "12.2050";
+    } else if (sheetName === 'ОБИТАТЕЛИ') {
+        apt = document.getElementById('masterObApt').value;
+        val = document.getElementById('masterObVal').value;
+        fromP = document.getElementById('masterObFrom').value.trim();
+        toP = "12.2050";
+        if (val !== "" && parseInt(val) < 1) {
+            showToast("⚠️ Минималният брой е 1.", "error");
+            return;
+        }
+    } else if (sheetName === 'ЧИПОВЕ') {
+        apt = document.getElementById('masterChApt').value;
+        val = document.getElementById('masterChVal').value;
+        fromP = document.getElementById('masterChFrom').value.trim();
+        toP = "12.2050";
+    } else if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
+        apt = document.getElementById('masterIdApt').value;
+        val = document.getElementById('masterIdVal').value;
+        fromP = document.getElementById('masterIdFrom').value.trim();
+        toP = "12.2050";
+    }
+
+    if (sheetName === 'PAYMENT_INFO') {
+        const pText = document.getElementById('masterPaymentText').value.trim();
+
+        const lElectric = document.getElementById('masterLinkElectric').value.trim();
+        const lSub = document.getElementById('masterLinkSubscription').value.trim();
+
+        if (!pText && !aEmail && !lElectric && !lSub) {
+            showToast("Моля, попълнете поне едно поле!", "error");
+            return;
+        }
+
+        // Пращаме го като обект, бекендът ще го разпознае
+        val = JSON.stringify({
+            paymentInfo: pText,
+
+            linkElectric: lElectric,
+            linkSubscription: lSub
+        });
+
+        fromP = "01.2000";
+        apt = "global";
+    }
+
+    if (sheetName !== 'PAYMENT_INFO' && (!val || !fromP || (sheetName !== 'Логика' && !apt))) {
+        showToast("Моля, попълнете задължителните полета!", "error");
+        return;
+    }
+
+    // Изчистваме и намираме активния бутон, за да му сложим Loading State
+    const activeTabObj = document.querySelector(`.master-panel[style*="display: block"] button`);
+    const originalText = activeTabObj ? activeTabObj.textContent : "Запиши";
+    if (activeTabObj) {
+        activeTabObj.disabled = true;
+        activeTabObj.textContent = "Записване...";
+    }
+
+    try {
+        const result = await apiCall('updateMaster', {
+            pin: getStoredPin(),
+            sheet: sheetName,
+            value: val,
+            apartment: apt,
+            fromPeriod: fromP,
+            toPeriod: toP
+        });
+
+        if (result && result.success) {
+            showToast(`Успешно обновен регистър: ${sheetName}`, "success");
+            if (sheetName === 'ОБИТАТЕЛИ') {
+                const valInput = document.getElementById('masterObVal');
+                if (valInput) valInput.value = "";
+            }
+            if (sheetName === 'ЧИПОВЕ') {
+                const valInput = document.getElementById('masterChVal');
+                if (valInput) valInput.value = "";
+            }
+            refreshCurrentView();
+        } else {
+            showToast(result?.error || "Възникна грешка", "error");
+        }
+    } catch (e) {
+        showToast("Сървърна грешка при запис", "error");
+    } finally {
+        if (activeTabObj) {
+            activeTabObj.disabled = false;
+            activeTabObj.textContent = originalText;
+        }
+    }
+}
+
+window.loadApartmentMasterSummary = async function () {
+    const apt = document.getElementById("masterInfoApt").value;
+    const container = document.getElementById("aptMasterSummary");
+    if (!apt) {
+        container.innerHTML = '<p style="color:#666; font-style:italic;">Изберете апартамент...</p>';
+        return;
+    }
+
+    container.innerHTML = "⌛ Зареждане на информация...";
+
+    try {
+        const res = await apiCall('getApartmentMasterSummary', { apartment: apt, pin: getStoredPin() });
+        if (res && res.success) {
+            const d = res.data;
+            container.innerHTML = `
+                <div style="background:rgba(0,122,255,0.05); padding:15px; border-radius:8px; border-left:4px solid var(--primary);">
+                    <h4 style="margin-bottom:10px;">📊 Статус за Апт. ${apt}</h4>
+                    <ul style="list-style:none; padding:0;">
+                        <li><b>👥 Обитатели:</b> ${d.occupants || 0} бр.</li>
+                        <li><b>🔑 Чипове:</b> ${d.chips || 0} бр.</li>
+                        <li><b>🔘 Уч. асансьор:</b> ${d.participation === 'Да' ? '✅ Да' : '❌ Не'}</li>
+                        <li><b>📐 Идеални части:</b> ${d.idealParts || 0}%</li>
+                    </ul>
+                    <p style="font-size:11px; color:#666; margin-top:10px;">* Посочените данни са от текущия MASTER регистър и се използват за следващите начисления.</p>
+                </div>
+            `;
+
+            // Show notice editor
+            const editor = document.getElementById("aptNoticeEditor");
+            const input = document.getElementById("masterAptNoticeVal");
+            if (editor && input) {
+                editor.style.display = "block";
+                input.value = d.notice || "";
+            }
+        } else {
+            container.innerHTML = '<p style="color:red;">Грешка при зареждане на данните.</p>';
+            const editor = document.getElementById("aptNoticeEditor");
+            if (editor) editor.style.display = "none";
+        }
+    } catch (e) {
+        container.innerHTML = '<p style="color:red;">Сървърна грешка.</p>';
+        const editor = document.getElementById("aptNoticeEditor");
+        if (editor) editor.style.display = "none";
+    }
+}
+
+window.submitAptNotice = async function () {
+    const apt = document.getElementById("masterInfoApt").value;
+    const notice = document.getElementById("masterAptNoticeVal").value.trim();
+    if (!apt) return;
+
+    showLoading();
+    const result = await apiCall('updateMaster', {
+        pin: getStoredPin(),
+        sheet: 'PAYMENT_INFO',
+        apartment: apt,
+        value: JSON.stringify({ ['notice_' + normalizeAptName(apt)]: notice })
+    });
+    hideLoading();
+
+    if (result && result.success) {
+        showToast("Персоналното съобщение е запазено!", "success");
+        refreshCurrentView();
+    } else {
+        showToast(result?.error || "Грешка при запис", "error");
+    }
+}
+
+// ==============================================
+// SUPER ADMIN LOGIC 
+// ==============================================
+
 window.openSuperAdmin = function () {
+    console.log("Opening Super Admin Overlay...");
     document.getElementById("superAdminOverlay").style.display = "flex";
     if (sessionStorage.getItem("superAdminAuth")) {
         showSuperAdminDashboard();
@@ -1023,6 +1422,7 @@ window.openSuperAdmin = function () {
         document.getElementById("superAdminLoginCard").style.display = "block";
         document.getElementById("superAdminDashboard").style.display = "none";
         document.getElementById("superPinInput").value = "";
+        document.getElementById("superPinInput").focus();
     }
 }
 
@@ -1032,36 +1432,46 @@ window.closeSuperAdmin = function () {
 
 window.loginSuperAdmin = async function () {
     const pin = document.getElementById("superPinInput").value.trim();
+    if (!pin) {
+        document.getElementById("superPinError").textContent = "Въведете парола!";
+        return;
+    }
+
+    // ПИН кодът се проверява централно през специалния endpoint verifySuperPin
     const result = await apiCall('verifySuperPin', { pin: pin });
+
     if (result && result.success) {
         sessionStorage.setItem("superAdminAuth", pin);
         showSuperAdminDashboard();
     } else {
-        document.getElementById("superPinError").textContent = result.error || "Грешна парола.";
+        document.getElementById("superPinError").textContent = result.error || "Грешна парола за Супер Админ.";
     }
 }
 
 async function showSuperAdminDashboard() {
+    console.log("Loading Super Admin Dashboard...");
     document.getElementById("superAdminLoginCard").style.display = "none";
     document.getElementById("superAdminDashboard").style.display = "block";
+
     try {
         const res = await apiCall('getSuperSettings');
         if (res && res.success) {
-            const setV = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
-            setV("superPaymentOptions", res.paymentOptions);
-            setV("priceBigCities", res.priceBigCities);
-            setV("priceOtherCities", res.priceOtherCities);
-            setV("priceLifetime", res.priceLifetime);
-            setV("superGlobalMessage", res.globalMessage);
-            const showReg = res.showRegForm !== undefined ? res.showRegForm.toString() : "true";
-            setV("superShowRegForm", showReg);
-            setV("superRegFormText", res.regFormText);
-            setV("superRegFormMessage", res.regFormMessage || "");
-
-            const wrapper = document.getElementById("superRegFormMessageWrapper");
-            if (wrapper) wrapper.style.display = (showReg === "false") ? "block" : "none";
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            };
+            setVal("superPaymentOptions", res.paymentOptions);
+            setVal("priceBigCities", res.priceBigCities);
+            setVal("priceOtherCities", res.priceOtherCities);
+            setVal("priceLifetime", res.priceLifetime);
+            setVal("superGlobalMessage", res.globalMessage);
+            setVal("superShowRegForm", res.showRegForm || "true");
+            setVal("superRegFormText", res.regFormText);
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error("Error loading super settings:", e);
+    }
+
     loadSuperAdminEntrances();
     loadSuperExceptions();
 }
@@ -1069,32 +1479,25 @@ async function showSuperAdminDashboard() {
 window.saveSuperSettings = async function () {
     const btn = document.getElementById("saveSuperSettingsBtn");
     showSaving(btn, "Запазване...");
+
     try {
-        const getV = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
-        const reqData = {
-            paymentOptions: getV("superPaymentOptions"),
-            priceBigCities: getV("priceBigCities"),
-            priceOtherCities: getV("priceOtherCities"),
-            priceLifetime: getV("priceLifetime"),
-            showRegForm: document.getElementById("superShowRegForm").value === "true",
-            regFormMessage: getV("superRegFormMessage"),
-            regFormText: getV("superRegFormText")
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : "";
         };
+
+        const reqData = {
+            paymentOptions: getVal("superPaymentOptions"),
+            priceBigCities: getVal("priceBigCities"),
+            priceOtherCities: getVal("priceOtherCities"),
+            priceLifetime: getVal("priceLifetime"),
+            showRegForm: document.getElementById("superShowRegForm").value === "true",
+            regFormText: getVal("superRegFormText")
+        };
+
         const result = await apiCall('updateSuperSettings', {
             pin: sessionStorage.getItem("superAdminAuth"),
             settings: JSON.stringify(reqData)
-        });
-        if (result && result.success) {
-            showToast("✅ Настройките са запазени!", "success");
-        } else {
-            showToast(result.error || "Грешка при запис", "error");
-        }
-    } catch (e) { console.error(e); } finally {
-        hideSaving(btn, "Запази настройките");
-    }
-}
-
-
         });
 
         if (result && result.success) {
