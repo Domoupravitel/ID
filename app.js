@@ -583,7 +583,7 @@ async function loadDashboardData() {
             // Показваме събраното спрямо общото начислено
             const collected = parseFloat(d.totalBalance) || 0;
             const target = parseFloat(d.totalTargetFund) || 0;
-            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur}`;
+            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (${target.toFixed(2)} ${cur})`;
 
             // Trends status text update
             const debtsTrendEl = document.getElementById('dash-debts-trend');
@@ -593,7 +593,13 @@ async function loadDashboardData() {
                 debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
             }
             if (balanceTrendEl) {
-                balanceTrendEl.textContent = parseFloat(d.totalBalance) > 0 ? "Наличен фонд" : "Очаква събиране";
+                if (target > 0) {
+                    balanceTrendEl.textContent = collected > 0 
+                        ? `Събрано ${collected.toFixed(2)} от ${target.toFixed(2)} ${cur}` 
+                        : `Начислено ${target.toFixed(2)} ${cur}`;
+                } else {
+                    balanceTrendEl.textContent = "Няма начислен фонд";
+                }
             }
 
             if (d.trendData && d.trendData.length > 0) {
