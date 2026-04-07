@@ -1,4 +1,4 @@
-﻿// ==============================================
+// ==============================================
 // CONFIGURATION & GLOBAL STATE
 // ==============================================
 
@@ -552,7 +552,10 @@ async function loadDashboardFromFirebase(routeKey) {
     });
 
     if (balance > 0) totalDebt += balance;
-    else totalBalance += Math.abs(balance);
+    else if (balance < 0) {
+      const overpayment = Math.abs(balance);
+      totalBalance += Math.min(overpayment, targetFund);
+    }
     
     totalTargetFund += targetFund;
   });
