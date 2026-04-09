@@ -34,7 +34,6 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="app.js" defer></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -67,6 +66,14 @@
             <button class="admin-close" onclick="closeAdmin()">✕</button>
             <div class="admin-icon">🔐</div>
             <div class="admin-title">Админ панел</div>
+            <!-- Floating Quick Nav -->
+            <div class="admin-quick-nav">
+                <a href="#admin-section-charges" class="quick-nav-btn">Начисления</a>
+                <a href="#admin-section-email" class="quick-nav-btn">Имейл</a>
+                <a href="#admin-section-master" class="quick-nav-btn">Настройки</a>
+                <a href="#admin-section-subscription" class="quick-nav-btn">Абонамент</a>
+            </div>
+
             <div class="admin-subtitle">Въведете вашия имейл и парола</div>
 
             <input type="email" id="adminEmailInput" class="admin-input" placeholder="Имейл адрес"
@@ -96,7 +103,7 @@
 
             <!-- Payment Section -->
             <div class="admin-section">
-                <h3>💰 Добавяне на плащане</h3>
+                <h3 id="admin-section-payment">💰 Добавяне на плащане</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от
                     апартамент за избран период.</p>
                 <label class="admin-label">Апартамент</label>
@@ -110,7 +117,7 @@
 
             <!-- Charges Section -->
             <div class="admin-section">
-                <h3>📋 Начисления</h3>
+                <h3 id="admin-section-charges">📋 Начисления</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте общите разходи на входа за
                     месеца.</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
@@ -144,7 +151,7 @@
 
             <!-- Email Section -->
             <div class="admin-section">
-                <h3>✉️ Имейл на апартамент</h3>
+                <h3 id="admin-section-email">✉️ Имейл на апартамент</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте имейл за получаване на
                     автоматични месечни отчети.</p>
                 <label class="admin-label">Апартамент</label>
@@ -160,7 +167,7 @@
 
             <!-- MASTER Section -->
             <div class="admin-section">
-                <h3>📊 MASTER – Настройки</h3>
+                <h3 id="admin-section-master">📊 MASTER – Настройки</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Управлявайте статусите (Логика,
                     Обитатели, Чипове) за дълги периоди.</p>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px;">
@@ -517,22 +524,10 @@
 
                 <div class="admin-divider" style="margin-top: 20px;"></div>
 
-                <!-- Sync Manual Edits Section -->
-                <div class="admin-section" style="background: rgba(46, 204, 113, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(46, 204, 113, 0.2); margin-top: 15px;">
-                    <h3 style="color: #27ae60; margin-bottom: 8px;">🔄 Синхронизиране на ръчни промени</h3>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
-                        Ако сте нанесли <strong>ръчни корекции или нови начисления директно в Google Sheets таблицата</strong>, 
-                        натиснете бутона по-долу, за да изпратите данните към приложението веднага.
-                    </p>
-                    <button class="admin-btn primary" id="forceSyncBtn" onclick="forceFirebaseSync()" style="background-color: #27ae60; border-color: #27ae60;">
-                        Изпрати данните към приложението
-                    </button>
-                </div>
-
                 <!-- Platform Subscription Section for Domoupraviteli -->
                 <div class="admin-section"
                     style="background: rgba(0, 122, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,122,255,0.2); margin-top: 15px;">
-                    <h3 style="color: var(--primary); margin-bottom: 8px;">⭐ Абонамент към Платформата</h3>
+                    <h3 id="admin-section-subscription" style="color: var(--primary); margin-bottom: 8px;">⭐ Абонамент към Платформата</h3>
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
                         За да удължите автоматично вашия абонамент за тази система, направете банков/ePay превод към
                         Супер
@@ -1030,17 +1025,7 @@
                         </ul>
                     </div>
 
-                    <div class="dashboard-bottom">
-                        <div class="recent-activity glass-panel" style="padding: 20px;">
-                            <div class="panel-header" style="margin-bottom: 20px;">
-                                <h3 style="margin:0; font-family:var(--font-head);">Тенденции на разходите (12 мес.)
-                                </h3>
-                            </div>
-                            <div style="width: 100%; height: 300px; position: relative;">
-                                <canvas id="trendChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
             </div>

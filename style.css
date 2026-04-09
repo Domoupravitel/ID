@@ -715,3 +715,45 @@ body {
         height: 600px;
     }
 }
+
+/* New Admin Quick Nav */
+.admin-quick-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  padding: 10px 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.quick-nav-btn {
+  flex: 1;
+  text-align: center;
+  background: var(--bg-light);
+  color: var(--text-main-light);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 4px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid rgba(0,0,0,0.1);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.quick-nav-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Thicker borders for sections */
+.admin-section {
+  border: 2px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
