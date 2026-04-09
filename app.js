@@ -602,628 +602,13 @@ async function loadDashboardData() {
                 }
             }
 
-            , 1000);
-                }
-            } else {
-                console.log("No trend data available for dashboard chart.");
-            }
-        } else {
-            const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
-            console.error("Dashboard data load failed:", errMsg);
-            // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
-            document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
-            document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
-        }
-    } catch (err) {
-        console.error("Critical error in loadDashboardData:", err);
-    }
-}
-
-// ==============================================
-// CONFIGURATION & GLOBAL STATE
-// ==============================================
-
-// Тук трябва да се постави линка от Google Apps Script, след като се разгърне (Deploy -> Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDypJEQt07rcjZZ0FDDzV_o2QoTfDBaA3p2CGNi99cGT5FeSrJGY-wYGYuB5UO6BZ8jA/exec";
-
-let currentRouteKey = "";
-let apartmentList = [];
-let _currentIdealParts = {};
-
-// ==============================================
-// INITIALIZATION
-// ==============================================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // Възстановяване на запазени данни, ако има такива
-    const savedEmail = localStorage.getItem("savedAdminEmail");
-    const savedId = localStorage.getItem("savedAccessId");
-
-    if (savedEmail) {
-        document.getElementById("adminEmailInput").value = savedEmail;
-    }
-    // We only set savedId if NO id is provided in the URL to avoid overwriting clean IDs with old/partial ones
-    const urlParams = new URLSearchParams(window.location.search);
-    if (savedId && !urlParams.get('id') && !window.location.hash) {
-        document.getElementById("access-id").value = savedId;
-    }
-
-    // Apartment Event Listener for the main view
-    document.getElementById('apartmentSelect').addEventListener('change', (e) => {
-        if (e.target.value) {
-            loadApartmentData(e.target.value);
-        } else {
-            resetApartmentData();
-            // Clear apartment from hash but keep entrance ID
-            if (currentRouteKey) {
-                window.location.hash = encodeURIComponent(currentRouteKey);
-            } else {
-                window.location.hash = "";
-            }
-        }
-    });
-
-    // Handle Enter key for admin login
-    document.getElementById("pinInput").addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') verifyPin();
-    });
-
-    // --- Автоматично влизане (Parsing ID and Apartment from Hash or Query) ---
-    // (use the already declared urlParams)
-    let idValue = urlParams.get('id');
-    let aptValue = urlParams.get('apt');
-
-    // Hash priority - Handle both encoded and raw hashes
-    if (window.location.hash) {
-        try {
-            const rawHash = window.location.hash.replace('#', '');
-            if (rawHash) {
-                // Split first to preserve encoded slashes inside parts if any (though rare in IDs)
-                const parts = rawHash.split('/');
-                if (parts[0]) idValue = decodeURIComponent(parts[0]);
-                if (parts[1]) aptValue = decodeURIComponent(parts[1]);
-            }
-        } catch(e) { console.error("Hash parsing failed", e); }
-    }
-
-    if (idValue) {
-        const cleanId = idValue.trim();
-        document.getElementById('access-id').value = cleanId;
-        
-        // Trigger entrance
-        const success = await enterEntrance();
-
-        if (success && aptValue) {
-            const select = document.getElementById("apartmentSelect");
-            const targetApt = decodeURIComponent(aptValue);
-            
-            // Polling approach is safer than a fixed timeout
-            // removed attempts
-            // removed interval wrapper
-                if (apartmentList && apartmentList.length > 0) {
-                    // Try to find matching apartment
-                    const found = apartmentList.find(a => normalizeAptName(a) === normalizeAptName(targetApt)) || 
-                                  apartmentList.find(a => a === targetApt);
-                    
-                    if (found) {
-                        select.value = found;
-                        loadApartmentData(found);
-                    }
-                    // removed clearInterval
-                }
-                // removed attempts check
-            // removed interval closing braces
-        }
-    }
-
-    // Зареждаме публичните настройки (Бутон за регистрация и т.н.)
-    loadPublicSettings();
-
-    // Ако сме се върнали от ръководството, отваряме админ панела автоматично
-    if (sessionStorage.getItem('shouldOpenAdmin') === 'true') {
-        sessionStorage.removeItem('shouldOpenAdmin');
-        // Даваме малко време на enterEntrance да приключи ако е в ход
-        setTimeout(() => {
-            if (currentRouteKey) openAdmin();
-        }, 800);
-    }
-});
-
-async function loadPublicSettings() {
-    try {
-        const res = await apiCall('getPublicSettings');
-        const regLink = document.getElementById("regButtonLink");
-        const regText = document.getElementById("regButtonText");
-        
-        if (res && res.success && regLink) {
-            regLink.style.display = res.showRegForm ? "block" : "none";
-            if (res.regFormText && regText) {
-                regText.textContent = res.regFormText;
-            }
-        } else if (regLink) {
-            // Default fallback if API fails
-            regLink.style.display = "block";
-        }
-    } catch (e) {
-        console.error("Error loading public settings:", e);
-    }
-}
-
-// ==============================================
-// CORE API CALLER
-// ==============================================
-
-async function apiCall(action, params = {}) {
-    showLoading();
-
-    // Ако SCRIPT_URL не съдържа истински google script URL, връщаме грешка
-    if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) {
-        hideLoading();
-        console.error("Моля, сложете реалния SCRIPT_URL в app.js");
-        showToast("Грешка: Липсва връзка с Google Script (API)", "error");
-        return { error: 'No Script URL configured' };
-    }
-
-    params.action = action;
-    params.routeKey = currentRouteKey;
-
-    const queryParams = new URLSearchParams(params).toString();
-
-    try {
-        const response = await fetch(`${SCRIPT_URL}?${queryParams}`);
-        const result = await response.json();
-        hideLoading();
-        return result;
-    } catch (error) {
-        hideLoading();
-        console.error("API Call failed:", error);
-        showToast("Проблем с връзката към сървъра", "error");
-        return { error: error.toString() };
-    }
-}
-
-// ==============================================
-// UI HELPERS
-// ==============================================
-
-window.activeLoadingRequests = 0;
-window.showLoading = function () { return;
-    window.activeLoadingRequests++;
-    const loader = document.getElementById("loadingOverlay");
-    if (loader) loader.classList.add("active");
-
-    // Safety timeout: ако нещо забие, скриваме лоудъра след 15 секунди
-    clearTimeout(window.loaderSafetyTimeout);
-    window.loaderSafetyTimeout = setTimeout(() => {
-        window.activeLoadingRequests = 0;
-        const loader = document.getElementById("loadingOverlay");
-        if (loader) loader.classList.remove("active");
-    }, 15000);
-}
-window.hideLoading = function () { return;
-    window.activeLoadingRequests--;
-    if (window.activeLoadingRequests > 0) return;
-    window.activeLoadingRequests = 0;
-    const loader = document.getElementById("loadingOverlay");
-    if (loader) loader.classList.remove("active");
-    clearTimeout(window.loaderSafetyTimeout);
-}
-
-window.normalizeAptName = function (name) {
-    if (!name) return "";
-    return name.toString().toUpperCase().replace(/А/g, "A").replace(/\s+/g, "");
-}
-
-function resetApartmentData() {
-    const sc = document.getElementById("saldoCard");
-    sc.className = "card saldo-card saldo-zero";
-    document.getElementById("saldo").textContent = "-";
-    document.getElementById("tableBody").innerHTML = "";
-    document.getElementById("payment-reference-box").style.display = "none";
-    document.getElementById("payment-details-box").style.display = "none";
-    document.getElementById("individualAptNotice").style.display = "none";
-}
-
-// --- TOAST ---
-let toastTimeout;
-window.showToast = function (msg, type) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.className = "toast " + type;
-    clearTimeout(toastTimeout);
-    requestAnimationFrame(() => { t.classList.add("show"); });
-    toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
-}
-
-// --- SAVING STATE (Задача 8: визуална индикация при запис) ---
-window.showSaving = function (btn, text = "⏳ Записване...") {
-    if (!btn) return;
-    btn._originalText = btn.innerHTML;
-    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:7px;">
-        <span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
-        ${text}
-    </span>`;
-    btn.disabled = true;
-    btn.style.opacity = "0.8";
-}
-window.hideSaving = function (btn, originalText) {
-    if (!btn) return;
-    btn.innerHTML = originalText || btn._originalText || "Запази";
-    btn.disabled = false;
-    btn.style.opacity = "";
-}
-
-window.refreshCurrentView = function () {
-    console.log("Refreshing current view data...");
-    loadDashboardData();
-    const apt = document.getElementById("apartmentSelect").value;
-    if (apt) {
-        loadApartmentData(apt);
-    }
-}
-
-window.toggleContactForm = function() {
-    const section = document.getElementById('contact-section');
-    if (section.classList.contains('hidden')) {
-        // Затваряме формата за регистрация, ако е отворена
-        document.getElementById('registration-section').classList.add('hidden');
-        
-        section.classList.remove('hidden');
-        setTimeout(() => {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    } else {
-        section.classList.add('hidden');
-    }
-};
-
-window.toggleRegistrationForm = function() {
-    const section = document.getElementById('registration-section');
-    if (section.classList.contains('hidden')) {
-        // Затваряме формата за контакт, ако е отворена
-        document.getElementById('contact-section').classList.add('hidden');
-        
-        section.classList.remove('hidden');
-        // Плавно скролване до формата, за да я види потребителят веднага
-        setTimeout(() => {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    } else {
-        section.classList.add('hidden');
-    }
-};
-
-// ==============================================
-// ENTRANCE NAVIGATION
-// ==============================================
-
-window.exitEntrance = function () {
-    // Reset state
-    currentRouteKey = "";
-    apartmentList = [];
-    
-    // Clear hash and UI
-    window.location.hash = "";
-    document.getElementById('access-id').value = "";
-    resetApartmentData();
-    
-    // Switch views
-    document.getElementById('view-entrance-home').classList.remove('active');
-    document.getElementById('view-entrance-home').classList.add('hidden');
-    document.getElementById('view-selector').classList.remove('hidden');
-    document.getElementById('view-selector').classList.add('active');
-    
-    // Smooth reset the apartment dropdown
-    const select = document.getElementById("apartmentSelect");
-    if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
-};
-
-window.enterEntrance = async function () {
-    let accessId = document.getElementById('access-id').value.trim();
-
-    // Auto-decode if the field contains encoded characters (handling %D0 %D1 etc.)
-    if (accessId.includes('%')) {
-        try {
-            accessId = decodeURIComponent(accessId);
-            document.getElementById('access-id').value = accessId;
-        } catch(e) {}
-    }
-
-    if (!accessId) {
-        showToast("Моля, въведете вашето ID за достъп!", "error");
-        return false;
-    }
-
-    // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
-    localStorage.setItem("savedAccessId", accessId);
-
-    // Задаваме го като текущ ключ за API заявките
-    currentRouteKey = accessId;
-
-    // Сменяме бутона за индикация
-    const btn = document.querySelector("#view-selector .btn-primary");
-    const originalText = btn.textContent;
-    btn.textContent = "Зареждане...";
-    btn.disabled = true;
-
-    // Зареждаме списъка с апартаменти
-    // Обединена заявка по-долу
-
-    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
-    const [result, configResult] = await Promise.all([
-        apiCall('list', { list: 'apartments' }),
-        apiCall('getEntranceInfo')
-    ]);
-
-    if (configResult && configResult.success && configResult.info) {
-        const info = configResult.info;
-
-        if (info.isHardBlocked) {
-            hideLoading();
-            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
-            btn.textContent = originalText;
-            btn.disabled = false;
-            return false; // PREVENT ENTRY
-        }
-
-        // Възстановяваме бутона веднага щом приключат заявките
-        btn.textContent = originalText;
-        btn.disabled = false;
-
-        // Запазваме цените в сесията
-        if (info.pricePerApt !== undefined) {
-            sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
-            sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
-            sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
-        }
-
-        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
-        if (info.paymentInfo) {
-            document.getElementById('payment-instructions').textContent = info.paymentInfo;
-            document.getElementById('masterPaymentText').value = info.paymentInfo;
-            // Съхраняваме в session за използване при избор на апартамент
-            sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
-        } else {
-            sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
-        }
-        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
-        document.getElementById('payment-details-box').style.display = 'none';
-
-        // Имейл за връзка
-        const adminMailBtn = document.getElementById('admin-mailto-link');
-        if (adminMailBtn) {
-            if (info.adminEmail) {
-                adminMailBtn.href = `mailto:${info.adminEmail}`;
-                adminMailBtn.style.display = 'inline-block';
-            } else {
-                adminMailBtn.style.display = 'none';
-            }
-        }
-
-        // Външни линкове
-        if (info.linkElectric) {
-            document.getElementById('btn-electric-link').href = info.linkElectric;
-            document.getElementById('btn-electric-link').style.display = 'inline-block';
-            document.getElementById('masterLinkElectric').value = info.linkElectric;
-        } else {
-            document.getElementById('btn-electric-link').style.display = 'none';
-        }
-
-        if (info.linkSubscription) {
-            document.getElementById('btn-subscription-link').href = info.linkSubscription;
-            document.getElementById('btn-subscription-link').style.display = 'inline-block';
-            document.getElementById('masterLinkSubscription').value = info.linkSubscription;
-        } else {
-            document.getElementById('btn-subscription-link').style.display = 'none';
-        }
-
-        // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
-        let totalMonthly = 0;
-        const basePrice = parseFloat(info.pricePerApt) || 0;
-        const aptCount = (result && Array.isArray(result)) ? result.length : 0;
-        const individual = info.individualPrices || [];
-        const globalEx = individual.find(ex => ex.apartment === 'ALL');
-
-        if (globalEx) {
-            totalMonthly = aptCount * parseFloat(globalEx.price);
-        } else {
-            totalMonthly = 0;
-            if (Array.isArray(result)) {
-                result.forEach(apt => {
-                    const aptEx = individual.find(ex => ex.apartment === apt);
-                    totalMonthly += aptEx ? parseFloat(aptEx.price) : basePrice;
-                });
-            }
-        }
-
-        const subMonthlyEl = document.getElementById("subMonthlyPrice");
-        const subLifetimeEl = document.getElementById("subLifetimePrice");
-        const subCodeEl = document.getElementById("subscriptionCodeDisplay");
-
-        if (subMonthlyEl) subMonthlyEl.textContent = `${totalMonthly.toFixed(2)} EUR`;
-        if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} EUR`;
-        if (subCodeEl) subCodeEl.textContent = currentRouteKey;
-
-        if (totalMonthly === 0 && aptCount > 0) {
-            if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
-        }
-
-        // --- ГЛОБАЛНО СЪОБЩЕНИЕ ОТ СУПЕР АДМИН ---
-        const newsBanner = document.getElementById("adminGlobalNews");
-        const newsText = document.getElementById("adminGlobalNewsText");
-        if (info.globalMessage && info.globalMessage.trim() !== "") {
-            newsText.innerHTML = info.globalMessage.replace(/\n/g, '<br>');
-            newsBanner.style.display = "block";
-        } else {
-            newsBanner.style.display = "none";
-        }
-
-        // --- СЪОБЩЕНИЕ ОТ ДОМОУПРАВИТЕЛЯ (КЪМ ЖИВУЩИТЕ) ---
-        const userNoticeBanner = document.getElementById("userEntranceNotice");
-        const userNoticeText = document.getElementById("userEntranceNoticeText");
-        const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
-        const userNoticeTextHome = document.getElementById("userEntranceNoticeTextHome");
-
-        if (info.entranceNotice && info.entranceNotice.trim() !== "") {
-            const formatted = info.entranceNotice.replace(/\n/g, '<br>');
-            userNoticeText.innerHTML = formatted;
-            userNoticeBanner.style.display = "block";
-            if (userNoticeTextHome) userNoticeTextHome.innerHTML = formatted;
-            if (userNoticeBannerHome) userNoticeBannerHome.style.display = "block";
-
-            // Populate value in admin tab
-            const adminNoticeInput = document.getElementById("masterEntranceNotice");
-            if (adminNoticeInput) adminNoticeInput.value = info.entranceNotice;
-        } else {
-            userNoticeBanner.style.display = "none";
-            if (userNoticeBannerHome) userNoticeBannerHome.style.display = "none";
-            const adminNoticeInput = document.getElementById("masterEntranceNotice");
-            if (adminNoticeInput) adminNoticeInput.value = "";
-        }
-    } else {
-        // Скриваме всичко, ако няма инфо
-        document.getElementById('payment-details-box').style.display = 'none';
-        document.getElementById('admin-mailto-link').style.display = 'none';
-        document.getElementById('btn-electric-link').style.display = 'none';
-        document.getElementById('btn-subscription-link').style.display = 'none';
-    }
-
-    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
-    if (result && !result.error && Array.isArray(result)) {
-        apartmentList = result;
-
-        // Сортиране по номер на апартамент
-        apartmentList.sort((a, b) => {
-            const numA = parseInt(a.replace(/\D/g, '')) || 0;
-            const numB = parseInt(b.replace(/\D/g, '')) || 0;
-            return numA - numB;
-        });
-
-        // Обновяваме заглавието на входа
-        if (configResult && configResult.info && configResult.info.entranceName) {
-            document.getElementById('entrance-title').textContent = configResult.info.entranceName;
-        } else {
-            document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
-        }
-
-        // Превключваме екрана
-        document.getElementById('view-selector').classList.remove('active');
-        document.getElementById('view-selector').classList.add('hidden');
-        document.getElementById('view-entrance-home').classList.remove('hidden');
-        document.getElementById('view-entrance-home').classList.add('active');
-
-        // Пълним падащото меню
-        const select = document.getElementById("apartmentSelect");
-        select.innerHTML = '<option value="">Избери апартамент</option>';
-        apartmentList.forEach(a => {
-            const opt = document.createElement("option");
-            opt.value = opt.textContent = a;
-            select.appendChild(opt);
-        });
-
-        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
-        const targetHash = "#" + encodeURIComponent(currentRouteKey);
-        if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
-            window.location.hash = targetHash;
-        }
-
-        // Зареждаме дашборда
-        loadDashboardData();
-        return true;
-    } else {
-        const errStr = result && result.error ? result.error.toString() : "";
-        if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
-            showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
-        } else {
-            showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
-        }
-        return false;
-    }
-}
-
-// Check URL params on load
-// (Moved logic to main DOMContentLoaded at the top)
-
-async function loadDashboardFromFirebase(routeKey) {
-  const { collection, getDocs, query, where } = window.fb;
-  const db = window.db;
-
-  const q = query(
-    collection(db, "apartments"),
-    where("buildingId", "==", routeKey)
-  );
-
-  const snapshot = await getDocs(q);
-
-  let totalDebt = 0;
-  let totalBalance = 0;
-  let totalTargetFund = 0;
-
-  const apartments = [];
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const balance = Number(data.balance || 0);
-    const targetFund = Number(data.targetFund || 0);
-
-    apartments.push({
-      id: data.apartmentId,
-      balance,
-      targetFund
-    });
-
-    if (balance > 0) totalDebt += balance;
-    else if (balance < 0) {
-      const overpayment = Math.abs(balance);
-      totalBalance += Math.min(overpayment, targetFund);
-    }
-    
-    totalTargetFund += targetFund;
-  });
-
-  return {
-    success: true,
-    dashboard: {
-      totalDebts: totalDebt.toFixed(2),
-      totalBalance: totalBalance.toFixed(2),
-      totalTargetFund: totalTargetFund.toFixed(2),
-      trendData: []
-    }
-  };
-}
-
-async function loadDashboardData() {
-    try {
-        const result = await loadDashboardFromFirebase(currentRouteKey);
-        if (result && result.success && result.dashboard) {
-            const d = result.dashboard;
-            const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
-
-            document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
-            
-            // Показваме събраното спрямо общото начислено
-            const collected = parseFloat(d.totalBalance) || 0;
-            const target = parseFloat(d.totalTargetFund) || 0;
-            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (${target.toFixed(2)} ${cur})`;
-
-            // Trends status text update
-            const debtsTrendEl = document.getElementById('dash-debts-trend');
-            const balanceTrendEl = document.getElementById('dash-balance-trend');
-
-            if (debtsTrendEl) {
-                debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
-            }
-            if (balanceTrendEl) {
-                if (target > 0) {
-                    balanceTrendEl.textContent = collected > 0 
-                        ? `Събрано ${collected.toFixed(2)} от ${target.toFixed(2)} ${cur}` 
-                        : `Начислено ${target.toFixed(2)} ${cur}`;
+            if (d.trendData && d.trendData.length > 0) {
+                // Ensure Chart.js is loaded before calling initChart
+                if (typeof Chart !== 'undefined') {
+                    initChart(d.trendData);
                 } else {
-                    balanceTrendEl.textContent = "Няма начислен фонд";
-                }
-            }
-
-            , 1000);
+                    console.warn("Chart.js is not loaded yet.");
+                    setTimeout(() => { if (typeof Chart !== 'undefined') initChart(d.trendData); }, 1000);
                 }
             } else {
                 console.log("No trend data available for dashboard chart.");
@@ -1240,7 +625,115 @@ async function loadDashboardData() {
     }
 }
 
+let myChart = null;
+function initChart(data) {
+    const ctx = document.getElementById('trendChart').getContext('2d');
 
+    if (myChart) {
+        myChart.destroy();
+    }
+
+    const labels = data.map(i => i.period);
+
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Асансьор',
+                    data: data.map(i => i.elevator),
+                    borderColor: '#3b6edc',
+                    backgroundColor: 'rgba(59, 110, 220, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Абонамент',
+                    data: data.map(i => i.subscription),
+                    borderColor: '#ff9500',
+                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Осветление',
+                    data: data.map(i => i.light),
+                    borderColor: '#34c759',
+                    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Почистване',
+                    data: data.map(i => i.cleaning),
+                    borderColor: '#5856d6',
+                    backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Поддръжка',
+                    data: data.map(i => i.podrajka),
+                    borderColor: '#ff2d55',
+                    backgroundColor: 'rgba(255, 45, 85, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Фонд ремонт',
+                    data: data.map(i => i.remont),
+                    borderColor: '#8e8e93',
+                    backgroundColor: 'rgba(142, 142, 147, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: { size: 11 }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
 
 // ==============================================
 // APARTMENT DATA
