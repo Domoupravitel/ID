@@ -551,10 +551,14 @@ async function loadDashboardFromFirebase(routeKey) {
       targetFund
     });
 
-    if (balance > 0) totalDebt += balance;
-    else if (balance < 0) {
-      const overpayment = Math.abs(balance);
-      totalBalance += Math.min(overpayment, targetFund);
+    if (balance > 0) {
+      totalDebt += balance;
+      // Дългът включва фонд ремонт. Ако дългът е по-малък от фонда,
+      // значи част от фонда е покрита. Ако е по-голям — нищо от фонда не е платено.
+      totalBalance += Math.max(0, targetFund - balance);
+    } else {
+      // balance <= 0: всичко е платено (вкл. целия фонд ремонт)
+      totalBalance += targetFund;
     }
     
     totalTargetFund += targetFund;
