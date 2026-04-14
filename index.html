@@ -66,13 +66,6 @@
             <button class="admin-close" onclick="closeAdmin()">✕</button>
             <div class="admin-icon">🔐</div>
             <div class="admin-title">Админ панел</div>
-            <!-- Floating Quick Nav -->
-            <div class="admin-quick-nav">
-                <a href="#admin-section-charges" class="quick-nav-btn">Начисления</a>
-                <a href="#admin-section-email" class="quick-nav-btn">Имейл</a>
-                <a href="#admin-section-master" class="quick-nav-btn">Настройки</a>
-                <a href="#admin-section-subscription" class="quick-nav-btn">Абонамент</a>
-            </div>
             <div class="admin-subtitle">Въведете вашия имейл и парола</div>
 
             <input type="email" id="adminEmailInput" class="admin-input" placeholder="Имейл адрес"
@@ -91,6 +84,13 @@
                 <a href="admin_guide.html" target="_blank" onclick="sessionStorage.setItem('shouldOpenAdmin', 'true'); sessionStorage.setItem('originalHash', window.location.hash);"
                     style="font-size: 13px; font-weight: normal; color: var(--primary); text-decoration: none; margin-left: 15px; background: #eefbff; padding: 4px 10px; border-radius: 6px; border: 1px solid #bdeaff;">📘
                     Ръководство</a>
+            </div>
+            <!-- Floating Quick Nav -->
+            <div class="admin-quick-nav">
+                <a href="#admin-section-charges" class="quick-nav-btn">Начисления</a>
+                <a href="#admin-section-email" class="quick-nav-btn">Имейл</a>
+                <a href="#admin-section-master" class="quick-nav-btn">Настройки</a>
+                <a href="#admin-section-subscription" class="quick-nav-btn">Абонамент</a>
             </div>
 
             <!-- Global News Banner -->
