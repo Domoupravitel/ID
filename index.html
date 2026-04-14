@@ -87,10 +87,10 @@
             </div>
             <!-- Floating Quick Nav -->
             <div class="admin-quick-nav">
-                <a href="#admin-section-charges" class="quick-nav-btn">Начисления</a>
-                <a href="#admin-section-email" class="quick-nav-btn">Имейл</a>
-                <a href="#admin-section-master" class="quick-nav-btn">Настройки</a>
-                <a href="#admin-section-subscription" class="quick-nav-btn">Абонамент</a>
+                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-charges')?.scrollIntoView({behavior:'smooth',block:'start'})">Начисления</a>
+                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-email')?.scrollIntoView({behavior:'smooth',block:'start'})">Имейл</a>
+                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-master')?.scrollIntoView({behavior:'smooth',block:'start'})">Настройки</a>
+                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-subscription')?.scrollIntoView({behavior:'smooth',block:'start'})">Абонамент</a>
             </div>
 
             <!-- Global News Banner -->
@@ -166,7 +166,7 @@
 
             <!-- MASTER Section -->
             <div class="admin-section">
-                <h3>📊 MASTER – Настройки</h3>
+                <h3 id="admin-section-master">📊 MASTER – Настройки</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Управлявайте статусите (Логика,
                     Обитатели, Чипове) за дълги периоди.</p>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px;">
