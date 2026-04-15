@@ -4,28 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Етажна собственост | Управление на входове</title>
+    <title>Онлайн Домоуправител — автоматизирано управление</title>
 
     <!-- Търсачки (Google) -->
     <meta name="description"
-        content="Модерна платформа за автоматизирано управление на етажна собственост и входове. Забравете за скъпите професионални домоуправители. Прозрачно и лесно за всички съседи.">
+        content="Автоматизирайте и управлявайте сами разходите в етажната си собственост.">
     <meta name="keywords"
-        content="етажна собственост, домоуправител, управление на блокове, блок, такса вход, асансьор, чипове, професионален домоуправител, id">
-    <meta name="author" content="ID">
+        content="етажна собственост, домоуправител, софтуер за входове, онлайн такси вход, отчетност, блок, сграда, управление на имоти">
+    <meta name="author" content="Етажна Собственост">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://yourwebsite.com"> <!-- Заменете с реалния си домейн -->
+    <link rel="canonical" href="https://domoupravitel.github.io/ID">
 
-    <!-- Open Graph (За споделяне във Facebook, Viber, Messenger) -->
-    <meta property="og:title" content="Етажна собственост | ID">
+    <!-- Open Graph (За търговски вид във Facebook, Viber, Messenger, LinkedIn) -->
+    <meta property="og:title" content="Онлайн Домоуправител — автоматизирано управление">
     <meta property="og:description"
-        content="Платформа за автоматизирано управление на етажна собственост без сложни Excel таблици. Влезте през своя уникален линк.">
+        content="Автоматизирайте и управлявайте сами разходите в етажната си собственост.">
+    <meta property="og:image" content="https://domoupravitel.github.io/ID/media/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Онлайн Домоуправител - Табло за управление">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yourwebsite.com">
+    <meta property="og:url" content="https://domoupravitel.github.io/ID">
+    <meta property="og:site_name" content="Онлайн Домоуправител">
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Етажна собственост | ID">
-    <meta name="twitter:description" content="Платформа за автоматизирано управление на етажна собственост.">
+    <meta name="twitter:title" content="Онлайн Домоуправител — автоматизирано управление">
+    <meta name="twitter:description" content="Автоматизирайте и управлявайте сами разходите в етажната си собственост.">
+    <meta name="twitter:image" content="https://domoupravitel.github.io/ID/media/og-image.png">
 
     <!-- Modern Typography: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -780,8 +786,10 @@
             <div class="selector-card glass-panel" style="margin-top: 60px;">
                 <div class="brand">
                     <div style="display: flex; align-items: flex-start; justify-content: center; gap: 4px;">
-                        <div class="brand-logo" onclick="openSuperAdmin()" style="cursor: pointer;"
-                            title="Вход за създатели">Е</div>
+                        <img src="media/logo.png" alt="Лого Етажна Собственост" onclick="openSuperAdmin()" 
+                            style="width: 56px; height: 56px; border-radius: 14px; cursor: pointer; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" 
+                            title="Вход за създатели" 
+                            onerror="this.onerror=null; this.outerHTML='<div class=\'brand-logo\' onclick=\'openSuperAdmin()\' style=\'cursor: pointer;\' title=\'Вход за създатели\'>Е</div>'">
                         <span class="version-tag">v0.1.6</span>
                     </div>
                     <h1 class="brand-name">Етажна собственост</h1>
