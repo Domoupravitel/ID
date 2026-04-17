@@ -207,7 +207,10 @@ function resetApartmentData() {
 let toastTimeout;
 window.showToast = function (msg, type) {
     const t = document.getElementById("toast");
-    t.textContent = msg;
+    t.innerHTML = `<span style="flex-grow:1;">${msg}</span><button onclick="document.getElementById('toast').classList.remove('show')" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;margin-left:15px;padding:0;line-height:1;">&times;</button>`;
+    t.style.display = "flex";
+    t.style.alignItems = "center";
+    t.style.justifyContent = "space-between";
     t.className = "toast " + type;
     clearTimeout(toastTimeout);
     requestAnimationFrame(() => { t.classList.add("show"); });
