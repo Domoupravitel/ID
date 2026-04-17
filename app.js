@@ -891,7 +891,6 @@ async function loadApartmentData(apartment) {
 
 window.openAdmin = function () {
     document.getElementById("adminOverlay").classList.add("active");
-window.openAdmin = function () {
     document.getElementById("adminOverlay").classList.add("active");
     if (sessionStorage.getItem("adminAuth_" + currentRouteKey)) {
         showAdminContent();
