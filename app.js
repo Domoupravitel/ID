@@ -891,6 +891,8 @@ async function loadApartmentData(apartment) {
 
 window.openAdmin = function () {
     document.getElementById("adminOverlay").classList.add("active");
+window.openAdmin = function () {
+    document.getElementById("adminOverlay").classList.add("active");
     if (sessionStorage.getItem("adminAuth_" + currentRouteKey)) {
         showAdminContent();
     } else {
@@ -971,7 +973,7 @@ function autoFillCurrentPeriod() {
     const periodFields = [
         "adminPeriod", "chargesPeriod",
         "masterLogikaFrom", "masterUchFrom",
-        "masterObFrom", "masterChFrom", "masterIdFrom"
+        "masterObFrom", "masterChFrom", "masterIdFrom", "reportPeriodInput"
     ];
 
     periodFields.forEach(id => {
@@ -984,7 +986,6 @@ function autoFillCurrentPeriod() {
                     "Януари", "Февруари", "Март", "Април", "Май", "Юни",
                     "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
                 ];
-                
                 monthNames.forEach((name, index) => {
                     const m = String(index + 1).padStart(2, '0');
                     const val = `${m}.${year}`;
@@ -2450,3 +2451,6 @@ window.forceFirebaseSync = async function() {
         hideSaving(btn, "Изпрати данните към приложението");
     }
 }
+
+autoFillCurrentPeriod();
+
