@@ -123,7 +123,8 @@
             <!-- Charges Section -->
             <div class="admin-section">
                 <h3 id="admin-section-charges">📋 Начисления</h3>
-                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px; color: #d32f2f; font-weight: 600;">Задава се една обща сума за мес., за добавяне на сума към вече въведена, първо въведете и запишете стойност 0, и след това новата сума!</p>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте общите разходи на входа за
+                    месеца.</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
                 <select id="chargesPeriod" class="admin-input"></select>
                 <label class="admin-label">Асансьор</label>
@@ -1053,7 +1054,8 @@
                 <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
                     <label class="admin-label">Изберете период (ММ.ГГГГ):</label>
                     <div style="display:flex; gap:10px; margin-bottom: 20px; margin-top: 8px;">
-                        <select id="reportPeriodInput" class="admin-input" style="margin:0;"></select>
+                        <input type="text" id="reportPeriodInput" class="admin-input" placeholder="03.2026"
+                            style="margin:0;">
                         <button class="btn btn-primary" onclick="generateReport()"
                             style="padding: 0 20px; white-space: nowrap;">Покажи</button>
                     </div>
