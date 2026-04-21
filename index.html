@@ -96,6 +96,7 @@
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-charges')?.scrollIntoView({behavior:'smooth',block:'start'})">Начисления</a>
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-email')?.scrollIntoView({behavior:'smooth',block:'start'})">Имейл</a>
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-master')?.scrollIntoView({behavior:'smooth',block:'start'})">Настройки</a>
+                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-subscription')?.scrollIntoView({behavior:'smooth',block:'start'})">Абонамент</a>
             </div>
 
             <!-- Global News Banner -->
@@ -511,8 +512,13 @@
                             фактурите.
                         </p>
 
-                        <label class="admin-label" style="font-size: 12px;">Линк за "Фактури/Документи"</label>
+                        <label class="admin-label" style="font-size: 12px;">Линк за "Ф-ри ел."</label>
                         <input type="url" id="masterLinkElectric" class="admin-input"
+                            placeholder="https://drive.google.com/...">
+
+                        <label class="admin-label" style="font-size: 12px; margin-top: 8px;">Линк за
+                            "Абонамент"</label>
+                        <input type="url" id="masterLinkSubscription" class="admin-input"
                             placeholder="https://drive.google.com/...">
                     </div>
 
@@ -903,7 +909,10 @@
             <div class="content-area">
                 <div class="top-buttons">
                     <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
-                        <button class="btn blue">Фактури/Документи</button>
+                        <button class="btn blue">Ф-ри ел.</button>
+                    </a>
+                    <a id="btn-subscription-link" href="#" target="_blank" style="display: none;">
+                        <button class="btn blue">Абонамент</button>
                     </a>
                 </div>
 
