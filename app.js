@@ -207,10 +207,7 @@ function resetApartmentData() {
 let toastTimeout;
 window.showToast = function (msg, type) {
     const t = document.getElementById("toast");
-    t.innerHTML = `<span style="flex-grow:1;">${msg}</span><button onclick="document.getElementById('toast').classList.remove('show')" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer;margin-left:15px;padding:0;line-height:1;">&times;</button>`;
-    t.style.display = "flex";
-    t.style.alignItems = "center";
-    t.style.justifyContent = "space-between";
+    t.textContent = msg;
     t.className = "toast " + type;
     clearTimeout(toastTimeout);
     requestAnimationFrame(() => { t.classList.add("show"); });
@@ -891,7 +888,6 @@ async function loadApartmentData(apartment) {
 
 window.openAdmin = function () {
     document.getElementById("adminOverlay").classList.add("active");
-    document.getElementById("adminOverlay").classList.add("active");
     if (sessionStorage.getItem("adminAuth_" + currentRouteKey)) {
         showAdminContent();
     } else {
@@ -972,7 +968,7 @@ function autoFillCurrentPeriod() {
     const periodFields = [
         "adminPeriod", "chargesPeriod",
         "masterLogikaFrom", "masterUchFrom",
-        "masterObFrom", "masterChFrom", "masterIdFrom", "reportPeriodInput"
+        "masterObFrom", "masterChFrom", "masterIdFrom"
     ];
 
     periodFields.forEach(id => {
@@ -985,6 +981,7 @@ function autoFillCurrentPeriod() {
                     "Януари", "Февруари", "Март", "Април", "Май", "Юни",
                     "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
                 ];
+                
                 monthNames.forEach((name, index) => {
                     const m = String(index + 1).padStart(2, '0');
                     const val = `${m}.${year}`;
@@ -2450,6 +2447,3 @@ window.forceFirebaseSync = async function() {
         hideSaving(btn, "Изпрати данните към приложението");
     }
 }
-
-autoFillCurrentPeriod();
-
