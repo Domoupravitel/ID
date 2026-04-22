@@ -96,7 +96,6 @@
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-charges')?.scrollIntoView({behavior:'smooth',block:'start'})">Начисления</a>
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-email')?.scrollIntoView({behavior:'smooth',block:'start'})">Имейл</a>
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-master')?.scrollIntoView({behavior:'smooth',block:'start'})">Настройки</a>
-                <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-subscription')?.scrollIntoView({behavior:'smooth',block:'start'})">Абонамент</a>
             </div>
 
             <!-- Global News Banner -->
@@ -123,8 +122,7 @@
             <!-- Charges Section -->
             <div class="admin-section">
                 <h3 id="admin-section-charges">📋 Начисления</h3>
-                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте общите разходи на входа за
-                    месеца.</p>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px; color: #d32f2f; font-weight: 600;">Задава се една обща сума за мес., за добавяне на сума към вече въведена, първо въведете и запишете стойност 0, и след това новата сума!</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
                 <select id="chargesPeriod" class="admin-input"></select>
                 <label class="admin-label">Асансьор</label>
@@ -513,13 +511,8 @@
                             фактурите.
                         </p>
 
-                        <label class="admin-label" style="font-size: 12px;">Линк за "Ф-ри ел."</label>
+                        <label class="admin-label" style="font-size: 12px;">Линк за "Фактури/Документи"</label>
                         <input type="url" id="masterLinkElectric" class="admin-input"
-                            placeholder="https://drive.google.com/...">
-
-                        <label class="admin-label" style="font-size: 12px; margin-top: 8px;">Линк за
-                            "Абонамент"</label>
-                        <input type="url" id="masterLinkSubscription" class="admin-input"
                             placeholder="https://drive.google.com/...">
                     </div>
 
@@ -910,10 +903,7 @@
             <div class="content-area">
                 <div class="top-buttons">
                     <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
-                        <button class="btn blue">Ф-ри ел.</button>
-                    </a>
-                    <a id="btn-subscription-link" href="#" target="_blank" style="display: none;">
-                        <button class="btn blue">Абонамент</button>
+                        <button class="btn blue">Фактури/Документи</button>
                     </a>
                 </div>
 
@@ -1054,8 +1044,7 @@
                 <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
                     <label class="admin-label">Изберете период (ММ.ГГГГ):</label>
                     <div style="display:flex; gap:10px; margin-bottom: 20px; margin-top: 8px;">
-                        <input type="text" id="reportPeriodInput" class="admin-input" placeholder="03.2026"
-                            style="margin:0;">
+                        <select id="reportPeriodInput" class="admin-input" style="margin:0;"></select>
                         <button class="btn btn-primary" onclick="generateReport()"
                             style="padding: 0 20px; white-space: nowrap;">Покажи</button>
                     </div>
