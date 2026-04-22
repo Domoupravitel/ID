@@ -388,13 +388,6 @@ window.enterEntrance = async function () {
             document.getElementById('btn-electric-link').style.display = 'none';
         }
 
-        if (info.linkSubscription) {
-            document.getElementById('btn-subscription-link').href = info.linkSubscription;
-            document.getElementById('btn-subscription-link').style.display = 'inline-block';
-            document.getElementById('masterLinkSubscription').value = info.linkSubscription;
-        } else {
-            document.getElementById('btn-subscription-link').style.display = 'none';
-        }
 
         // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
         let totalMonthly = 0;
@@ -462,9 +455,9 @@ window.enterEntrance = async function () {
     } else {
         // Скриваме всичко, ако няма инфо
         document.getElementById('payment-details-box').style.display = 'none';
-        document.getElementById('admin-mailto-link').style.display = 'none';
+        const mailEl = document.getElementById('admin-mailto-link');
+        if (mailEl) mailEl.style.display = 'none';
         document.getElementById('btn-electric-link').style.display = 'none';
-        document.getElementById('btn-subscription-link').style.display = 'none';
     }
 
     // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
@@ -1288,9 +1281,8 @@ window.submitMaster = async function (sheetName) {
         const pText = document.getElementById('masterPaymentText').value.trim();
 
         const lElectric = document.getElementById('masterLinkElectric').value.trim();
-        const lSub = document.getElementById('masterLinkSubscription').value.trim();
 
-        if (!pText && !aEmail && !lElectric && !lSub) {
+        if (!pText && !lElectric) {
             showToast("Моля, попълнете поне едно поле!", "error");
             return;
         }
@@ -1298,9 +1290,7 @@ window.submitMaster = async function (sheetName) {
         // Пращаме го като обект, бекендът ще го разпознае
         val = JSON.stringify({
             paymentInfo: pText,
-
-            linkElectric: lElectric,
-            linkSubscription: lSub
+            linkElectric: lElectric
         });
 
         fromP = "01.2000";
