@@ -768,25 +768,28 @@ async function loadApartmentFromFirebase(routeKey, apartmentId) {
   });
 
   rawPeriods.sort((a, b) => {
-    const [mA, yA] = (a.period || "").split(".");
-    const [mB, yB] = (b.period || "").split(".");
+    const [mA, yA] = (a.periodId || a.period || "").split(".");
+    const [mB, yB] = (b.periodId || b.period || "").split(".");
     const dA = new Date(yA, mA - 1);
     const dB = new Date(yB, mB - 1);
     return dA - dB;
   });
 
-  result.periods = rawPeriods.map(p => ({
-    period: p.period,
-    elevator: Number(p.elevator || 0),
-    subscription: Number(p.subscription || 0),
-    light: Number(p.light || 0),
-    security: Number(p.security || 0),
-    cleaning: Number(p.cleaning || 0),
-    podrajka: Number(p.podrajka || 0),
-    remont: Number(p.remont || 0),
-    due: Number(p.due || 0),
-    paid: Number(p.paid || 0)
-  }));
+  result.periods = rawPeriods.map(p => {
+    const d = p.details || {};
+    return {
+      period: p.periodId || p.period,
+      elevator: Number(d["Асансьор"] || p.elevator || 0),
+      subscription: Number(d["Абонамент"] || p.subscription || 0),
+      light: Number(d["Ток"] || p.light || 0),
+      security: Number(d["Вход"] || p.security || 0),
+      cleaning: Number(d["Чистач"] || p.cleaning || 0),
+      podrajka: Number(d["Поддръжка"] || p.podrajka || 0),
+      remont: Number(d["Ремонт"] || p.remont || 0),
+      due: Number(p.totalDue || p.due || 0),
+      paid: Number(p.totalPaid || p.paid || 0)
+    };
+  });
 
   return result;
 }
@@ -2150,7 +2153,7 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
   const q = query(
     collection(db, "monthlyReports"),
     where("buildingId", "==", routeKey),
-    where("period", "==", period)
+    where("periodId", "==", period)
   );
 
   const snapshot = await getDocs(q);
@@ -2168,19 +2171,20 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
   snapshot.forEach(doc => {
     const d = doc.data();
 
-    const due = Number(d.due || 0);
-    const paid = Number(d.paid || 0);
+    const due = Number(d.totalDue || d.due || 0);
+    const paid = Number(d.totalPaid || d.paid || 0);
 
     totalInvoiced += due;
     totalCollected += paid;
 
-    invoicedCounts.elevator += Number(d.elevator || 0);
-    invoicedCounts.subscription += Number(d.subscription || 0);
-    invoicedCounts.light += Number(d.light || 0);
-    invoicedCounts.security += Number(d.security || 0);
-    invoicedCounts.cleaning += Number(d.cleaning || 0);
-    invoicedCounts.podrajka += Number(d.podrajka || 0);
-    invoicedCounts.remont += Number(d.remont || 0);
+    const det = d.details || {};
+    invoicedCounts.elevator += Number(det["Асансьор"] || d.elevator || 0);
+    invoicedCounts.subscription += Number(det["Абонамент"] || d.subscription || 0);
+    invoicedCounts.light += Number(det["Ток"] || d.light || 0);
+    invoicedCounts.security += Number(det["Вход"] || d.security || 0);
+    invoicedCounts.cleaning += Number(det["Чистач"] || d.cleaning || 0);
+    invoicedCounts.podrajka += Number(det["Поддръжка"] || d.podrajka || 0);
+    invoicedCounts.remont += Number(det["Ремонт"] || d.remont || 0);
 
     rows.push(d);
   });
@@ -2199,7 +2203,7 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
         chips: r.chips || 0,
         participation: r.participation || 'Да',
         idealParts: r.idealParts || 0,
-        due: Number(r.due || 0)
+        due: Number(r.totalDue || r.due || 0)
       })).sort((a, b) => {
         const numA = parseInt(a.apt.replace(/[^0-9]/g, '')) || 0;
         const numB = parseInt(b.apt.replace(/[^0-9]/g, '')) || 0;
