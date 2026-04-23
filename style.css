@@ -757,3 +757,33 @@ body {
   border: 2px solid rgba(0, 0, 0, 0.12) !important;
   box-shadow: 0 4px 10px rgba(0,0,0,0.02);
 }
+
+/* Charge Current Value Badge */
+.charge-current {
+  font-size: 11px;
+  font-weight: 500;
+  color: #3b6edc;
+  background: rgba(59, 110, 220, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 4px;
+  letter-spacing: 0.2px;
+  transition: all 0.3s ease;
+}
+.charge-current.has-value {
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.08);
+}
+.charge-current.no-value {
+  color: #999;
+  background: rgba(0,0,0,0.04);
+}
+.charge-current.loading {
+  color: #999;
+  background: rgba(0,0,0,0.03);
+  animation: pulse-fade 1s infinite;
+}
+@keyframes pulse-fade {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

@@ -1131,6 +1131,92 @@ window.submitBookData = async function () {
     }
 }
 
+// ==============================================
+// ЗАРЕЖДАНЕ НА ТЕКУЩИ НАЧИСЛЕНИЯ ЗА ИЗБРАН ПЕРИОД
+// ==============================================
+
+const chargeLabelsMap = [
+    { labelId: 'lbl-chargesElevator',     name: 'Асансьор',     key: 'elevator' },
+    { labelId: 'lbl-chargesSubscription', name: 'Абонамент',    key: 'subscription' },
+    { labelId: 'lbl-chargesLight',        name: 'Осветление',   key: 'light' },
+    { labelId: 'lbl-chargesSecurity',     name: 'Охрана',       key: 'security' },
+    { labelId: 'lbl-chargesCleaning',     name: 'Почистване',   key: 'cleaning' },
+    { labelId: 'lbl-chargesPodrajka',     name: 'Поддръжка',    key: 'podrajka' },
+    { labelId: 'lbl-chargesRemont',       name: 'Фонд Ремонт', key: 'remont' }
+];
+
+function updateChargeLabel(labelId, name, value) {
+    const lbl = document.getElementById(labelId);
+    if (!lbl) return;
+    const span = lbl.querySelector('.charge-current');
+    if (!span) return;
+
+    if (value !== null && value !== undefined && value !== '' && Number(value) !== 0) {
+        const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+        span.textContent = `(текущо ${Number(value).toFixed(2)} ${cur})`;
+        span.className = 'charge-current has-value';
+    } else {
+        span.textContent = '(текущо —)';
+        span.className = 'charge-current no-value';
+    }
+}
+
+function setChargeLabelsLoading() {
+    chargeLabelsMap.forEach(c => {
+        const lbl = document.getElementById(c.labelId);
+        if (!lbl) return;
+        const span = lbl.querySelector('.charge-current');
+        if (span) {
+            span.textContent = '(зареждане...)';
+            span.className = 'charge-current loading';
+        }
+    });
+}
+
+function clearChargeLabels() {
+    chargeLabelsMap.forEach(c => {
+        const lbl = document.getElementById(c.labelId);
+        if (!lbl) return;
+        const span = lbl.querySelector('.charge-current');
+        if (span) {
+            span.textContent = '';
+            span.className = 'charge-current';
+        }
+    });
+}
+
+window.loadCurrentCharges = async function () {
+    const period = document.getElementById("chargesPeriod").value.trim();
+    if (!period) {
+        clearChargeLabels();
+        return;
+    }
+
+    setChargeLabelsLoading();
+
+    try {
+        // Четем директно от Firebase колекция buildingCharges — мигновено
+        const { collection, getDocs, query, where, doc, getDoc } = window.fb;
+        const db = window.db;
+
+        // Опитваме да вземем конкретния документ по ID
+        const docId = currentRouteKey + "_" + period;
+        const docRef = doc(collection(db, "buildingCharges"), docId);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists()) {
+            const data = snap.data();
+            chargeLabelsMap.forEach(c => updateChargeLabel(c.labelId, c.name, data[c.key]));
+        } else {
+            // Няма записани глобални начисления за този период
+            chargeLabelsMap.forEach(c => updateChargeLabel(c.labelId, c.name, null));
+        }
+    } catch (e) {
+        console.error('loadCurrentCharges error:', e);
+        clearChargeLabels();
+    }
+}
+
 window.submitCharges = async function () {
     const period = document.getElementById("chargesPeriod").value.trim();
     const elev = document.getElementById("chargesElevator").value.trim();
@@ -1173,6 +1259,7 @@ window.submitCharges = async function () {
         document.getElementById("chargesPodrajka").value = "";
         document.getElementById("chargesRemont").value = "";
         refreshCurrentView();
+        loadCurrentCharges(); // Обновяваме текущите стойности в лейбълите
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }

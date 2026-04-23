@@ -43,7 +43,7 @@
         <script src="app.js" defer></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "XXX",
@@ -55,7 +55,7 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.fb = { collection, getDocs, query, where };
+        window.fb = { collection, getDocs, doc, getDoc, query, where };
     </script>
 </head>
 
@@ -124,26 +124,26 @@
                 <h3 id="admin-section-charges">📋 Начисления</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px; color: #d32f2f; font-weight: 600;">Задава се една обща сума за мес., за добавяне на сума към вече въведена, първо въведете и запишете стойност 0, и след това новата сума!</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
-                <select id="chargesPeriod" class="admin-input"></select>
-                <label class="admin-label">Асансьор</label>
+                <select id="chargesPeriod" class="admin-input" onchange="loadCurrentCharges()"></select>
+                <label class="admin-label" id="lbl-chargesElevator">Асансьор <span class="charge-current"></span></label>
                 <input type="number" id="chargesElevator" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Абонамент</label>
+                <label class="admin-label" id="lbl-chargesSubscription">Абонамент <span class="charge-current"></span></label>
                 <input type="number" id="chargesSubscription" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Осветление</label>
+                <label class="admin-label" id="lbl-chargesLight">Осветление <span class="charge-current"></span></label>
                 <input type="number" id="chargesLight" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Охрана</label>
+                <label class="admin-label" id="lbl-chargesSecurity">Охрана <span class="charge-current"></span></label>
                 <input type="number" id="chargesSecurity" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Почистване</label>
+                <label class="admin-label" id="lbl-chargesCleaning">Почистване <span class="charge-current"></span></label>
                 <input type="number" id="chargesCleaning" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Поддръжка</label>
+                <label class="admin-label" id="lbl-chargesPodrajka">Поддръжка <span class="charge-current"></span></label>
                 <input type="number" id="chargesPodrajka" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label">Фонд Ремонт</label>
+                <label class="admin-label" id="lbl-chargesRemont">Фонд Ремонт <span class="charge-current"></span></label>
                 <input type="number" id="chargesRemont" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
                 <div id="remontWarning" style="color: #ff9800; font-size: 0.75rem; margin-top: 4px; display:none;">
