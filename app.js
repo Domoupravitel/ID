@@ -1004,8 +1004,7 @@ function populateAdminDropdowns() {
             apartmentList.forEach(a => sel.appendChild(new Option(a, a)));
         }
     });
-
-    // ЗУЕС Валидация в реално време за обитатели
+// ЗУЕС Валидация в реално време за обитатели
     const obInput = document.getElementById("masterObVal");
     if (obInput) {
         obInput.addEventListener("change", (e) => {
@@ -1016,6 +1015,8 @@ function populateAdminDropdowns() {
         });
     }
     autoFillCurrentPeriod();
+    if (typeof loadCurrentCharges === 'function') loadCurrentCharges();
+    if (typeof loadPaymentDue === 'function') loadPaymentDue();
 }
 
 const getStoredPin = () => sessionStorage.getItem("adminAuth_" + currentRouteKey);
@@ -1046,10 +1047,60 @@ window.submitPayment = async function () {
         showToast("✅ Успешно добавено плащане.", "success");
         document.getElementById("adminAmount").value = "";
         refreshCurrentView();
+        if (typeof loadPaymentDue === 'function') loadPaymentDue();
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
 }
+
+
+window.loadPaymentDue = async function() {
+    const apt = document.getElementById("adminApt").value;
+    const period = document.getElementById("adminPeriod").value.trim();
+    const lbl = document.getElementById("lbl-paymentDue");
+    
+    if (!lbl) return;
+    
+    if (!apt || !period || !window.fb || !window.db) {
+        lbl.innerHTML = "";
+        lbl.className = "charge-current";
+        return;
+    }
+    
+    lbl.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
+    lbl.className = "charge-current loading";
+    
+    try {
+        const { collection, doc, getDoc } = window.fb;
+        const db = window.db;
+        
+        const docId = currentRouteKey + "_" + apt + "_" + period;
+        const docRef = doc(collection(db, "monthlyReports"), docId);
+        const snap = await getDoc(docRef);
+        
+        if (snap.exists()) {
+            const data = snap.data();
+            const due = Number(data.totalDue || data.due || 0);
+            const paid = Number(data.totalPaid || data.paid || 0);
+            const remaining = due - paid;
+            
+            lbl.className = "charge-current " + (remaining > 0 ? "value-red" : "value-green");
+            if (remaining > 0) {
+                lbl.innerText = "(остатък " + remaining.toFixed(2) + " " + (sessionStorage.getItem("currency_" + currentRouteKey) || "лв.") + ")";
+            } else if (due > 0 && remaining <= 0) {
+                lbl.innerText = "(платено)";
+            } else {
+                lbl.innerText = "(няма задължение)";
+            }
+        } else {
+            lbl.className = "charge-current";
+            lbl.innerText = "(няма данни)";
+        }
+    } catch (e) {
+        lbl.className = "charge-current";
+        lbl.innerText = "";
+    }
+};
 
 window.loadBookData = async function () {
     const apt = document.getElementById("masterBookApt").value;
