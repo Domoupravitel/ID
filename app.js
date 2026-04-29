@@ -1086,18 +1086,19 @@ window.loadPaymentDue = async function() {
         if (aptSnap.exists()) {
             const aptData = aptSnap.data();
             const bal = Number(aptData.balance || 0);
-            balanceStr = `, салдо ${bal.toFixed(2)} ${currency}`;
+            const colorClass = bal > 0 ? "value-red" : "value-green";
+            balanceStr = `, салдо <span class="${colorClass}">${bal.toFixed(2)} ${currency}</span>`;
         }
         
         if (snap.exists()) {
             const data = snap.data();
             const paid = Number(data.totalPaid || data.paid || 0);
             
-            lbl.className = "charge-current value-green";
-            lbl.innerText = `(платено ${paid.toFixed(2)} ${currency}${balanceStr})`;
+            lbl.className = "charge-current";
+            lbl.innerHTML = `(платено <span class="value-green">${paid.toFixed(2)} ${currency}</span>${balanceStr})`;
         } else {
             lbl.className = "charge-current";
-            lbl.innerText = `(платено 0.00 ${currency}${balanceStr})`;
+            lbl.innerHTML = `(платено 0.00 ${currency}${balanceStr})`;
         }
     } catch (e) {
         lbl.className = "charge-current";
