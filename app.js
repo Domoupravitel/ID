@@ -1076,25 +1076,28 @@ window.loadPaymentDue = async function() {
         
         const docId = currentRouteKey + "_" + apt + "_" + period;
         const docRef = doc(collection(db, "monthlyReports"), docId);
-        const snap = await getDoc(docRef);
+        const aptDocRef = doc(collection(db, "apartments"), currentRouteKey + "_" + apt);
+        
+        const [snap, aptSnap] = await Promise.all([getDoc(docRef), getDoc(aptDocRef)]);
+        
+        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "лв.";
+        let balanceStr = "";
+        
+        if (aptSnap.exists()) {
+            const aptData = aptSnap.data();
+            const bal = Number(aptData.balance || 0);
+            balanceStr = `, салдо ${bal.toFixed(2)} ${currency}`;
+        }
         
         if (snap.exists()) {
             const data = snap.data();
-            const due = Number(data.totalDue || data.due || 0);
             const paid = Number(data.totalPaid || data.paid || 0);
-            const remaining = due - paid;
             
-            lbl.className = "charge-current " + (remaining > 0 ? "value-red" : "value-green");
-            if (remaining > 0) {
-                lbl.innerText = "(остатък " + remaining.toFixed(2) + " " + (sessionStorage.getItem("currency_" + currentRouteKey) || "лв.") + ")";
-            } else if (due > 0 && remaining <= 0) {
-                lbl.innerText = "(платено)";
-            } else {
-                lbl.innerText = "(няма задължение)";
-            }
+            lbl.className = "charge-current value-green";
+            lbl.innerText = `(платено ${paid.toFixed(2)} ${currency}${balanceStr})`;
         } else {
             lbl.className = "charge-current";
-            lbl.innerText = "(няма данни)";
+            lbl.innerText = `(платено 0.00 ${currency}${balanceStr})`;
         }
     } catch (e) {
         lbl.className = "charge-current";
