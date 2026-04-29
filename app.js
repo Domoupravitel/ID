@@ -2335,14 +2335,17 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
       invoiced: invoicedCounts,
       collected: totalCollected,
       logic: rows[0] ? (rows[0].logic || 'Равно') : 'Равно', // Взимаме логиката от първия запис
-      apartments: rows.map(r => ({
-        apt: r.apartmentId || r.apt || '?',
-        occupants: r.occupants || 0,
-        chips: r.chips || 0,
-        participation: r.participation || 'Да',
-        idealParts: r.idealParts || 0,
-        due: Number(r.totalDue || r.due || 0)
-      })).sort((a, b) => {
+      apartments: rows.map(r => {
+        const d = r.details || {};
+        return {
+          apt: r.apartmentId || r.apt || '?',
+          occupants: d["Обитатели"] !== undefined ? d["Обитатели"] : (r.occupants || 0),
+          chips: d["Чипове"] !== undefined ? d["Чипове"] : (r.chips || 0),
+          participation: d["Участие"] !== undefined ? d["Участие"] : (r.participation || 'Да'),
+          idealParts: d["Ид. части"] !== undefined ? d["Ид. части"] : (r.idealParts || 0),
+          due: Number(r.totalDue || r.due || 0)
+        };
+      }).sort((a, b) => {
         const numA = parseInt(a.apt.replace(/[^0-9]/g, '')) || 0;
         const numB = parseInt(b.apt.replace(/[^0-9]/g, '')) || 0;
         return numA - numB;
