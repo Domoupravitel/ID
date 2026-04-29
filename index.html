@@ -111,6 +111,9 @@
             <div class="admin-section">
                 <h3 id="admin-section-payment">💰 Добавяне на плащане</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от
+                            <div class="admin-section">
+                <h3 id="admin-section-payment">💰 Добавяне на плащане</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от
                     апартамент за избран период.</p>
                 <label class="admin-label">Апартамент</label>
                 <select id="adminApt" class="admin-input" onchange="loadPaymentDue()"></select>
@@ -127,10 +130,10 @@
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px; color: #d32f2f; font-weight: 600;">Въвеждане на стойност изтрива и замества текущата, а не я допълва!</p>
                 <label class="admin-label">Период (MM.YYYY)</label>
                 <select id="chargesPeriod" class="admin-input" onchange="loadCurrentCharges()"></select>
-                <label class="admin-label" id="lbl-chargesElevator">Асансьор <span class="charge-current"></span></label>
+                <label class="admin-label" id="lbl-chargesElevator">Асансьор ел. <span class="charge-current"></span></label>
                 <input type="number" id="chargesElevator" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
-                <label class="admin-label" id="lbl-chargesSubscription">Абонамент <span class="charge-current"></span></label>
+                <label class="admin-label" id="lbl-chargesSubscription">Асансьор абон. и др. <span class="charge-current"></span></label>
                 <input type="number" id="chargesSubscription" class="admin-input" placeholder="оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesLight">Осветление <span class="charge-current"></span></label>
