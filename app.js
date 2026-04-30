@@ -2092,7 +2092,6 @@ window.printFullBook = function () {
     win.document.close();
 }
 
-
 window.populateAttendanceTable = async function () {
     const list = document.getElementById("meeting-attendance-list");
     if (!list) return;
@@ -2243,28 +2242,126 @@ window.printOwnerDeclaration = async function () {
     const result = await apiCall('getBookData', { apartment: apt });
     const data = result?.data || {};
 
+    const ownerName = data.Owner || '';
+    const occupants = data.Occupants || '';
+    const purpose = data.Purpose || '';
+    const pets = data.Pets || '';
+    const idealParts = data.IdealParts || '';
+
     let html = `
-        <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6;">
-            <h2 style="text-align:center;">ДЕКЛАРАЦИЯ</h2>
-            <p style="text-align:center;">по Чл. 47, ал. 2 от Закона за управление на етажната собственост</p>
-            <br>
-            <p>До Управителния съвет / Управителя на ЕС</p>
-            <p><strong>ОТНОСНО:</strong> Вписване на данни в Книгата на етажната собственост</p>
-            <br>
-            <p>Долуподписаният/ата: <strong>${data.Owner || '..........................................................'}</strong></p>
-            <p>В качеството ми на собственик/ползвател на самостоятелен обект <strong>№ ${apt}</strong></p>
-            <br>
-            <p><strong>ДЕКЛАРИРАМ СЛЕДНИТЕ ОБСТОЯТЕЛСТВА:</strong></p>
-            <p>1. Членове на моето домакинство / Обитатели: <br><em>${data.Occupants || '..........................................................'}</em></p>
-            <p>2. Притежавани домашни любимци: <em>${data.Pets || 'Няма'}</em></p>
-            <p>3. Използвам обекта за: <em>${data.Purpose || 'Жилищни нужди'}</em></p>
-            <br>
-            <p>Известно ми е, че за декларирани неверни данни нося наказателна отговорност по чл. 313 от Наказателния кодекс.</p>
-            <br><br>
-            <div style="display:flex; justify-content: space-between;">
-                <div>Дата: ......................</div>
-                <div>Декларатор: ......................</div>
+        <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 900px; margin: auto; line-height: 1.4; font-size: 12px; color: #000;">
+            <p style="text-align:center; font-weight: bold; margin-top: 0; margin-bottom: 20px;">
+                ДЕКЛАРАЦИЯ ЗА ВПИСВАНЕ НА ДАННИ И ЗА ПРОМЯНА НА ОБСТОЯТЕЛСТВА НА ДАННИ В КНИГАТА НА ЕТАЖНАТА СОБСТВЕНОСТ ПО ЧЛ. 7, АЛ. 3 ОТ ЗАКОНА ЗА УПРАВЛЕНИЕ НА ЕТАЖНАТА СОБСТВЕНОСТ
+            </p>
+            
+            <p style="text-align:justify;">
+                Долуподписаният/ата <strong>${ownerName ? ownerName : '...........................................................................'}</strong>, в качеството си на собственик/ползвател, декларирам следните данни за вписване в книгата на етажната собственост съгласно чл. 7, ал. 2 от ЗУЕС относно самостоятелен обект <strong>№ ${apt}</strong> в сграда в режим на етажна собственост по реда на чл. 7, ал. 3 от ЗУЕС:
+            </p>
+            
+            <p>1. Местонахождение (вход, етаж и № на обекта в сградата): ..............................................................</p>
+            <p>2. Застроена площ: ....................................................................................</p>
+            <p>3. Предназначение: <strong>${purpose ? purpose : '............................................................................'}</strong></p>
+            <p>4. Идеални части на обекта от общите части на сградата (в проценти): <strong>${idealParts ? idealParts : '............'}</strong> *</p>
+            <p style="font-size: 10px; color: #555;">* Съгласно документ за собственост или по реда на чл. 17, ал. 4 от ЗУЕС.</p>
+            
+            <h4 style="margin-bottom: 5px; margin-top: 20px;">I. СОБСТВЕНИК/СОБСТВЕНИЦИ:</h4>
+            <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background:#f9f9f9; font-size: 11px;">
+                        <th style="padding: 5px; width: 5%;">№ по ред</th>
+                        <th style="padding: 5px; width: 30%;">Трите имена на собственика/собствениците, в случай че собственик е юридическо лице или едноличен търговец - наименованието, БУЛСТАТ или единен идентификационен код (ЕИК)</th>
+                        <th style="padding: 5px; width: 25%;">Трите имена на всеки член на домакинството, който живее заедно със собственика/собствениците</th>
+                        <th style="padding: 5px; width: 15%;">Начална дата на ползване</th>
+                        <th style="padding: 5px; width: 25%;">Електронна поща за уведомяване и време, в което собственикът/собствениците не обитава/т своята собственост</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 5px; text-align: center;">1</td>
+                        <td style="padding: 5px; height: 30px;"><strong>${ownerName}</strong></td>
+                        <td style="padding: 5px;"><strong>${occupants}</strong></td>
+                        <td style="padding: 5px;"></td>
+                        <td style="padding: 5px;"></td>
+                    </tr>
+                    <tr><td style="padding: 5px; text-align: center;">2</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                </tbody>
+            </table>
+            <p style="font-size: 10px; margin-top: 2px;">Забележка. Добавете редове, ако е необходимо.</p>
+            
+            <h4 style="margin-bottom: 5px; margin-top: 15px;">II. ПОЛЗВАТЕЛ/ПОЛЗВАТЕЛИ:</h4>
+            <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background:#f9f9f9; font-size: 11px;">
+                        <th style="padding: 5px; width: 5%;">№ по ред</th>
+                        <th style="padding: 5px; width: 30%;">Трите имена на ползвателя/ползвателите, в случай, ползвател е юридическо лице или едноличен търговец - наименованието, БУЛСТАТ или единен идентификационен код (ЕИК)</th>
+                        <th style="padding: 5px; width: 25%;">Трите имена на всеки член на домакинството, който живее заедно с ползвателя/ползвателите</th>
+                        <th style="padding: 5px; width: 10%;">Начална дата на ползване</th>
+                        <th style="padding: 5px; width: 15%;">Електронна поща за уведомяване</th>
+                        <th style="padding: 5px; width: 15%;">Права и задължения на ползвателя относно управлението на общите части на сградата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 5px; text-align: center;">1</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                    <tr><td style="padding: 5px; text-align: center;">2</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                </tbody>
+            </table>
+            <p style="font-size: 10px; margin-top: 2px;">Забележка. Добавете редове, ако е необходимо.</p>
+
+            <h4 style="margin-bottom: 5px; margin-top: 15px;">III. ОБИТАТЕЛ/ОБИТАТЕЛИ:</h4>
+            <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background:#f9f9f9; font-size: 11px;">
+                        <th style="padding: 5px; width: 5%;">№ по ред</th>
+                        <th style="padding: 5px; width: 35%;">Трите имена на обитателя/обителите, в случай, че обитател е юридическо лице или едноличен търговец -наименованието, БУЛСТАТ или единен идентификационен код (ЕИК)</th>
+                        <th style="padding: 5px; width: 30%;">Трите имена на всеки член на домакинството, който живее заедно с обитателя/обитателите</th>
+                        <th style="padding: 5px; width: 15%;">Дата на вписване</th>
+                        <th style="padding: 5px; width: 15%;">Дата на отписване</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 5px; text-align: center;">1</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                    <tr><td style="padding: 5px; text-align: center;">2</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                </tbody>
+            </table>
+            <p style="font-size: 10px; margin-top: 2px;">Забележка. Добавете редове, ако е необходимо.</p>
+
+            <h4 style="margin-bottom: 5px; margin-top: 15px;">IV. ПРИТЕЖАВАНИ ИЛИ ВЗЕТИ ЗА ОТГЛЕЖДАНЕ ЖИВОТНИ В ОБЕКТА</h4>
+            <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background:#f9f9f9; font-size: 11px;">
+                        <th style="padding: 5px; width: 5%;">№ по ред</th>
+                        <th style="padding: 5px; width: 45%;">Вид на притежаваните или взетите за отглеждане животни, които се извеждат на обществени места</th>
+                        <th style="padding: 5px; width: 25%;">Брой на притежаваните или взетите за отглеждане животни, които се извеждат на обществени места</th>
+                        <th style="padding: 5px; width: 25%;">За куче - номер на ветеринарномедицинския паспорт</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 5px; text-align: center;">1</td><td style="padding: 5px; height: 30px;"><strong>${pets}</strong></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                    <tr><td style="padding: 5px; text-align: center;">2</td><td style="padding: 5px; height: 30px;"></td><td style="padding: 5px;"></td><td style="padding: 5px;"></td></tr>
+                </tbody>
+            </table>
+            <p style="font-size: 10px; margin-top: 2px;">Забележка. Добавете редове, ако е необходимо.</p>
+
+            <div style="display:flex; justify-content: space-between; margin-top: 30px; font-size: 11px;">
+                <div style="width: 30%;">Дата на съставяне: .......................</div>
+                <div style="width: 30%; text-align: center;">Собственик/собственици или ползвател/ползватели<br>(три имена и подпис)<br><br>....................................................</div>
+                <div style="width: 30%; text-align: center;">Обитател/обитатели<br>(три имена и подпис)<br><br>....................................................</div>
             </div>
+            <div style="text-align: right; margin-top: 20px; font-size: 11px;">
+                Председател на управителния съвет (управител)<br>(три имена и подпис)<br><br>....................................................
+            </div>
+            
+            <hr style="margin-top: 20px; margin-bottom: 20px; border: 0; border-top: 1px dashed #ccc;">
+            
+            <p style="font-weight: bold; font-size: 11px;">Дата на вписване на промяната: .......................</p>
+            <p style="font-weight: bold; font-size: 11px;">Поле, в което е вписана промяна на декларирани обстоятелства: .......................</p>
+            
+            <div style="display:flex; justify-content: space-between; margin-top: 30px; font-size: 11px;">
+                <div style="width: 45%; text-align: center;">Собственик/собственици, ползвател/ползватели или обитател/обитатели, деклариращи промяна на обстоятелства<br>(име и подпис)<br><br>....................................................</div>
+                <div style="width: 45%; text-align: center;">Председател на управителния съвет (управителя)<br>(три имена и подпис)<br><br>....................................................</div>
+            </div>
+            
+            <p style="font-size: 10px; color: #555; margin-top: 20px;">*Забележка: Когато декларацията се подава при настъпила промяна на данните, подлежащи на вписване по чл. 7, ал. 2 от ЗУЕС, се попълват само редовете, при които има промяна.</p>
         </div>
     `;
 
@@ -2274,8 +2371,6 @@ window.printOwnerDeclaration = async function () {
     win.print();
 }
 
-// ==============================================
-// МЕСЕЧЕН ФИНАНСОВ ОТЧЕТ (Чл. 23 ЗУЕС)
 // ==============================================
 
 window.openMonthlyReport = function () {
