@@ -1191,8 +1191,8 @@ window.submitBookData = async function () {
 // ==============================================
 
 const chargeLabelsMap = [
-    { labelId: 'lbl-chargesElevator',     name: 'Асансьор',     key: 'elevator' },
-    { labelId: 'lbl-chargesSubscription', name: 'Абонамент',    key: 'subscription' },
+    { labelId: 'lbl-chargesElevator',     name: 'Асансьор ел.',     key: 'elevator' },
+    { labelId: 'lbl-chargesSubscription', name: 'Асансьор абон. и др.',    key: 'subscription' },
     { labelId: 'lbl-chargesLight',        name: 'Осветление',   key: 'light' },
     { labelId: 'lbl-chargesSecurity',     name: 'Охрана',       key: 'security' },
     { labelId: 'lbl-chargesCleaning',     name: 'Почистване',   key: 'cleaning' },
@@ -2474,8 +2474,8 @@ window.generateReport = async function () {
             tableBody.innerHTML = "";
 
             const labels = {
-                elevator: "Разходи за асансьор",
-                subscription: "Други абонаменти",
+                elevator: "Разходи за Асансьор ел.",
+                subscription: "Асансьор абон. и др.",
                 light: "Електрическа енергия - общи части",
                 security: "Охрана / Консиерж",
                 cleaning: "Хигиена и почистване",
