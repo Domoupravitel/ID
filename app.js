@@ -112,16 +112,27 @@ async function loadPublicSettings() {
     try {
         const res = await apiCall('getPublicSettings');
         const regLink = document.getElementById("regButtonLink");
-        const regText = document.getElementById("regButtonText");
+        const customText = document.getElementById("regCustomText");
         
         if (res && res.success && regLink) {
-            regLink.style.display = res.showRegForm ? "block" : "none";
-            if (res.regFormText && regText) {
-                regText.textContent = res.regFormText;
+            if (res.showRegForm) {
+                regLink.style.display = "flex";
+                if (customText) customText.style.display = "none";
+            } else {
+                regLink.style.display = "none";
+                if (customText) {
+                    if (res.regFormText && res.regFormText.trim() !== "") {
+                        customText.style.display = "flex";
+                        customText.textContent = res.regFormText;
+                    } else {
+                        customText.style.display = "none";
+                    }
+                }
             }
         } else if (regLink) {
             // Default fallback if API fails
-            regLink.style.display = "block";
+            regLink.style.display = "flex";
+            if (customText) customText.style.display = "none";
         }
     } catch (e) {
         console.error("Error loading public settings:", e);
@@ -1791,6 +1802,7 @@ async function loadSuperAdminEntrances() {
                     <button class="admin-btn secondary small" onclick="manageSub('${ent.id}', 'unblock')" style="padding:4px 8px; font-size:11px; margin-right:4px;">+30 дн.</button>
                     <button class="admin-btn small" onclick="manageSub('${ent.id}', 'block')" style="background:#fa5252; color:white; padding:4px 8px; font-size:11px; margin-right:4px;">Спри</button>
                     <button class="admin-btn small" onclick="manageSub('${ent.id}', 'lifetime')" style="background:#4ade80; color:white; padding:4px 8px; font-size:11px;">Безсрочен</button>
+                    <button class="admin-btn small" onclick="deleteFirebaseData('${ent.id}', this)" style="background:#000; color:white; padding:4px 8px; font-size:11px; margin-left:4px;" title="Изтрий всички данни за входа от Firestore">🗑️ FS</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1817,6 +1829,57 @@ window.manageSub = async function (targetId, subAction) {
     }
 }
 
+
+window.deleteFirebaseData = async function(buildingId, btn) {
+    if(!confirm("⚠️ ВНИМАНИЕ!\nСигурни ли сте, че искате да ИЗТРИЕТЕ ВСИЧКИ ДАННИ за вход " + buildingId + " от Firestore?\nТова действие не може да бъде отменено!")) return;
+    
+    const pin = prompt("Моля, въведете вашия ПИН код за Супер Админ, за да потвърдите:");
+    if (pin !== sessionStorage.getItem("superAdminAuth")) {
+        showToast("Грешен ПИН код! Действието е прекратено.", "error");
+        return;
+    }
+
+    if (!window.fb || !window.db) {
+        showToast("Firebase не е зареден", "error");
+        return;
+    }
+
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "⏳ Изтриване...";
+    btn.disabled = true;
+
+    try {
+        const { collection, getDocs, deleteDoc, doc, query, where } = window.fb;
+        const db = window.db;
+
+        let deletedCount = 0;
+        const collections = ["apartments", "monthlyReports", "buildingCharges"];
+
+        for (const colName of collections) {
+            const q = query(collection(db, colName), where("buildingId", "==", buildingId));
+            const snapshot = await getDocs(q);
+            for (const d of snapshot.docs) {
+                await deleteDoc(doc(db, colName, d.id));
+                deletedCount++;
+            }
+        }
+        
+        try {
+            await deleteDoc(doc(db, "buildings", buildingId));
+            deletedCount++;
+        } catch(e) {}
+
+        showToast(`✅ Изтрити ${deletedCount} документа за вход ${buildingId}`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("Грешка при изтриване: " + e.message, "error");
+    } finally {
+        if(btn) {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+}
 window.submitNewClient = async function () {
     const city = document.getElementById("newCity").value.trim();
     const block = document.getElementById("newBlock").value.trim();
