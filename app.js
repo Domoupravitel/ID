@@ -1833,9 +1833,9 @@ window.manageSub = async function (targetId, subAction) {
 window.deleteFirebaseData = async function(buildingId, btn) {
     if(!confirm("⚠️ ВНИМАНИЕ!\nСигурни ли сте, че искате да ИЗТРИЕТЕ ВСИЧКИ ДАННИ за вход " + buildingId + " от Firestore?\nТова действие не може да бъде отменено!")) return;
     
-    const pin = prompt("Моля, въведете вашия ПИН код за Супер Админ, за да потвърдите:");
-    if (pin !== sessionStorage.getItem("superAdminAuth")) {
-        showToast("Грешен ПИН код! Действието е прекратено.", "error");
+    const rawPin = prompt("Моля, въведете паролата за Супер Админ, за да потвърдите изтриването:");
+    if (!rawPin || rawPin.trim() !== sessionStorage.getItem("superAdminAuth")) {
+        showToast("Грешна парола! Действието е прекратено.", "error");
         return;
     }
 
