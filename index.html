@@ -441,6 +441,16 @@
                     <div id="zub-z-meeting" class="zues-sub-panel" style="display:none;">
                         <h4 class="admin-subtitle">🤝 Общо събрание</h4>
                         <div style="background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 8px;">
+                            <label class="admin-label">Вид на решението (определя кворума)</label>
+                            <select id="meetingDecisionType" class="admin-input" onchange="calculateQuorum()" style="margin-bottom: 10px;">
+                                <option value="100">Надстрояване, пристрояване, промяна предназначението (100%)</option>
+                                <option value="75_violator">Изваждане на собственик за срок до 3 години (75% без нарушителя)</option>
+                                <option value="75">Кредити, полезни разходи, опрощаване на дългове (75%)</option>
+                                <option value="67">Учредяване на Сдружение на собствениците (67%)</option>
+                                <option value="51">Основен ремонт, обновяване, еврофондове (51%)</option>
+                                <option value="50_plus" selected>Избор на органи, разходи за управление, вътрешен ред (>50%)</option>
+                            </select>
+
                             <label class="admin-label">Дневен ред (кратко)</label>
                             <textarea id="meetingAgenda" class="admin-input"
                                 placeholder="1. Приемане на отчет; 2. Избор на домоуправител..."></textarea>
@@ -452,8 +462,7 @@
                                     <span>Представени ид.части:</span>
                                     <span id="quorum-percent">0.00%</span>
                                 </div>
-                                <p id="quorum-status" style="font-size: 11px; margin: 4px 0 0; color: #666;">Необходими
-                                    67% (или 51% след 1 час)</p>
+                                <div id="quorum-status" style="font-size: 12px; margin: 8px 0 0; color: #666; font-weight: 500; line-height: 1.4;"></div>
                             </div>
 
                             <div
