@@ -1849,7 +1849,7 @@ window.deleteFirebaseData = async function(buildingId, btn) {
     btn.disabled = true;
 
     try {
-        const { collection, getDocs, deleteDoc, doc } = window.fb;
+        const { collection, getDocs, deleteDoc, doc, query, where } = window.fb;
         const db = window.db;
 
         let deletedCount = 0;
@@ -1858,7 +1858,10 @@ window.deleteFirebaseData = async function(buildingId, btn) {
         for (const colName of collections) {
             const snapshot = await getDocs(collection(db, colName));
             for (const d of snapshot.docs) {
-                if (d.id.startsWith(buildingId + "_") || d.id === buildingId) {
+                const normDocId = typeof normalizeAptName === 'function' ? normalizeAptName(d.id) : d.id.toUpperCase();
+                const normBuildId = typeof normalizeAptName === 'function' ? normalizeAptName(buildingId) : buildingId.toUpperCase();
+                
+                if (normDocId.startsWith(normBuildId + "_") || normDocId === normBuildId || d.id.includes(buildingId)) {
                     await deleteDoc(doc(db, colName, d.id));
                     deletedCount++;
                 }
