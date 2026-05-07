@@ -2212,17 +2212,43 @@ window.calculateQuorum = function () {
     const s = document.getElementById("quorum-status");
     if (p) p.innerText = total.toFixed(2) + "%";
 
+    const decisionType = document.getElementById("meetingDecisionType") ? document.getElementById("meetingDecisionType").value : "50_plus";
+
+    let required = 50.0001;
+    let reqText = ">50%";
+    if (decisionType === "100") { required = 100; reqText = "100%"; }
+    else if (decisionType === "75_violator" || decisionType === "75") { required = 75; reqText = "75%"; }
+    else if (decisionType === "67") { required = 67; reqText = "67%"; }
+    else if (decisionType === "51") { required = 51; reqText = "51%"; }
+
     if (s) {
-        if (total >= 67) {
-            s.innerText = "✅ Има кворум (над 67%)";
-            s.style.color = "green";
-        } else if (total >= 51) {
-            s.innerText = "🔶 Кворум за отложено събрание (над 51%)";
-            s.style.color = "orange";
+        let meetingStatus = "";
+        let meetColor = "";
+        if (total >= 51) {
+            meetingStatus = "✅ Старт: Редовен (има 51%)";
+            meetColor = "green";
+        } else if (total >= 26) {
+            meetingStatus = "🔶 Старт: След 1 час (има 26%)";
+            meetColor = "orange";
+        } else if (total > 0) {
+            meetingStatus = "⚠️ Старт: На следващия ден";
+            meetColor = "#d28e00";
         } else {
-            s.innerText = "❌ Няма кворум (необходими 67%)";
-            s.style.color = "red";
+            meetingStatus = "❌ Няма кворум за старт";
+            meetColor = "red";
         }
+
+        let decisionStatus = "";
+        let decColor = "";
+        if (total >= required) {
+            decisionStatus = `✅ Решение: Може да се приеме (≥${reqText})`;
+            decColor = "green";
+        } else {
+            decisionStatus = `❌ Решение: Не стига кворум (нужни ${reqText})`;
+            decColor = "red";
+        }
+
+        s.innerHTML = `<div style="color:${meetColor}; margin-bottom:4px;">${meetingStatus}</div><div style="color:${decColor};">${decisionStatus}</div>`;
     }
 }
 
