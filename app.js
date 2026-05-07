@@ -1849,18 +1849,19 @@ window.deleteFirebaseData = async function(buildingId, btn) {
     btn.disabled = true;
 
     try {
-        const { collection, getDocs, deleteDoc, doc, query, where } = window.fb;
+        const { collection, getDocs, deleteDoc, doc } = window.fb;
         const db = window.db;
 
         let deletedCount = 0;
         const collections = ["apartments", "monthlyReports", "buildingCharges"];
 
         for (const colName of collections) {
-            const q = query(collection(db, colName), where("buildingId", "==", buildingId));
-            const snapshot = await getDocs(q);
+            const snapshot = await getDocs(collection(db, colName));
             for (const d of snapshot.docs) {
-                await deleteDoc(doc(db, colName, d.id));
-                deletedCount++;
+                if (d.id.startsWith(buildingId + "_") || d.id === buildingId) {
+                    await deleteDoc(doc(db, colName, d.id));
+                    deletedCount++;
+                }
             }
         }
         
@@ -1868,8 +1869,19 @@ window.deleteFirebaseData = async function(buildingId, btn) {
             await deleteDoc(doc(db, "buildings", buildingId));
             deletedCount++;
         } catch(e) {}
+        
+        // Също така изтриваме таблиците и записа от супер регистъра чрез бекенда
+        const backendRes = await apiCall('deleteClient', {
+            superPin: rawPin.trim(),
+            targetId: buildingId
+        });
 
-        showToast(`✅ Изтрити ${deletedCount} документа за вход ${buildingId}`, "success");
+        if (backendRes && backendRes.success) {
+            showToast(`✅ Входът е напълно заличен! (Изтрити ${deletedCount} FB записа + Таблици)`, "success");
+            loadSuperAdminEntrances(); // Refresh list
+        } else {
+            showToast(`✅ FB данните са изтрити, но: ` + (backendRes?.error || "Грешка при изтриване на таблиците"), "warning");
+        }
     } catch(e) {
         console.error(e);
         showToast("Грешка при изтриване: " + e.message, "error");
