@@ -143,6 +143,20 @@ async function loadPublicSettings() {
 // CORE API CALLER
 // ==============================================
 
+
+async function bgApiCall(action, params = {}) {
+    if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) return { error: 'No Script URL configured' };
+    params.action = action;
+    params.routeKey = currentRouteKey;
+    const queryParams = new URLSearchParams(params).toString();
+    try {
+        const response = await fetch(`${SCRIPT_URL}?${queryParams}`);
+        return await response.json();
+    } catch (error) {
+        return { error: error.toString() };
+    }
+}
+
 async function apiCall(action, params = {}) {
     showLoading();
 
