@@ -1069,10 +1069,12 @@ window.submitPayment = async function () {
     hideSaving(btn, "Добави плащане");
 
     if (result && result.success) {
-        showToast("✅ Успешно добавено плащане.", "success");
+        showToast("✅ Успешно добавено плащане. Данните се синхронизират...", "success");
         document.getElementById("adminAmount").value = "";
-        refreshCurrentView();
-        if (typeof loadPaymentDue === 'function') loadPaymentDue();
+        bgApiCall('forceSync', { pin: getStoredPin() }).then(() => {
+            refreshCurrentView();
+            if (typeof loadPaymentDue === 'function') loadPaymentDue();
+        });
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
@@ -1330,7 +1332,7 @@ window.submitCharges = async function () {
     hideSaving(btn, "Запиши начисления");
 
     if (result && result.success) {
-        showToast("✅ Успешно записани начисления.", "success");
+        showToast("✅ Успешно записани начисления. Данните се синхронизират...", "success");
         document.getElementById("chargesElevator").value = "";
         document.getElementById("chargesSubscription").value = "";
         document.getElementById("chargesLight").value = "";
@@ -1338,8 +1340,10 @@ window.submitCharges = async function () {
         document.getElementById("chargesCleaning").value = "";
         document.getElementById("chargesPodrajka").value = "";
         document.getElementById("chargesRemont").value = "";
-        refreshCurrentView();
-        loadCurrentCharges(); // Обновяваме текущите стойности в лейбълите
+        bgApiCall('forceSync', { pin: getStoredPin() }).then(() => {
+            refreshCurrentView();
+            loadCurrentCharges();
+        }); // Обновяваме текущите стойности в лейбълите
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
@@ -1491,7 +1495,7 @@ window.submitMaster = async function (sheetName) {
         });
 
         if (result && result.success) {
-            showToast(`Успешно обновен регистър: ${sheetName}`, "success");
+            showToast(`Успешно обновен регистър: ${sheetName}. Данните се синхронизират...`, "success");
             if (sheetName === 'ОБИТАТЕЛИ') {
                 const valInput = document.getElementById('masterObVal');
                 if (valInput) valInput.value = "";
@@ -1500,7 +1504,9 @@ window.submitMaster = async function (sheetName) {
                 const valInput = document.getElementById('masterChVal');
                 if (valInput) valInput.value = "";
             }
-            refreshCurrentView();
+            bgApiCall('forceSync', { pin: getStoredPin() }).then(() => {
+                refreshCurrentView();
+            });
         } else {
             showToast(result?.error || "Възникна грешка", "error");
         }
