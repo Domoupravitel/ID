@@ -2805,3 +2805,26 @@ window.forceFirebaseSync = async function() {
         hideSaving(btn, "Изпрати данните към приложението");
     }
 }
+
+// --- V2 INCOMES MODULE ---
+function switchMainTab(tab) {
+    const viewExpenses = document.getElementById('view-expenses');
+    const viewIncomes = document.getElementById('view-incomes');
+    const navExpenses = document.getElementById('nav-expenses');
+    const navIncomes = document.getElementById('nav-incomes-v2');
+
+    if (!viewExpenses || !viewIncomes || !navExpenses || !navIncomes) return;
+
+    if (tab === 'incomes') {
+        viewExpenses.style.display = 'none';
+        viewIncomes.style.display = 'block';
+        navExpenses.className = 'btn secondary';
+        navIncomes.className = 'btn btn-primary';
+    } else {
+        viewExpenses.style.display = 'block';
+        viewIncomes.style.display = 'none';
+        navExpenses.className = 'btn btn-primary';
+        navIncomes.className = 'btn secondary';
+    }
+}
+window.switchMainTab = switchMainTab;
