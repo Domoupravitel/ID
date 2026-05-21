@@ -325,7 +325,6 @@ window.exitEntrance = function () {
 window.enterEntrance = async function () {
     let accessId = document.getElementById('access-id').value.trim();
 
-    // Auto-decode if the field contains encoded characters (handling %D0 %D1 etc.)
     if (accessId.includes('%')) {
         try {
             accessId = decodeURIComponent(accessId);
@@ -338,26 +337,57 @@ window.enterEntrance = async function () {
         return false;
     }
 
-        // Запазваме цените в сесията
+    localStorage.setItem("savedAccessId", accessId);
+    currentRouteKey = accessId;
+
+    const btn = document.querySelector("#view-selector .btn-primary");
+    const originalText = btn.textContent;
+    btn.textContent = "Зареждане...";
+    btn.disabled = true;
+
+    // --- V2 INCOMES MODULE INJECTION ---
+    const isV2 = localStorage.getItem('enableV2Incomes_' + currentRouteKey) === 'true';
+    const navContainer = document.getElementById('v2-nav-container');
+    if (navContainer) {
+        navContainer.style.display = isV2 ? 'block' : 'none';
+        if (!isV2 && window.switchMainTab) switchMainTab('expenses');
+    }
+    // -----------------------------------
+
+    const [result, configResult] = await Promise.all([
+        apiCall('list', { list: 'apartments' }),
+        apiCall('getEntranceInfo')
+    ]);
+
+    if (configResult && configResult.success && configResult.info) {
+        const info = configResult.info;
+
+        if (info.isHardBlocked) {
+            hideLoading();
+            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return false;
+        }
+
+        btn.textContent = originalText;
+        btn.disabled = false;
+
         if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
 
-        // Инструкции за плащане — запазваме за по-късно, но НЕ показваме веднага при влизане
         if (info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = info.paymentInfo;
             document.getElementById('masterPaymentText').value = info.paymentInfo;
-            // Съхраняваме в session за използване при избор на апартамент
             sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
             sessionStorage.removeItem('paymentInfo_' + currentRouteKey);
         }
-        // Винаги скриваме при влизане — ще се покаже само при избран апартамент с дълг
         document.getElementById('payment-details-box').style.display = 'none';
 
-        // Имейл за връзка
         const adminMailBtn = document.getElementById('admin-mailto-link');
         if (adminMailBtn) {
             if (info.adminEmail) {
@@ -368,7 +398,6 @@ window.enterEntrance = async function () {
             }
         }
 
-        // Външни линкове
         if (info.linkElectric) {
             document.getElementById('btn-electric-link').href = info.linkElectric;
             document.getElementById('btn-electric-link').style.display = 'inline-block';
@@ -377,8 +406,6 @@ window.enterEntrance = async function () {
             document.getElementById('btn-electric-link').style.display = 'none';
         }
 
-
-        // --- ИЗЧИСЛЯВАНЕ НА АБОНАМЕНТ КЪМ ПЛАТФОРМАТА ---
         let totalMonthly = 0;
         const basePrice = parseFloat(info.pricePerApt) || 0;
         const aptCount = (result && Array.isArray(result)) ? result.length : 0;
@@ -409,7 +436,6 @@ window.enterEntrance = async function () {
             if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
         }
 
-        // --- ГЛОБАЛНО СЪОБЩЕНИЕ ОТ СУПЕР АДМИН ---
         const newsBanner = document.getElementById("adminGlobalNews");
         const newsText = document.getElementById("adminGlobalNewsText");
         if (info.globalMessage && info.globalMessage.trim() !== "") {
@@ -419,7 +445,6 @@ window.enterEntrance = async function () {
             newsBanner.style.display = "none";
         }
 
-        // --- СЪОБЩЕНИЕ ОТ ДОМОУПРАВИТЕЛЯ (КЪМ ЖИВУЩИТЕ) ---
         const userNoticeBanner = document.getElementById("userEntranceNotice");
         const userNoticeText = document.getElementById("userEntranceNoticeText");
         const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
@@ -432,7 +457,6 @@ window.enterEntrance = async function () {
             if (userNoticeTextHome) userNoticeTextHome.innerHTML = formatted;
             if (userNoticeBannerHome) userNoticeBannerHome.style.display = "block";
 
-            // Populate value in admin tab
             const adminNoticeInput = document.getElementById("masterEntranceNotice");
             if (adminNoticeInput) adminNoticeInput.value = info.entranceNotice;
         } else {
@@ -442,38 +466,32 @@ window.enterEntrance = async function () {
             if (adminNoticeInput) adminNoticeInput.value = "";
         }
     } else {
-        // Скриваме всичко, ако няма инфо
         document.getElementById('payment-details-box').style.display = 'none';
         const mailEl = document.getElementById('admin-mailto-link');
         if (mailEl) mailEl.style.display = 'none';
         document.getElementById('btn-electric-link').style.display = 'none';
     }
 
-    // ОБРАБОТКА НА СПИСЪКА С АПАРТАМЕНТИ И СМЯНА НА ИЗГЛЕДА
     if (result && !result.error && Array.isArray(result)) {
         apartmentList = result;
 
-        // Сортиране по номер на апартамент
         apartmentList.sort((a, b) => {
             const numA = parseInt(a.replace(/\D/g, '')) || 0;
             const numB = parseInt(b.replace(/\D/g, '')) || 0;
             return numA - numB;
         });
 
-        // Обновяваме заглавието на входа
         if (configResult && configResult.info && configResult.info.entranceName) {
             document.getElementById('entrance-title').textContent = configResult.info.entranceName;
         } else {
             document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
         }
 
-        // Превключваме екрана
         document.getElementById('view-selector').classList.remove('active');
         document.getElementById('view-selector').classList.add('hidden');
         document.getElementById('view-entrance-home').classList.remove('hidden');
         document.getElementById('view-entrance-home').classList.add('active');
 
-        // Пълним падащото меню
         const select = document.getElementById("apartmentSelect");
         select.innerHTML = '<option value="">Избери апартамент</option>';
         apartmentList.forEach(a => {
@@ -482,13 +500,11 @@ window.enterEntrance = async function () {
             select.appendChild(opt);
         });
 
-        // ПРЕЗАКЛЮЧВАМЕ HASH ЗА СИНХРОНИЗАЦИЯ (без зацикляне)
         const targetHash = "#" + encodeURIComponent(currentRouteKey);
         if (window.location.hash !== targetHash && !window.location.hash.includes("/")) {
             window.location.hash = targetHash;
         }
 
-        // Зареждаме дашборда
         loadDashboardData();
         return true;
     } else {
@@ -502,7 +518,6 @@ window.enterEntrance = async function () {
     }
 }
 
-// Check URL params on load
 // (Moved logic to main DOMContentLoaded at the top)
 
 async function loadDashboardFromFirebase(routeKey) {
