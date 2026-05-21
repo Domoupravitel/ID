@@ -338,42 +338,6 @@ window.enterEntrance = async function () {
         return false;
     }
 
-    // Запазваме в браузъра (localStorage), за не затрудняваме домоуправителя следващия път
-    localStorage.setItem("savedAccessId", accessId);
-
-    // Задаваме го като текущ ключ за API заявките
-    currentRouteKey = accessId;
-
-    // Сменяме бутона за индикация
-    const btn = document.querySelector("#view-selector .btn-primary");
-    const originalText = btn.textContent;
-    btn.textContent = "Зареждане...";
-    btn.disabled = true;
-
-    // Зареждаме списъка с апартаменти
-    // Обединена заявка по-долу
-
-    // Зареждаме и конфигурацията за входа (Плащане и т.н.)
-    const [result, configResult] = await Promise.all([
-        apiCall('list', { list: 'apartments' }),
-        apiCall('getEntranceInfo')
-    ]);
-
-    if (configResult && configResult.success && configResult.info) {
-        const info = configResult.info;
-
-        if (info.isHardBlocked) {
-            hideLoading();
-            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
-            btn.textContent = originalText;
-            btn.disabled = false;
-            return false; // PREVENT ENTRY
-        }
-
-        // Възстановяваме бутона веднага щом приключат заявките
-        btn.textContent = originalText;
-        btn.disabled = false;
-
         // Запазваме цените в сесията
         if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
@@ -1425,6 +1389,15 @@ window.submitMaster = async function (sheetName) {
         fromP = document.getElementById('masterLogikaFrom').value.trim();
         toP = "12.2050"; 
         apt = "";
+
+        const masterV2 = document.getElementById('masterEnableV2Incomes');
+        if (masterV2) {
+            localStorage.setItem('enableV2Incomes_' + currentRouteKey, masterV2.checked ? 'true' : 'false');
+            const navContainer = document.getElementById('v2-nav-container');
+            if (navContainer) {
+                navContainer.style.display = masterV2.checked ? 'block' : 'none';
+            }
+        }
     } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
