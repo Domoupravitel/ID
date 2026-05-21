@@ -93,6 +93,26 @@
                     style="font-size: 13px; font-weight: normal; color: var(--primary); text-decoration: none; margin-left: 15px; background: #eefbff; padding: 4px 10px; border-radius: 6px; border: 1px solid #bdeaff;">📘
                     Ръководство</a>
             </div>
+
+            <!-- V2 Admin Navigation -->
+            <div id="v2-admin-nav" style="display: none; margin-bottom: 20px; text-align: center; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <button id="nav-admin-expenses" class="btn btn-primary" onclick="switchAdminTab('expenses')" style="margin-right: 10px; padding: 10px 20px; border-radius: 8px; font-weight: bold;">📊 Управление Разходи</button>
+                <button id="nav-admin-incomes" class="btn secondary" onclick="switchAdminTab('incomes')" style="padding: 10px 20px; border-radius: 8px; font-weight: bold;">💰 Управление Приходи (V2)</button>
+            </div>
+
+            <div id="admin-view-incomes" style="display: none;">
+                <div class="admin-section">
+                    <h3 style="color: #16a34a;">💰 Регистър Приходи (V2 Бета)</h3>
+                    <p class="subtitle" style="font-size: 13px; margin-bottom: 15px;">Тук ще се въвеждат и управляват приходите на етажната собственост по ЗУЕС.</p>
+                    <div style="padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
+                        <span style="font-size: 30px;">🚧</span>
+                        <h4 style="color: #15803d; margin: 10px 0;">Формата е в процес на изграждане</h4>
+                        <p style="color: #166534; font-size: 13px;">Очаквайте интеграция на категориите по ЗУЕС.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-view-expenses">
             <!-- Floating Quick Nav -->
             <div class="admin-quick-nav">
                 <a href="javascript:void(0)" class="quick-nav-btn" onclick="document.getElementById('admin-section-charges')?.scrollIntoView({behavior:'smooth',block:'start'})">Начисления</a>
@@ -581,6 +601,8 @@
 
     </div>
 
+</div> <!-- end admin-view-expenses -->
+
     <!-- SUPER ADMIN FULL OVERLAY -->
     <div id="superAdminOverlay" class="admin-overlay" style="display:none; z-index:2000;"
         onclick="if(event.target===this)closeSuperAdmin()">
@@ -920,6 +942,9 @@
 
             <!-- OLD APP CONTENT -->
             <div class="content-area">
+                
+
+                
                 <div class="top-buttons">
                     <a id="btn-electric-link" href="#" target="_blank" style="display: none;">
                         <button class="btn blue">Фактури/Документи</button>
@@ -1136,6 +1161,7 @@
     </div>
 
 
+</div>
 </div>
 </body>
 

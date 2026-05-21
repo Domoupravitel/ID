@@ -345,14 +345,7 @@ window.enterEntrance = async function () {
     btn.textContent = "Зареждане...";
     btn.disabled = true;
 
-    // --- V2 INCOMES MODULE INJECTION ---
-    const isV2 = localStorage.getItem('enableV2Incomes_' + currentRouteKey) === 'true';
-    const navContainer = document.getElementById('v2-nav-container');
-    if (navContainer) {
-        navContainer.style.display = isV2 ? 'block' : 'none';
-        if (!isV2 && window.switchMainTab) switchMainTab('expenses');
-    }
-    // -----------------------------------
+
 
     const [result, configResult] = await Promise.all([
         apiCall('list', { list: 'apartments' }),
@@ -1408,7 +1401,7 @@ window.submitMaster = async function (sheetName) {
         const masterV2 = document.getElementById('masterEnableV2Incomes');
         if (masterV2) {
             localStorage.setItem('enableV2Incomes_' + currentRouteKey, masterV2.checked ? 'true' : 'false');
-            const navContainer = document.getElementById('v2-nav-container');
+            const navContainer = document.getElementById('v2-admin-nav');
             if (navContainer) {
                 navContainer.style.display = masterV2.checked ? 'block' : 'none';
             }
@@ -2795,11 +2788,11 @@ window.forceFirebaseSync = async function() {
 }
 
 // --- V2 INCOMES MODULE ---
-function switchMainTab(tab) {
-    const viewExpenses = document.getElementById('view-expenses');
-    const viewIncomes = document.getElementById('view-incomes');
-    const navExpenses = document.getElementById('nav-expenses');
-    const navIncomes = document.getElementById('nav-incomes-v2');
+function switchAdminTab(tab) {
+    const viewExpenses = document.getElementById('admin-view-expenses');
+    const viewIncomes = document.getElementById('admin-view-incomes');
+    const navExpenses = document.getElementById('nav-admin-expenses');
+    const navIncomes = document.getElementById('nav-admin-incomes');
 
     if (!viewExpenses || !viewIncomes || !navExpenses || !navIncomes) return;
 
@@ -2815,4 +2808,4 @@ function switchMainTab(tab) {
         navIncomes.className = 'btn secondary';
     }
 }
-window.switchMainTab = switchMainTab;
+window.switchAdminTab = switchAdminTab;
