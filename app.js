@@ -920,6 +920,13 @@ function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
 
+    // V2 Incomes Admin Nav Injection
+    const isV2 = localStorage.getItem('enableV2Incomes_' + currentRouteKey) === 'true';
+    const v2AdminNav = document.getElementById('v2-admin-nav');
+    if (v2AdminNav) v2AdminNav.style.display = isV2 ? 'block' : 'none';
+    if (window.switchAdminTab) switchAdminTab('expenses'); // default view
+
+
     // Първоначална подкана за MASTER настройки
     const masterPromptKey = "hasSeenMasterPrompt_" + currentRouteKey;
     if (!localStorage.getItem(masterPromptKey)) {
