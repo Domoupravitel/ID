@@ -966,7 +966,7 @@ function autoFillCurrentPeriod() {
     const currentPeriod = String(d.getMonth() + 1).padStart(2, '0') + "." + d.getFullYear();
 
     const periodFields = [
-        "adminPeriod", "chargesPeriod",
+        "adminPeriod", "chargesPeriod", "v2IncomePeriod",
         "masterLogikaFrom", "masterUchFrom",
         "masterObFrom", "masterChFrom", "masterIdFrom"
     ];
@@ -1019,7 +1019,14 @@ function populateAdminDropdowns() {
         });
     }
     autoFillCurrentPeriod();
-    if (typeof loadCurrentCharges === 'function') loadCurrentCharges();
+    
+    const v2AptSel = document.getElementById("v2IncomeApt");
+    if (v2AptSel && apartmentList.length > 0 && v2AptSel.options.length <= 2) {
+        v2AptSel.innerHTML = '<option value="">Избери...</option>';
+        apartmentList.forEach(a => v2AptSel.appendChild(new Option(a, a)));
+        v2AptSel.appendChild(new Option("Външен източник", "EXTERNAL"));
+    }
+if (typeof loadCurrentCharges === 'function') loadCurrentCharges();
     if (typeof loadPaymentDue === 'function') loadPaymentDue();
 }
 
@@ -2816,3 +2823,203 @@ function switchAdminTab(tab) {
     }
 }
 window.switchAdminTab = switchAdminTab;
+
+// ==============================================
+// V2 INCOMES LOGIC (BETA)
+// ==============================================
+
+window.v2HandleAptChange = function() {
+    const apt = document.getElementById("v2IncomeApt").value;
+    const catSel = document.getElementById("v2IncomeCategory");
+    if (apt && apt !== "EXTERNAL") {
+        catSel.value = "Управление и поддръжка";
+        catSel.disabled = true;
+    } else {
+        catSel.disabled = false;
+    }
+};
+
+window.submitIncomeV2 = async function() {
+    const period = document.getElementById("v2IncomePeriod").value;
+    const apt = document.getElementById("v2IncomeApt").value;
+    const category = document.getElementById("v2IncomeCategory").value;
+    const amountStr = document.getElementById("v2IncomeAmount").value;
+    const docNum = document.getElementById("v2IncomeDoc").value.trim();
+    const note = document.getElementById("v2IncomeNote").value.trim();
+    const editId = document.getElementById("v2IncomeEditId").value;
+
+    if (!period || !apt || !category || !amountStr) {
+        showToast("Моля, попълнете Период, Платец, Категория и Сума.", "error");
+        return;
+    }
+
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+        showToast("Невалидна сума.", "error");
+        return;
+    }
+
+    if (!window.fb || !window.fb.addDoc) {
+        showToast("Грешка при връзка с базата данни (Firebase AddDoc липсва).", "error");
+        return;
+    }
+
+    const btn = document.getElementById("v2SubmitBtn");
+    btn.disabled = true;
+    btn.textContent = "Записване...";
+
+    try {
+        const { collection, addDoc, updateDoc, doc } = window.fb;
+        const db = window.db;
+
+        const recordData = {
+            routeKey: currentRouteKey,
+            period: period,
+            apt: apt,
+            category: category,
+            amount: amount,
+            docNum: docNum,
+            note: note,
+            timestamp: editId ? undefined : new Date().getTime() // Only set timestamp on new
+        };
+
+        if (editId) {
+            await updateDoc(doc(db, "incomesV2", editId), recordData);
+            showToast("Успешно редактиран приход!", "success");
+            v2CancelEdit();
+        } else {
+            await addDoc(collection(db, "incomesV2"), recordData);
+            showToast("Успешно записан приход!", "success");
+            
+            // Clear form
+            document.getElementById("v2IncomeAmount").value = "";
+            document.getElementById("v2IncomeDoc").value = "";
+            document.getElementById("v2IncomeNote").value = "";
+            document.getElementById("v2IncomeApt").value = "";
+            v2HandleAptChange();
+        }
+
+        await loadIncomesV2();
+    } catch (e) {
+        console.error(e);
+        showToast("Грешка при запис: " + e.message, "error");
+    }
+
+    btn.disabled = false;
+    btn.textContent = editId ? "💾 Запиши промените" : "➕ Добави приход";
+};
+
+window.v2CancelEdit = function() {
+    document.getElementById("v2IncomeEditId").value = "";
+    document.getElementById("v2IncomeAmount").value = "";
+    document.getElementById("v2IncomeDoc").value = "";
+    document.getElementById("v2IncomeNote").value = "";
+    document.getElementById("v2IncomeApt").value = "";
+    v2HandleAptChange();
+    
+    document.getElementById("v2SubmitBtn").textContent = "➕ Добави приход";
+    document.getElementById("v2CancelEditBtn").style.display = "none";
+};
+
+window.editIncomeV2 = function(id, period, apt, category, amount, docNum, note) {
+    document.getElementById("v2IncomeEditId").value = id;
+    document.getElementById("v2IncomePeriod").value = period;
+    document.getElementById("v2IncomeApt").value = apt;
+    document.getElementById("v2IncomeCategory").disabled = false;
+    document.getElementById("v2IncomeCategory").value = category;
+    document.getElementById("v2IncomeAmount").value = amount;
+    document.getElementById("v2IncomeDoc").value = docNum || "";
+    document.getElementById("v2IncomeNote").value = note || "";
+    
+    v2HandleAptChange();
+
+    document.getElementById("v2SubmitBtn").textContent = "💾 Запиши промените";
+    document.getElementById("v2CancelEditBtn").style.display = "inline-block";
+    document.getElementById("v2IncomeAmount").focus();
+};
+
+window.deleteIncomeV2 = async function(id) {
+    if (!confirm("Сигурни ли сте, че искате да изтриете този приход?")) return;
+    
+    try {
+        const { deleteDoc, doc } = window.fb;
+        const db = window.db;
+        await deleteDoc(doc(db, "incomesV2", id));
+        showToast("Приходът е изтрит.", "success");
+        await loadIncomesV2();
+    } catch (e) {
+        console.error(e);
+        showToast("Грешка при изтриване: " + e.message, "error");
+    }
+};
+
+window.loadIncomesV2 = async function() {
+    const tbody = document.getElementById("v2IncomesTableBody");
+    if (!tbody) return;
+
+    if (!window.fb || !window.fb.getDocs) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Грешка: Firebase не е зареден.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+        
+        const q = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey));
+        const snap = await getDocs(q);
+        
+        let records = [];
+        snap.forEach(d => {
+            records.push({ id: d.id, ...d.data() });
+        });
+        
+        records.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Няма въведени приходи.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            const payer = r.apt === "EXTERNAL" ? "Външен източник" : "Ап. " + r.apt;
+            const docText = r.docNum ? `<b>Док:</b> ${r.docNum}<br>` : "";
+            const noteText = r.note ? `<span style="color:#666; font-size:11px;">${r.note}</span>` : "";
+            
+            const safeDoc = (r.docNum || "").replace(/'/g, "\\'");
+            const safeNote = (r.note || "").replace(/'/g, "\\'");
+
+            html += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.period}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${payer}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.category}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #16a34a;">${parseFloat(r.amount).toFixed(2)}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${docText}${noteText}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                        <button onclick="editIncomeV2('${r.id}', '${r.period}', '${r.apt}', '${r.category}', ${r.amount}, '${safeDoc}', '${safeNote}')" style="background: none; border: none; cursor: pointer; font-size: 14px;" title="Редактирай">✏️</button>
+                        <button onclick="deleteIncomeV2('${r.id}')" style="background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 5px;" title="Изтрий">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Грешка при зареждане: ${e.message}</td></tr>`;
+    }
+};
+
+const oldSwitchAdminTab = window.switchAdminTab;
+if (oldSwitchAdminTab) {
+    window.switchAdminTab = function(tab) {
+        oldSwitchAdminTab(tab);
+        if (tab === 'incomes') {
+            loadIncomesV2();
+        }
+    };
+}
