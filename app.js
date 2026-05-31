@@ -2837,6 +2837,7 @@ window.v2HandleAptChange = function() {
     } else {
         catSel.disabled = false;
     }
+    v2LoadPaymentDue();
 };
 
 window.submitIncomeV2 = async function() {
@@ -2902,7 +2903,30 @@ window.submitIncomeV2 = async function() {
         await loadIncomesV2();
     } catch (e) {
         console.error(e);
-        showToast("Грешка при запис: " + e.message, "error");
+        
+        if (e.message && e.message.includes('Missing or insufficient permissions')) {
+            showToast("ВНИМАНИЕ: Липсват Firebase права за incomesV2. Записът е запазен ЛОКАЛНО в браузъра (за тестване).", "error");
+            
+            // Fallback to LocalStorage
+            let localIncomes = JSON.parse(localStorage.getItem('incomesV2_' + currentRouteKey) || '[]');
+            if (editId) {
+                const idx = localIncomes.findIndex(r => r.id === editId);
+                if (idx > -1) localIncomes[idx] = { ...localIncomes[idx], ...recordData };
+            } else {
+                recordData.id = 'loc_' + new Date().getTime();
+                localIncomes.push(recordData);
+                document.getElementById("v2IncomeAmount").value = "";
+                document.getElementById("v2IncomeDoc").value = "";
+                document.getElementById("v2IncomeNote").value = "";
+                document.getElementById("v2IncomeApt").value = "";
+                v2HandleAptChange();
+            }
+            localStorage.setItem('incomesV2_' + currentRouteKey, JSON.stringify(localIncomes));
+            await loadIncomesV2();
+        } else {
+            showToast("Грешка при запис: " + e.message, "error");
+        }
+    
     }
 
     btn.disabled = false;
@@ -2944,7 +2968,13 @@ window.deleteIncomeV2 = async function(id) {
     try {
         const { deleteDoc, doc } = window.fb;
         const db = window.db;
-        await deleteDoc(doc(db, "incomesV2", id));
+        if (id.startsWith('loc_')) {
+            let localIncomes = JSON.parse(localStorage.getItem('incomesV2_' + currentRouteKey) || '[]');
+            localIncomes = localIncomes.filter(r => r.id !== id);
+            localStorage.setItem('incomesV2_' + currentRouteKey, JSON.stringify(localIncomes));
+        } else {
+            await deleteDoc(doc(db, "incomesV2", id));
+        }
         showToast("Приходът е изтрит.", "success");
         await loadIncomesV2();
     } catch (e) {
@@ -2969,12 +2999,17 @@ window.loadIncomesV2 = async function() {
         const db = window.db;
         
         const q = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey));
-        const snap = await getDocs(q);
-        
         let records = [];
-        snap.forEach(d => {
-            records.push({ id: d.id, ...d.data() });
-        });
+        try {
+            const snap = await getDocs(q);
+            snap.forEach(d => {
+                records.push({ id: d.id, ...d.data() });
+            });
+        } catch (fbErr) {
+            console.warn("Firebase Read Error, loading from LocalStorage", fbErr);
+            const localIncomes = JSON.parse(localStorage.getItem('incomesV2_' + currentRouteKey) || '[]');
+            records = localIncomes;
+        }
         
         records.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
@@ -3023,3 +3058,58 @@ if (oldSwitchAdminTab) {
         }
     };
 }
+
+window.v2LoadPaymentDue = async function() {
+    const apt = document.getElementById("v2IncomeApt").value;
+    const period = document.getElementById("v2IncomePeriod").value;
+    const lbl = document.getElementById("v2IncomeCurrentBal");
+    
+    if (!lbl) return;
+    
+    if (!apt || apt === "EXTERNAL" || !period) {
+        lbl.innerText = "";
+        return;
+    }
+    
+    lbl.innerText = "(зареждане...)";
+    
+    try {
+        const { collection, doc, getDoc } = window.fb;
+        const db = window.db;
+        
+        const docId = currentRouteKey + "_" + apt + "_" + period;
+        const docRef = doc(collection(db, "monthlyReports"), docId);
+        const aptDocRef = doc(collection(db, "apartments"), currentRouteKey + "_" + apt);
+        
+        const [snap, aptSnap] = await Promise.all([getDoc(docRef), getDoc(aptDocRef)]);
+        
+        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+        let balanceStr = "";
+        
+        if (aptSnap.exists()) {
+            const aptData = aptSnap.data();
+            const bal = Number(aptData.balance || 0);
+            const colorClass = bal > 0 ? "value-red" : "value-green";
+            balanceStr = `, салдо <span class="${colorClass}">${bal.toFixed(2)} ${currency}</span>`;
+        }
+        
+        if (snap.exists()) {
+            const data = snap.data();
+            const paid = Number(data.totalPaid || data.paid || 0);
+            lbl.innerHTML = `(платено <span class="value-green">${paid.toFixed(2)} ${currency}</span>${balanceStr})`;
+        } else {
+            lbl.innerHTML = `(платено 0.00 ${currency}${balanceStr})`;
+        }
+    } catch (e) {
+        lbl.innerText = "";
+        console.error(e);
+    }
+};
+
+// Add listener to period change
+setTimeout(() => {
+    const pEl = document.getElementById("v2IncomePeriod");
+    if (pEl) {
+        pEl.addEventListener('change', v2LoadPaymentDue);
+    }
+}, 2000);
