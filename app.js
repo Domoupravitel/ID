@@ -923,6 +923,8 @@ function showAdminContent() {
     // V2 Incomes Admin Nav Injection
     const isV2 = localStorage.getItem('enableV2Incomes_' + currentRouteKey) === 'true';
     const v2AdminNav = document.getElementById('v2-admin-nav');
+    const masterV2 = document.getElementById('masterEnableV2Incomes');
+    if (masterV2) masterV2.checked = isV2;
     if (v2AdminNav) v2AdminNav.style.display = isV2 ? 'block' : 'none';
     if (window.switchAdminTab) switchAdminTab('expenses'); // default view
 
