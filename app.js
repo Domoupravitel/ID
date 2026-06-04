@@ -2839,13 +2839,25 @@ function switchAdminTab(tab) {
     if (tab === 'expenses') {
         viewExpensesWrapper.style.display = 'block';
         adminSections.forEach((sec, idx) => {
-            sec.style.display = (idx < 2) ? 'block' : 'none';
+            // idx 0 = Добавяне на плащане. idx 1 = Начисления.
+            // В режим V2 "Добавяне на плащане" е скрито, защото имаме "Приходи".
+            sec.style.display = (idx === 1) ? 'block' : 'none';
         });
+        if (quickNav) quickNav.style.display = 'none'; // Няма нужда от бързи бутони, защото има само 1 секция
     } else if (tab === 'settings') {
         viewExpensesWrapper.style.display = 'block';
         adminSections.forEach((sec, idx) => {
             sec.style.display = (idx >= 2) ? 'block' : 'none';
         });
+        if (quickNav) {
+            quickNav.style.display = 'block';
+            // Скриване на бутона "Начисления" от quick nav
+            const links = quickNav.querySelectorAll('a');
+            links.forEach(l => {
+                if (l.textContent.includes('Начисления')) l.style.display = 'none';
+                else l.style.display = 'inline-block';
+            });
+        }
     } else {
         viewExpensesWrapper.style.display = 'none';
     }
@@ -3090,3 +3102,222 @@ window.loadIncomesV2 = async function() {
     }
 };
 
+
+// ==============================================
+// V2 DISTRIBUTION LOGIC
+// ==============================================
+
+window.v2DistSelectAll = function(selectAll) {
+    const container = document.getElementById("v2DistApts");
+    if (!container) return;
+    const checkboxes = container.querySelectorAll("input[type='checkbox']");
+    checkboxes.forEach(cb => cb.checked = selectAll);
+};
+
+window.populateDistPeriods = function() {
+    const pEl = document.getElementById("v2DistPeriod");
+    if (!pEl) return;
+    if (pEl.options.length <= 1) {
+        const d = new Date();
+        const year = d.getFullYear();
+        const monthNames = [
+            "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+            "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+        ];
+        monthNames.forEach((name, index) => {
+            const m = String(index + 1).padStart(2, '0');
+            const val = `${m}.${year}`;
+            const opt = new Option(`${name} ${year}`, val);
+            pEl.appendChild(opt);
+        });
+        const currentPeriod = String(d.getMonth() + 1).padStart(2, '0') + "." + d.getFullYear();
+        pEl.value = currentPeriod;
+    }
+};
+
+window.loadDistributionsV2 = async function() {
+    // Populate checkboxes
+    const container = document.getElementById("v2DistApts");
+    if (container && container.innerHTML.trim() === '<!-- Checkboxes will be populated here -->') {
+        container.innerHTML = '';
+        apartmentList.forEach(apt => {
+            const lbl = document.createElement("label");
+            lbl.style.cssText = "display: flex; align-items: center; gap: 5px; background: white; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; cursor: pointer;";
+            lbl.innerHTML = `<input type="checkbox" value="${apt}" checked> ${apt}`;
+            container.appendChild(lbl);
+        });
+    }
+    
+    populateDistPeriods();
+
+    // Load table
+    const tbody = document.getElementById("v2DistTableBody");
+    if (!tbody) return;
+
+    if (!window.fb || !window.fb.getDocs) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+        
+        const q = query(collection(db, "distributionsV2"), where("routeKey", "==", currentRouteKey));
+        let records = [];
+        try {
+            const snap = await getDocs(q);
+            snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+        } catch (fbErr) {
+            console.warn("Firebase Read Error for distributionsV2", fbErr);
+            records = JSON.parse(localStorage.getItem('distributionsV2_' + currentRouteKey) || '[]');
+        }
+        
+        records.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Няма въведени разпределения.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            const dateStr = new Date(r.timestamp).toLocaleDateString('bg-BG');
+            const safeNote = (r.note || "").replace(/'/g, "\\'");
+
+            html += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.category}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.type === 'balance' ? 'На салдо' : 'На каса'}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #3b82f6;">${parseFloat(r.amount).toFixed(2)}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 11px;">${r.note} <br><span style="color:#64748b">Апт: ${(r.apts || []).length}</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Грешка: ${e.message}</td></tr>`;
+    }
+};
+
+window.submitDistributionV2 = async function() {
+    const period = document.getElementById("v2DistPeriod").value;
+    const category = document.getElementById("v2DistCategory").value;
+    const amountStr = document.getElementById("v2DistAmount").value;
+    const note = document.getElementById("v2DistNote").value.trim();
+    const typeRadio = document.querySelector('input[name="v2DistType"]:checked');
+    const type = typeRadio ? typeRadio.value : 'cash';
+
+    if (!period || !category || !amountStr) {
+        showToast("Моля, попълнете Период, Категория и Сума.", "error");
+        return;
+    }
+
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+        showToast("Невалидна сума.", "error");
+        return;
+    }
+
+    const container = document.getElementById("v2DistApts");
+    const checkboxes = container.querySelectorAll("input[type='checkbox']:checked");
+    const selectedApts = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedApts.length === 0) {
+        showToast("Изберете поне един апартамент за разпределение.", "error");
+        return;
+    }
+
+    const btn = document.getElementById("v2SubmitDistBtn");
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Изчисляване и Запис...";
+
+    try {
+        const { collection, getDoc, doc, addDoc } = window.fb;
+        const db = window.db;
+
+        let totalIdealParts = 0;
+        let aptIdealParts = {};
+
+        const promises = selectedApts.map(apt => getDoc(doc(collection(db, "apartments"), currentRouteKey + "_" + apt)));
+        const snaps = await Promise.all(promises);
+
+        snaps.forEach((snap, idx) => {
+            const apt = selectedApts[idx];
+            let ip = 0;
+            if (snap.exists() && snap.data().idealParts) {
+                ip = parseFloat(snap.data().idealParts) || 0;
+            }
+            aptIdealParts[apt] = ip;
+            totalIdealParts += ip;
+        });
+
+        if (totalIdealParts <= 0) {
+            showToast("Избраните апартаменти нямат въведени идеални части. Разпределението е невъзможно.", "error");
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+
+        let distributedDetails = {};
+        selectedApts.forEach(apt => {
+            const share = aptIdealParts[apt] / totalIdealParts;
+            const distAmt = amount * share;
+            distributedDetails[apt] = distAmt;
+        });
+
+        if (type === 'balance') {
+            for (let apt of selectedApts) {
+                let amt = distributedDetails[apt];
+                if (amt > 0) {
+                    await apiCall('addPayment', {
+                        pin: getStoredPin(),
+                        apartment: apt,
+                        period: period,
+                        amount: amt.toFixed(2)
+                    });
+                }
+            }
+        }
+
+        const recordData = {
+            routeKey: currentRouteKey,
+            period: period,
+            category: category,
+            amount: amount,
+            type: type,
+            note: note,
+            apts: selectedApts,
+            details: distributedDetails,
+            timestamp: new Date().getTime()
+        };
+
+        try {
+            await addDoc(collection(db, "distributionsV2"), recordData);
+        } catch (fbErr) {
+            console.warn("Fallback to localStorage for distributionsV2", fbErr);
+            const local = JSON.parse(localStorage.getItem('distributionsV2_' + currentRouteKey) || '[]');
+            recordData.id = 'loc_' + new Date().getTime();
+            local.push(recordData);
+            localStorage.setItem('distributionsV2_' + currentRouteKey, JSON.stringify(local));
+        }
+
+        showToast("Успешно разпределение!", "success");
+        
+        document.getElementById("v2DistAmount").value = "";
+        document.getElementById("v2DistNote").value = "";
+        document.getElementById("v2DistCategory").value = "";
+        
+        await loadDistributionsV2();
+        
+    } catch (e) {
+        console.error(e);
+        showToast("Грешка при разпределение: " + e.message, "error");
+    }
+
+    btn.disabled = false;
+    btn.textContent = originalText;
+};
