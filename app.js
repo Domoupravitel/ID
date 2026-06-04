@@ -926,7 +926,25 @@ function showAdminContent() {
     const masterV2 = document.getElementById('masterEnableV2Incomes');
     if (masterV2) masterV2.checked = isV2;
     if (v2AdminNav) v2AdminNav.style.display = isV2 ? 'block' : 'none';
-    if (window.switchAdminTab) switchAdminTab('expenses'); // default view
+    
+    if (isV2) {
+        // V2 mode: use tab switching
+        if (window.switchAdminTab) switchAdminTab('expenses');
+    } else {
+        // V1 mode: show everything normally
+        const viewExpenses = document.getElementById('admin-view-expenses');
+        const viewIncomes = document.getElementById('admin-view-incomes');
+        const viewDist = document.getElementById('admin-view-distribution');
+        if (viewExpenses) {
+            viewExpenses.style.display = 'block';
+            const allSections = viewExpenses.querySelectorAll('.admin-section');
+            allSections.forEach(s => s.style.display = 'block');
+            const qn = viewExpenses.querySelector('.admin-quick-nav');
+            if (qn) qn.style.display = 'block';
+        }
+        if (viewIncomes) viewIncomes.style.display = 'none';
+        if (viewDist) viewDist.style.display = 'none';
+    }
 
 
     // Първоначална подкана за MASTER настройки
