@@ -2805,24 +2805,45 @@ window.forceFirebaseSync = async function() {
 
 // --- V2 INCOMES MODULE ---
 function switchAdminTab(tab) {
-    const viewExpenses = document.getElementById('admin-view-expenses');
     const viewIncomes = document.getElementById('admin-view-incomes');
+    const viewDistribution = document.getElementById('admin-view-distribution');
+    const viewExpensesWrapper = document.getElementById('admin-view-expenses');
+    
+    if (!viewExpensesWrapper) return;
+    
+    const adminSections = Array.from(viewExpensesWrapper.querySelectorAll('.admin-section'));
+    const quickNav = viewExpensesWrapper.querySelector('.admin-quick-nav');
+    if (quickNav) quickNav.style.display = (tab === 'expenses' || tab === 'settings') ? 'block' : 'none';
+
+    if (viewIncomes) viewIncomes.style.display = (tab === 'incomes') ? 'block' : 'none';
+    if (viewDistribution) viewDistribution.style.display = (tab === 'distribution') ? 'block' : 'none';
+    
+    if (tab === 'expenses') {
+        viewExpensesWrapper.style.display = 'block';
+        adminSections.forEach((sec, idx) => {
+            sec.style.display = (idx < 2) ? 'block' : 'none';
+        });
+    } else if (tab === 'settings') {
+        viewExpensesWrapper.style.display = 'block';
+        adminSections.forEach((sec, idx) => {
+            sec.style.display = (idx >= 2) ? 'block' : 'none';
+        });
+    } else {
+        viewExpensesWrapper.style.display = 'none';
+    }
+
     const navExpenses = document.getElementById('nav-admin-expenses');
     const navIncomes = document.getElementById('nav-admin-incomes');
+    const navSettings = document.getElementById('nav-admin-settings');
+    const navDist = document.getElementById('nav-admin-distribution');
 
-    if (!viewExpenses || !viewIncomes || !navExpenses || !navIncomes) return;
-
-    if (tab === 'incomes') {
-        viewExpenses.style.display = 'none';
-        viewIncomes.style.display = 'block';
-        navExpenses.className = 'btn secondary';
-        navIncomes.className = 'btn btn-primary';
-    } else {
-        viewExpenses.style.display = 'block';
-        viewIncomes.style.display = 'none';
-        navExpenses.className = 'btn btn-primary';
-        navIncomes.className = 'btn secondary';
-    }
+    if (navExpenses) { navExpenses.style.opacity = (tab === 'expenses') ? '1' : '0.5'; navExpenses.style.boxShadow = (tab === 'expenses') ? '0 0 0 2px #fff, 0 0 0 4px #ef4444' : 'none'; }
+    if (navIncomes) { navIncomes.style.opacity = (tab === 'incomes') ? '1' : '0.5'; navIncomes.style.boxShadow = (tab === 'incomes') ? '0 0 0 2px #fff, 0 0 0 4px #10b981' : 'none'; }
+    if (navSettings) { navSettings.style.opacity = (tab === 'settings') ? '1' : '0.5'; navSettings.style.boxShadow = (tab === 'settings') ? '0 0 0 2px #fff, 0 0 0 4px #64748b' : 'none'; }
+    if (navDist) { navDist.style.opacity = (tab === 'distribution') ? '1' : '0.5'; navDist.style.boxShadow = (tab === 'distribution') ? '0 0 0 2px #fff, 0 0 0 4px #3b82f6' : 'none'; }
+    
+    if (tab === 'incomes' && typeof loadIncomesV2 === 'function') loadIncomesV2();
+    if (tab === 'distribution' && typeof loadDistributionsV2 === 'function') loadDistributionsV2();
 }
 window.switchAdminTab = switchAdminTab;
 
@@ -3051,67 +3072,3 @@ window.loadIncomesV2 = async function() {
     }
 };
 
-const oldSwitchAdminTab = window.switchAdminTab;
-if (oldSwitchAdminTab) {
-    window.switchAdminTab = function(tab) {
-        oldSwitchAdminTab(tab);
-        if (tab === 'incomes') {
-            loadIncomesV2();
-        }
-    };
-}
-
-window.v2LoadPaymentDue = async function() {
-    const apt = document.getElementById("v2IncomeApt").value;
-    const period = document.getElementById("v2IncomePeriod").value;
-    const lbl = document.getElementById("v2IncomeCurrentBal");
-    
-    if (!lbl) return;
-    
-    if (!apt || apt === "EXTERNAL" || !period) {
-        lbl.innerText = "";
-        return;
-    }
-    
-    lbl.innerText = "(зареждане...)";
-    
-    try {
-        const { collection, doc, getDoc } = window.fb;
-        const db = window.db;
-        
-        const docId = currentRouteKey + "_" + apt + "_" + period;
-        const docRef = doc(collection(db, "monthlyReports"), docId);
-        const aptDocRef = doc(collection(db, "apartments"), currentRouteKey + "_" + apt);
-        
-        const [snap, aptSnap] = await Promise.all([getDoc(docRef), getDoc(aptDocRef)]);
-        
-        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
-        let balanceStr = "";
-        
-        if (aptSnap.exists()) {
-            const aptData = aptSnap.data();
-            const bal = Number(aptData.balance || 0);
-            const colorClass = bal > 0 ? "value-red" : "value-green";
-            balanceStr = `, салдо <span class="${colorClass}">${bal.toFixed(2)} ${currency}</span>`;
-        }
-        
-        if (snap.exists()) {
-            const data = snap.data();
-            const paid = Number(data.totalPaid || data.paid || 0);
-            lbl.innerHTML = `(платено <span class="value-green">${paid.toFixed(2)} ${currency}</span>${balanceStr})`;
-        } else {
-            lbl.innerHTML = `(платено 0.00 ${currency}${balanceStr})`;
-        }
-    } catch (e) {
-        lbl.innerText = "";
-        console.error(e);
-    }
-};
-
-// Add listener to period change
-setTimeout(() => {
-    const pEl = document.getElementById("v2IncomePeriod");
-    if (pEl) {
-        pEl.addEventListener('change', v2LoadPaymentDue);
-    }
-}, 2000);
