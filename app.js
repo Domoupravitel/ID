@@ -2893,6 +2893,60 @@ window.v2HandleAptChange = function() {
     v2LoadPaymentDue();
 };
 
+
+window.v2LoadPaymentDue = async function() {
+    const apt = document.getElementById("v2IncomeApt").value;
+    const period = document.getElementById("v2IncomePeriod").value;
+    const lbl = document.getElementById("v2IncomeCurrentBal");
+    
+    if (!lbl) return;
+    
+    // Външен източник няма салдо/задължения към входа
+    if (!apt || apt === "EXTERNAL" || !period || !window.fb || !window.db) {
+        lbl.innerHTML = "";
+        lbl.className = "charge-current";
+        return;
+    }
+    
+    lbl.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
+    lbl.className = "charge-current loading";
+    
+    try {
+        const { collection, doc, getDoc } = window.fb;
+        const db = window.db;
+        
+        // Взимане на данни от V1 колекциите
+        const docId = currentRouteKey + "_" + apt + "_" + period;
+        const docRef = doc(collection(db, "monthlyReports"), docId);
+        const aptDocRef = doc(collection(db, "apartments"), currentRouteKey + "_" + apt);
+        
+        const [snap, aptSnap] = await Promise.all([getDoc(docRef), getDoc(aptDocRef)]);
+        
+        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "лв.";
+        let balanceStr = "";
+        
+        if (aptSnap.exists()) {
+            const aptData = aptSnap.data();
+            const bal = Number(aptData.balance || 0);
+            const colorClass = bal > 0 ? "value-red" : "value-green";
+            balanceStr = `, салдо <span class="${colorClass}">${bal.toFixed(2)} ${currency}</span>`;
+        }
+        
+        if (snap.exists()) {
+            const data = snap.data();
+            const paid = Number(data.totalPaid || data.paid || 0);
+            lbl.className = "charge-current";
+            lbl.innerHTML = `(платено <span class="value-green">${paid.toFixed(2)} ${currency}</span>${balanceStr})`;
+        } else {
+            lbl.className = "charge-current";
+            lbl.innerHTML = `(платено 0.00 ${currency}${balanceStr})`;
+        }
+    } catch (e) {
+        lbl.className = "charge-current";
+        lbl.innerText = "";
+    }
+};
+
 window.submitIncomeV2 = async function() {
     const period = document.getElementById("v2IncomePeriod").value;
     const apt = document.getElementById("v2IncomeApt").value;
@@ -2908,7 +2962,7 @@ window.submitIncomeV2 = async function() {
     }
 
     const amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount <= 0) {
+    if (isNaN(amount) || amount === 0) {
         showToast("Невалидна сума.", "error");
         return;
     }
