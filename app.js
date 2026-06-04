@@ -3088,7 +3088,6 @@ window.loadIncomesV2 = async function() {
                     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #16a34a;">${parseFloat(r.amount).toFixed(2)}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${docText}${noteText}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-                        <button onclick="editIncomeV2('${r.id}', '${r.period}', '${r.apt}', '${r.category}', ${r.amount}, '${safeDoc}', '${safeNote}')" style="background: none; border: none; cursor: pointer; font-size: 14px;" title="Редактирай">✏️</button>
                         <button onclick="deleteIncomeV2('${r.id}')" style="background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 5px;" title="Изтрий">🗑️</button>
                     </td>
                 </tr>

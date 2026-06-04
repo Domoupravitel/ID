@@ -180,7 +180,7 @@
 <div id="admin-view-incomes" style="display: none;">
                 <div class="admin-section">
                     <h3 style="color: #16a34a;">💰 Добавяне на Приход (V2)</h3>
-                    <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте приход по категории от ЗУЕС.</p>
+                    <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от апартамент или външен източник, за избран период. <span style="color: #d32f2f;">Може да се добавя или изважда (със знак -) сума за период.</span></p>
                     
                     <input type="hidden" id="v2IncomeEditId" value="">
 
@@ -190,8 +190,8 @@
                     <label class="admin-label">Апартамент / Платец</label>
                     <select id="v2IncomeApt" class="admin-input" onchange="v2HandleAptChange()">
                         <option value="">Избери...</option>
-                        <!-- options will be populated by JS -->
                         <option value="EXTERNAL">Външен източник</option>
+                        <!-- options will be populated by JS -->
                     </select>
 
                     <label class="admin-label">Категория по ЗУЕС</label>
