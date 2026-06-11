@@ -2999,6 +2999,25 @@ window.submitIncomeV2 = async function() {
             await addDoc(collection(db, "incomesV2"), recordData);
             showToast("Успешно записан приход!", "success");
             
+            // Връзка с V1: Ако е от апартамент, запиши го и като плащане във V1
+            if (apt !== "EXTERNAL" && category === "Управление и поддръжка") {
+                try {
+                    await apiCall('addPayment', {
+                        pin: getStoredPin(),
+                        apartment: apt,
+                        period: period,
+                        amount: amount.toFixed(2) // Може да е отрицателно за корекции
+                    });
+                    showToast("✅ Отразено в салдото на апартамента.", "success");
+                    bgApiCall('forceSync', { pin: getStoredPin() }).then(() => {
+                        refreshCurrentView();
+                        if (typeof v2LoadPaymentDue === 'function') v2LoadPaymentDue();
+                    });
+                } catch (apiErr) {
+                    showToast("Грешка при отразяване на плащането във V1.", "error");
+                }
+            }
+
             // Clear form
             document.getElementById("v2IncomeAmount").value = "";
             document.getElementById("v2IncomeDoc").value = "";
