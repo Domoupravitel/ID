@@ -2873,7 +2873,10 @@ function switchAdminTab(tab) {
     if (navDist) { navDist.style.opacity = (tab === 'distribution') ? '1' : '0.5'; navDist.style.boxShadow = (tab === 'distribution') ? '0 0 0 2px #fff, 0 0 0 4px #3b82f6' : 'none'; }
     
     if (tab === 'incomes' && typeof loadIncomesV2 === 'function') loadIncomesV2();
-    if (tab === 'distribution' && typeof loadDistributionsV2 === 'function') loadDistributionsV2();
+    if (tab === 'distribution') {
+        if (typeof loadDistributionsV2 === 'function') loadDistributionsV2();
+        if (typeof updateV2DistAvailableSum === 'function') updateV2DistAvailableSum();
+    }
 }
 window.switchAdminTab = switchAdminTab;
 
@@ -3178,6 +3181,48 @@ window.loadIncomesV2 = async function() {
 // ==============================================
 // V2 DISTRIBUTION LOGIC
 // ==============================================
+
+window.updateV2DistAvailableSum = async function() {
+    const category = document.getElementById("v2DistCategory").value;
+    const lbl = document.getElementById("lbl-v2DistAmount");
+    if (!lbl) return;
+
+    if (!category) {
+        lbl.innerHTML = 'Сума за разпределяне';
+        return;
+    }
+
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+
+        // Fetch distributions for this category
+        const qDist = query(collection(db, "distributionsV2"), where("routeKey", "==", currentRouteKey), where("category", "==", category));
+        const snapDist = await getDocs(qDist);
+        let totalDist = 0;
+        snapDist.forEach(d => totalDist += parseFloat(d.data().amount) || 0);
+
+        let totalCollected = 0;
+        if (category === "Фонд ремонт") {
+            const qApts = query(collection(db, "apartments"), where("buildingId", "==", currentRouteKey));
+            const snapApts = await getDocs(qApts);
+            snapApts.forEach(d => {
+                totalCollected += parseFloat(d.data().collectedTargetFund) || 0;
+            });
+        } else {
+            const qInc = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey), where("category", "==", category));
+            const snapInc = await getDocs(qInc);
+            snapInc.forEach(d => totalCollected += parseFloat(d.data().amount) || 0);
+        }
+
+        const available = totalCollected - totalDist;
+        const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+        lbl.innerHTML = `Сума за разпределяне <span style="color:#16a34a; font-size:12px;">(Налични: ${available.toFixed(2)} ${cur})</span>`;
+    } catch (e) {
+        console.error("Error updating available sum:", e);
+        lbl.innerHTML = 'Сума за разпределяне <span style="color:#ef4444; font-size:12px;">(Грешка)</span>';
+    }
+};
 
 window.v2DistSelectAll = function(selectAll) {
     const container = document.getElementById("v2DistApts");
