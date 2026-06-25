@@ -2614,6 +2614,7 @@ window.generateReport = async function () {
 
             const labels = {
                 elevator: "Разходи за Асансьор ел.",
+
                 subscription: "Асансьор абон. и др.",
                 light: "Електрическа енергия - общи части",
                 security: "Охрана / Консиерж",
@@ -2779,24 +2780,7 @@ async function checkRemontEligibility() {
 
 
 
-window.forceFirebaseSync = async function() {
-    const btn = document.getElementById('forceSyncBtn');
-    if (!btn) return;
-    showSaving(btn, 'Синхронизиране... (отнема 5-15 сек)');
-    try {
-        const result = await apiCall('forceDataSync', { pin: getStoredPin() });
-        if (result && result.success) {
-            showToast('Синхронизацията приключи успешно!', 'success');
-            refreshCurrentView();
-        } else {
-            showToast(result?.error || 'роблем при синхронизацията.', 'error');
-        }
-    } catch(e) {
-        showToast('решка при комуникация със сървъра', 'error');
-    } finally {
-        hideSaving(btn, 'зпрати данните към приложението');
-    }
-}
+
 
 
 // ==============================================
@@ -3427,6 +3411,15 @@ window.submitDistributionV2 = async function() {
         document.getElementById("v2DistAmount").value = "";
         document.getElementById("v2DistNote").value = "";
         document.getElementById("v2DistCategory").value = "";
+        
+        // Синхронизираме Firebase с актуалните данни от Google Sheets (салда и отчети)
+        if (type === 'balance') {
+            try {
+                await apiCall('forceDataSync', { pin: getStoredPin() });
+            } catch (syncErr) {
+                console.warn("Post-distribution sync warning:", syncErr);
+            }
+        }
         
         await loadDistributionsV2();
         
