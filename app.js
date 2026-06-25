@@ -543,16 +543,28 @@ async function loadDashboardFromFirebase(routeKey) {
 
     if (balance > 0) {
       totalDebt += balance;
-      // Дългът включва фонд ремонт. Ако дългът е по-малък от фонда,
-      // значи част от фонда е покрита. Ако е по-голям — нищо от фонда не е платено.
       totalBalance += Math.max(0, targetFund - balance);
     } else {
-      // balance <= 0: всичко е платено (вкл. целия фонд ремонт)
       totalBalance += targetFund;
     }
     
     totalTargetFund += targetFund;
   });
+
+  let totalSpent = 0;
+  try {
+    const qDist = query(
+      collection(db, "distributionsV2"),
+      where("routeKey", "==", routeKey),
+      where("category", "==", "Фонд ремонт")
+    );
+    const snapDist = await getDocs(qDist);
+    snapDist.forEach(d => {
+      totalSpent += parseFloat(d.data().amount) || 0;
+    });
+  } catch (err) {
+    console.error("Error loading distributions for dashboard:", err);
+  }
 
   return {
     success: true,
@@ -560,6 +572,7 @@ async function loadDashboardFromFirebase(routeKey) {
       totalDebts: totalDebt.toFixed(2),
       totalBalance: totalBalance.toFixed(2),
       totalTargetFund: totalTargetFund.toFixed(2),
+      totalSpent: totalSpent.toFixed(2),
       trendData: []
     }
   };
@@ -574,12 +587,15 @@ async function loadDashboardData() {
 
             document.getElementById('dash-debts').textContent = `${d.totalDebts} ${cur}`;
             
-            // Показваме събраното спрямо общото начислено
             const collected = parseFloat(d.totalBalance) || 0;
             const target = parseFloat(d.totalTargetFund) || 0;
-            document.getElementById('dash-balance').textContent = `${collected.toFixed(2)} ${cur} (${target.toFixed(2)} ${cur})`;
+            const spent = parseFloat(d.totalSpent) || 0;
 
-            // Trends status text update
+            const netBalance = Math.max(0, collected - spent);
+            const netTarget = Math.max(0, target - spent);
+
+            document.getElementById('dash-balance').textContent = `${netBalance.toFixed(2)} ${cur} (${netTarget.toFixed(2)} ${cur})`;
+
             const debtsTrendEl = document.getElementById('dash-debts-trend');
             const balanceTrendEl = document.getElementById('dash-balance-trend');
 
@@ -587,17 +603,16 @@ async function loadDashboardData() {
                 debtsTrendEl.textContent = parseFloat(d.totalDebts) > 0 ? "Изисква се заплащане" : "Всичко е изплатено";
             }
             if (balanceTrendEl) {
-                if (target > 0) {
-                    balanceTrendEl.textContent = collected > 0 
-                        ? `Събрано ${collected.toFixed(2)} от ${target.toFixed(2)} ${cur}` 
-                        : `Начислено ${target.toFixed(2)} ${cur}`;
+                if (netTarget > 0) {
+                    balanceTrendEl.textContent = `Събрано ${netBalance.toFixed(2)} от ${netTarget.toFixed(2)} ${cur}`;
+                } else if (target > 0 && spent >= target) {
+                    balanceTrendEl.textContent = "Всички събрани средства са усвоени";
                 } else {
                     balanceTrendEl.textContent = "Няма начислен фонд";
                 }
             }
 
             if (d.trendData && d.trendData.length > 0) {
-                // Ensure Chart.js is loaded before calling initChart
                 if (typeof Chart !== 'undefined') {
                     initChart(d.trendData);
                 } else {
@@ -610,7 +625,6 @@ async function loadDashboardData() {
         } else {
             const errMsg = result?.error || "Неуспешно зареждане на обобщените данни.";
             console.error("Dashboard data load failed:", errMsg);
-            // Don't show toast for every fail to not annoy, but update the placeholders if they were stuck
             document.getElementById('dash-debts-trend').textContent = "Грешка при зареждане";
             document.getElementById('dash-balance-trend').textContent = "Грешка при зареждане";
         }
