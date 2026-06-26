@@ -1057,8 +1057,8 @@ function populateAdminDropdowns() {
     const v2AptSel = document.getElementById("v2IncomeApt");
     if (v2AptSel && apartmentList.length > 0 && v2AptSel.options.length <= 2) {
         v2AptSel.innerHTML = '<option value="">Избери...</option>';
-        apartmentList.forEach(a => v2AptSel.appendChild(new Option(a, a)));
         v2AptSel.appendChild(new Option("Външен източник", "EXTERNAL"));
+        apartmentList.forEach(a => v2AptSel.appendChild(new Option(a, a)));
     }
 if (typeof loadCurrentCharges === 'function') loadCurrentCharges();
     if (typeof loadPaymentDue === 'function') loadPaymentDue();
@@ -2581,12 +2581,50 @@ async function loadMonthlyReportFromFirebase(routeKey, period) {
   
   invoicedCounts.total = totalInvoiced;
 
+  // Външни приходи (V2) за същия период
+  let incomesV2 = [];
+  try {
+    const qInc = query(
+      collection(db, "incomesV2"),
+      where("routeKey", "==", routeKey),
+      where("period", "==", period)
+    );
+    const snapInc = await getDocs(qInc);
+    snapInc.forEach(doc => {
+      incomesV2.push({ id: doc.id, ...doc.data() });
+    });
+  } catch (err) {
+    console.warn("Error fetching V2 incomes for report, trying local storage:", err);
+    const local = JSON.parse(localStorage.getItem('incomesV2_' + routeKey) || '[]');
+    incomesV2 = local.filter(r => r.period === period);
+  }
+
+  // Разпределения (V2) за същия период
+  let distributionsV2 = [];
+  try {
+    const qDist = query(
+      collection(db, "distributionsV2"),
+      where("routeKey", "==", routeKey),
+      where("period", "==", period)
+    );
+    const snapDist = await getDocs(qDist);
+    snapDist.forEach(doc => {
+      distributionsV2.push({ id: doc.id, ...doc.data() });
+    });
+  } catch (err) {
+    console.warn("Error fetching V2 distributions for report, trying local storage:", err);
+    const local = JSON.parse(localStorage.getItem('distributionsV2_' + routeKey) || '[]');
+    distributionsV2 = local.filter(r => r.period === period);
+  }
+
   return {
     success: true,
     data: {
       invoiced: invoicedCounts,
       collected: totalCollected,
       logic: rows[0] ? (rows[0].logic || 'Равно') : 'Равно', // Взимаме логиката от първия запис
+      incomesV2: incomesV2,
+      distributionsV2: distributionsV2,
       apartments: rows.map(r => {
         const d = r.details || {};
         return {
@@ -2650,7 +2688,61 @@ window.generateReport = async function () {
             }
 
             document.getElementById("report-total-invoiced").textContent = d.invoiced.total.toFixed(2) + " EUR";
-            document.getElementById("report-total-collected").textContent = d.collected.toFixed(2) + " EUR";
+
+            // Populate V2 Incomes table in Section II
+            const collectedRows = document.getElementById("report-collected-rows");
+            collectedRows.innerHTML = "";
+            
+            // 1. Apartment payments (V1 total)
+            let totalIncomesSum = d.collected || 0;
+            const trApt = document.createElement("tr");
+            trApt.innerHTML = `
+                <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">Постъпили плащания за периода (от апартаменти)</td>
+                <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${d.collected.toFixed(2)} EUR</td>
+            `;
+            collectedRows.appendChild(trApt);
+
+            // 2. V2 incomes
+            if (d.incomesV2 && d.incomesV2.length > 0) {
+                d.incomesV2.forEach(inc => {
+                    totalIncomesSum += Number(inc.amount || 0);
+                    const tr = document.createElement("tr");
+                    const payer = inc.apt === "EXTERNAL" ? "Външен източник" : `Ап. ${inc.apt}`;
+                    const noteStr = inc.note ? ` (${inc.note})` : "";
+                    tr.innerHTML = `
+                        <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">Приход от ${payer} - кат. "${inc.category}"${noteStr}</td>
+                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${Number(inc.amount || 0).toFixed(2)} EUR</td>
+                    `;
+                    collectedRows.appendChild(tr);
+                });
+            }
+            document.getElementById("report-total-collected").textContent = totalIncomesSum.toFixed(2) + " EUR";
+
+            // Populate V2 Distributions in Section III
+            const distRows = document.getElementById("report-distribution-rows");
+            distRows.innerHTML = "";
+            let totalDistSum = 0;
+            
+            if (d.distributionsV2 && d.distributionsV2.length > 0) {
+                d.distributionsV2.forEach(dist => {
+                    totalDistSum += Number(dist.amount || 0);
+                    const tr = document.createElement("tr");
+                    const destType = dist.type === "balance" ? "На салдо" : "На каса";
+                    const noteStr = dist.note ? ` (${dist.note})` : "";
+                    tr.innerHTML = `
+                        <td style="padding: 10px 0; border-bottom: 1px dashed #eee;">Разпределено от "${dist.category}" към ${destType}${noteStr}</td>
+                        <td style="text-align: right; padding: 10px 0; border-bottom: 1px dashed #eee;">${Number(dist.amount || 0).toFixed(2)} EUR</td>
+                    `;
+                    distRows.appendChild(tr);
+                });
+            } else {
+                const trEmpty = document.createElement("tr");
+                trEmpty.innerHTML = `
+                    <td colspan="2" style="padding: 10px 0; text-align: center; color: #666; font-style: italic;">Няма разпределени средства за периода</td>
+                `;
+                distRows.appendChild(trEmpty);
+            }
+            document.getElementById("report-total-distributed").textContent = totalDistSum.toFixed(2) + " EUR";
 
             // --- ДОБАВЯНЕ НА СТАТИСТИКА ЗА ПЕРИОДА (ПАРАМЕТРИ ПЕРСОНАЛНО) ---
             const statsBoxId = "monthly-report-stats-box";
@@ -2663,7 +2755,12 @@ window.generateReport = async function () {
                 statsSect.style.borderTop = "1px solid #eee";
             }
             // Винаги го добавяме наново, за да сме сигурни, че е вътре в самия отчет (преди подписите):
-            document.getElementById("report-total-collected").parentNode.parentNode.appendChild(statsSect);
+            const signatures = document.getElementById("report-signatures-area");
+            if (signatures) {
+                signatures.parentNode.insertBefore(statsSect, signatures);
+            } else {
+                document.getElementById("report-print-area").appendChild(statsSect);
+            }
 
             let aptRowsHTML = "";
             let summaryTotalDue = 0;
@@ -2688,7 +2785,7 @@ window.generateReport = async function () {
             statsSect.innerHTML = `
                 <div style="page-break-inside: avoid;">
                     <h4 style="margin: 0 0 5px; font-size: 14px; text-transform: uppercase;">
-                        III. Подробни параметри по апартаменти
+                        IV. Подробни параметри по апартаменти
                     </h4>
                     <p style="font-size: 11px; margin-bottom: 15px; color: #555;">Логика на разпределение (Асансьор): <strong>${d.logic || 'Равно'}</strong></p>
                     <table style="width: 100%; font-size: 12px; color: #333; border-collapse: collapse;">
@@ -3161,9 +3258,6 @@ window.loadIncomesV2 = async function() {
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.category}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #16a34a;">${parseFloat(r.amount).toFixed(2)}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${docText}${noteText}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-                        <button onclick="deleteIncomeV2('${r.id}')" style="background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 5px;" title="Изтрий">🗑️</button>
-                    </td>
                 </tr>
             `;
         });

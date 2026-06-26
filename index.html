@@ -231,7 +231,7 @@
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Платец</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Категория</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: right;">Сума</th>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: center;">Действия</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Бележка / Документ</th>
                                 </tr>
                             </thead>
                             <tbody id="v2IncomesTableBody">
@@ -1265,14 +1265,41 @@
                                 <h4
                                     style="border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 14px; text-transform: uppercase;">
                                     II. Приходи (Събрани суми)</h4>
-                                <div
-                                    style="display:flex; justify-content: space-between; padding: 10px 0; font-size: 13px;">
-                                    <span>Всички постъпили плащания за периода:</span>
-                                    <span id="report-total-collected" style="font-weight: bold;">0.00 EUR</span>
-                                </div>
+                                <table
+                                    style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                                    <tbody id="report-collected-rows">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight: bold; border-top: 1px solid #333;">
+                                            <td style="padding: 10px 0;">ОБЩО СЪБРАНИ ПРИХОДИ:</td>
+                                            <td id="report-total-collected" style="text-align: right; padding: 10px 0; font-weight: bold;">
+                                                0.00 EUR</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
 
-                            <div
+                            <div style="margin-bottom: 20px;" id="report-distributions-section">
+                                <h4
+                                    style="border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 14px; text-transform: uppercase;">
+                                    III. Разпределени средства (Разпределения)</h4>
+                                <table
+                                    style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                                    <tbody id="report-distribution-rows">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight: bold; border-top: 1px solid #333;">
+                                            <td style="padding: 10px 0;">ОБЩО РАЗПРЕДЕЛЕНИ СУМИ:</td>
+                                            <td id="report-total-distributed" style="text-align: right; padding: 10px 0; font-weight: bold;">
+                                                0.00 EUR</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div id="report-signatures-area"
                                 style="margin-top: 50px; font-size: 12px; display: flex; justify-content: space-between;">
                                 <span>Дата на генериране: <span id="report-gen-date"></span></span>
                                 <div style="text-align: right;">
