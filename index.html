@@ -222,6 +222,46 @@
                 </div>
 
                 <div class="admin-section" style="margin-top: 20px;">
+                    <h3 style="color: #1e3a8a;">👥 Регистър Външни платци</h3>
+                    <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Дефинирайте съответствие между името на Наредителя в ePay имейлите и съответния Вид платец.</p>
+                    
+                    <label class="admin-label">Вид платец (Категория по ЗУЕС)</label>
+                    <select id="v2PayerType" class="admin-input">
+                        <option value="Наем на общи части">2. Наем на общи части</option>
+                        <option value="Средства от бюджетни институции">3. Средства от бюджетни институции</option>
+                        <option value="Кредит">4. Кредит</option>
+                        <option value="ВЕИ на ЕС">5. ВЕИ на ЕС</option>
+                        <option value="Дарения">6. Дарения</option>
+                        <option value="Други">7. Други</option>
+                    </select>
+                    
+                    <label class="admin-label">Наименование на платеца</label>
+                    <input type="text" id="v2PayerName" class="admin-input" placeholder="напр. Иван Иванов или ФИРМА ООД">
+                    
+                    <label class="admin-label">Пояснение (Опционално)</label>
+                    <input type="text" id="v2PayerNote" class="admin-input" placeholder="напр. Наемател ателие 1">
+                    
+                    <button class="admin-btn" id="v2SavePayerBtn" style="background: #1e3a8a; color: white; width: 100%; margin-top: 10px;" onclick="saveExternalPayer()">💾 Запиши</button>
+                    
+                    <div class="table-responsive" style="margin-top: 20px; max-height: 250px; overflow-y: auto;">
+                        <table class="status-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                                <tr>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Дата</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Вид платец</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Наименование</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Пояснение</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: center;">Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody id="v2PayersTableBody">
+                                <tr><td colspan="5" style="text-align: center; padding: 15px; color: #666;">Няма въведени външни платци.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section" style="margin-top: 20px;">
                     <h3 style="color: #1e3a8a;">📋 Регистър Приходи</h3>
                     <div class="table-responsive" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
                         <table class="status-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">

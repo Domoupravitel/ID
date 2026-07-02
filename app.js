@@ -2967,7 +2967,10 @@ function switchAdminTab(tab) {
     if (navSettings) { navSettings.style.opacity = (tab === 'settings') ? '1' : '0.5'; navSettings.style.boxShadow = (tab === 'settings') ? '0 0 0 2px #fff, 0 0 0 4px #64748b' : 'none'; }
     if (navDist) { navDist.style.opacity = (tab === 'distribution') ? '1' : '0.5'; navDist.style.boxShadow = (tab === 'distribution') ? '0 0 0 2px #fff, 0 0 0 4px #3b82f6' : 'none'; }
     
-    if (tab === 'incomes' && typeof loadIncomesV2 === 'function') loadIncomesV2();
+    if (tab === 'incomes') {
+        if (typeof loadIncomesV2 === 'function') loadIncomesV2();
+        if (typeof loadExternalPayers === 'function') loadExternalPayers();
+    }
     if (tab === 'distribution') {
         if (typeof loadDistributionsV2 === 'function') loadDistributionsV2();
         if (typeof updateV2DistAvailableSum === 'function') updateV2DistAvailableSum();
@@ -3269,6 +3272,166 @@ window.loadIncomesV2 = async function() {
     }
 };
 
+// ==============================================
+// V2 EXTERNAL PAYERS REGISTRY
+// ==============================================
+
+window.saveExternalPayer = async function() {
+    const payerType = document.getElementById("v2PayerType").value;
+    const payerName = document.getElementById("v2PayerName").value.trim();
+    const note = document.getElementById("v2PayerNote").value.trim();
+
+    if (!payerType || !payerName) {
+        showToast("Моля, попълнете Вид платец и Наименование на платеца.", "error");
+        return;
+    }
+
+    if (!window.fb || !window.fb.addDoc) {
+        showToast("Грешка при връзка с базата данни (Firebase AddDoc липсва).", "error");
+        return;
+    }
+
+    const btn = document.getElementById("v2SavePayerBtn");
+    btn.disabled = true;
+    btn.textContent = "Записване...";
+
+    // Generate date in format YYYY/MM/DD
+    const dateObj = new Date();
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}/${mm}/${dd}`;
+
+    try {
+        const { collection, addDoc } = window.fb;
+        const db = window.db;
+
+        const recordData = {
+            routeKey: currentRouteKey,
+            payerType: payerType,
+            payerName: payerName,
+            note: note,
+            dateAdded: dateStr,
+            timestamp: new Date().getTime()
+        };
+
+        await addDoc(collection(db, "externalPayers"), recordData);
+        showToast("Успешно записан външен платец!", "success");
+
+        // Clear input fields
+        document.getElementById("v2PayerName").value = "";
+        document.getElementById("v2PayerNote").value = "";
+
+        await loadExternalPayers();
+    } catch (e) {
+        console.error(e);
+        if (e.message && e.message.includes('Missing or insufficient permissions')) {
+            showToast("Липсват Firebase права за externalPayers. Записът е запазен ЛОКАЛНО.", "error");
+            
+            // LocalStorage fallback
+            let localPayers = JSON.parse(localStorage.getItem('externalPayers_' + currentRouteKey) || '[]');
+            const recordData = {
+                id: 'loc_' + new Date().getTime(),
+                routeKey: currentRouteKey,
+                payerType: payerType,
+                payerName: payerName,
+                note: note,
+                dateAdded: dateStr,
+                timestamp: new Date().getTime()
+            };
+            localPayers.push(recordData);
+            localStorage.setItem('externalPayers_' + currentRouteKey, JSON.stringify(localPayers));
+            
+            document.getElementById("v2PayerName").value = "";
+            document.getElementById("v2PayerNote").value = "";
+            
+            await loadExternalPayers();
+        } else {
+            showToast("Грешка при запис: " + e.message, "error");
+        }
+    }
+
+    btn.disabled = false;
+    btn.textContent = "💾 Запиши";
+};
+
+window.deleteExternalPayer = async function(id) {
+    if (!confirm("Сигурни ли сте, че искате да изтриете този външен платец?")) return;
+
+    try {
+        const { deleteDoc, doc } = window.fb;
+        const db = window.db;
+
+        if (id.startsWith('loc_')) {
+            let localPayers = JSON.parse(localStorage.getItem('externalPayers_' + currentRouteKey) || '[]');
+            localPayers = localPayers.filter(r => r.id !== id);
+            localStorage.setItem('externalPayers_' + currentRouteKey, JSON.stringify(localPayers));
+        } else {
+            await deleteDoc(doc(db, "externalPayers", id));
+        }
+        showToast("Външният платец е изтрит.", "success");
+        await loadExternalPayers();
+    } catch (e) {
+        console.error(e);
+        showToast("Грешка при изтриване: " + e.message, "error");
+    }
+};
+
+window.loadExternalPayers = async function() {
+    const tbody = document.getElementById("v2PayersTableBody");
+    if (!tbody) return;
+
+    if (!window.fb || !window.fb.getDocs) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Грешка: Firebase не е зареден.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+
+        const q = query(collection(db, "externalPayers"), where("routeKey", "==", currentRouteKey));
+        let records = [];
+        try {
+            const snap = await getDocs(q);
+            snap.forEach(d => {
+                records.push({ id: d.id, ...d.data() });
+            });
+        } catch (fbErr) {
+            console.warn("Firebase Read Error, loading from LocalStorage", fbErr);
+            const localPayers = JSON.parse(localStorage.getItem('externalPayers_' + currentRouteKey) || '[]');
+            records = localPayers;
+        }
+
+        records.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Няма въведени външни платци.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            html += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.dateAdded}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.payerType}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.payerName}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.note || ""}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                        <button class="admin-btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 11px;" onclick="deleteExternalPayer('${r.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Грешка при зареждане: ${e.message}</td></tr>`;
+    }
+};
 
 // ==============================================
 // V2 DISTRIBUTION LOGIC
