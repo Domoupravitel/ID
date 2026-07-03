@@ -1084,6 +1084,29 @@
         </div>
 
         <!-- ============================================== -->
+        <!-- VIEW: HARD BLOCK — ДОСТЪПЪТ Е СПРЯН          -->
+        <!-- ============================================== -->
+        <div id="view-hard-blocked" class="view-panel hidden">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; padding:30px; text-align:center;">
+                <div style="font-size:64px; margin-bottom:20px;">🔒</div>
+                <h2 style="color:#e74c3c; margin-bottom:12px;">Достъпът до входа е спрян</h2>
+                <p style="color:#555; max-width:480px; line-height:1.6; margin-bottom:20px;">
+                    Абонаментът за този вход не е платен повече от <strong>3 месеца</strong>.<br>
+                    Достъпът до всички данни е напълно блокиран.
+                </p>
+                <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:10px; padding:18px 24px; margin-bottom:24px; max-width:420px;">
+                    <div style="font-size:12px; color:#856404; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Основание за плащане (вашият ID):</div>
+                    <div id="hard-block-id" style="font-size:22px; font-weight:700; color:#d32f2f; letter-spacing:2px;">—</div>
+                </div>
+                <p style="color:#888; font-size:13px; max-width:420px; margin-bottom:24px;">
+                    За да възстановите достъпа, извършете плащане и посочете вашия ID код като основание.<br>
+                    Данните се пазят 6 месеца след пълно спиране.
+                </p>
+                <button onclick="exitEntrance()" style="background:#3b6edc; color:white; border:none; border-radius:8px; padding:12px 28px; font-size:15px; cursor:pointer;">← Към началото</button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
         <!-- VIEW: 2. НАЧАЛНА СТРАНИЦА НА ИЗБРАНИЯ ВХОД     -->
         <!-- ============================================== -->
         <div id="view-entrance-home" class="view-panel hidden">

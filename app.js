@@ -314,6 +314,12 @@ window.exitEntrance = function () {
     // Switch views
     document.getElementById('view-entrance-home').classList.remove('active');
     document.getElementById('view-entrance-home').classList.add('hidden');
+    // Скриваме и hard-block view ако е показан
+    const hardBlockView = document.getElementById('view-hard-blocked');
+    if (hardBlockView) {
+        hardBlockView.classList.remove('active');
+        hardBlockView.classList.add('hidden');
+    }
     document.getElementById('view-selector').classList.remove('hidden');
     document.getElementById('view-selector').classList.add('active');
     
@@ -357,7 +363,19 @@ window.enterEntrance = async function () {
 
         if (info.isHardBlocked) {
             hideLoading();
-            showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            // Показваме заключен екран вместо на екрана за избор на вход
+            document.getElementById('view-selector').classList.remove('active');
+            document.getElementById('view-selector').classList.add('hidden');
+            const hardBlockView = document.getElementById('view-hard-blocked');
+            if (hardBlockView) {
+                hardBlockView.classList.remove('hidden');
+                hardBlockView.classList.add('active');
+                const hbId = hardBlockView.querySelector('#hard-block-id');
+                if (hbId) hbId.textContent = currentRouteKey;
+            } else {
+                // Фалбак ако няма специален елемент
+                showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
+            }
             btn.textContent = originalText;
             btn.disabled = false;
             return false;
@@ -371,6 +389,10 @@ window.enterEntrance = async function () {
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
+
+        // Запазваме статуса на абонамента за проверка при зареждане на апартамент
+        sessionStorage.setItem("isSoftBlocked_" + currentRouteKey, info.isSoftBlocked ? "true" : "false");
+        sessionStorage.setItem("isHardBlocked_" + currentRouteKey, info.isHardBlocked ? "true" : "false");
 
         if (info.paymentInfo) {
             document.getElementById('payment-instructions').textContent = info.paymentInfo;
@@ -580,6 +602,14 @@ async function loadDashboardFromFirebase(routeKey) {
 
 async function loadDashboardData() {
     try {
+        // Hard block — не зареждаме Firebase данни
+        if (sessionStorage.getItem("isHardBlocked_" + currentRouteKey) === "true") {
+            document.getElementById('dash-debts').textContent = "—";
+            document.getElementById('dash-balance').textContent = "—";
+            if (document.getElementById('dash-debts-trend')) document.getElementById('dash-debts-trend').textContent = "Достъпът е спрян";
+            if (document.getElementById('dash-balance-trend')) document.getElementById('dash-balance-trend').textContent = "Достъпът е спрян";
+            return;
+        }
         const result = await loadDashboardFromFirebase(currentRouteKey);
         if (result && result.success && result.dashboard) {
             const d = result.dashboard;
@@ -819,6 +849,26 @@ async function loadApartmentData(apartment) {
     // Показваме кода за плащане веднага
     document.getElementById("payment-reference-value").textContent = `${currentRouteKey}-${apartment}`;
     document.getElementById("payment-reference-box").style.display = "block";
+
+    // Проверяваме за блок ПРЕДИ Firebase заявката
+    const isHardBlocked = sessionStorage.getItem("isHardBlocked_" + currentRouteKey) === "true";
+    if (isHardBlocked) {
+        document.getElementById("saldo").textContent = "Спрян достъп";
+        const tBody = document.getElementById("tableBody");
+        if (tBody) tBody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#e74c3c;">⚠️ Достъпът е напълно спрян поради неплатен абонамент.</td></tr>';
+        showToast("Достъпът до входа е напълно спрян поради неплатен абонамент", "error");
+        return;
+    }
+
+    const isSoftBlocked = sessionStorage.getItem("isSoftBlocked_" + currentRouteKey) === "true";
+    if (isSoftBlocked) {
+        document.getElementById("saldo").textContent = "Скрит";
+        // Скриваме таблицата с периодите
+        const tBody = document.getElementById("tableBody");
+        if (tBody) tBody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#e74c3c;">⚠️ Информацията е скрита поради неплатен абонамент.</td></tr>';
+        showToast("Информацията за салдото Ви не се показва поради неплатен абонамент", "error");
+        return;
+    }
 
     const result = await loadApartmentFromFirebase(currentRouteKey, apartment);
 
