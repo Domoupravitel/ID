@@ -328,6 +328,45 @@ window.exitEntrance = function () {
     if (select) select.innerHTML = '<option value="">Избери апартамент</option>';
 };
 
+window.openLoginPrompt = function() {
+    const modal = document.getElementById("accessIdModal");
+    if (modal) modal.style.display = "flex";
+    const err = document.getElementById("accessIdError");
+    if (err) err.textContent = "";
+    const input = document.getElementById("access-id");
+    if (input) {
+        input.value = "";
+        setTimeout(() => { input.focus(); }, 100);
+    }
+};
+
+window.closeAccessIdModal = function() {
+    const modal = document.getElementById("accessIdModal");
+    if (modal) modal.style.display = "none";
+};
+
+window.submitAccessIdModal = async function() {
+    const accessId = document.getElementById("access-id").value.trim();
+    if (!accessId) {
+        const err = document.getElementById("accessIdError");
+        if (err) err.textContent = "Моля, въведете код за достъп!";
+        return;
+    }
+    
+    const success = await window.enterEntrance();
+    if (success !== false) {
+        window.closeAccessIdModal();
+    }
+};
+
+window.toggleMobileMenu = function() {
+    const menu = document.getElementById("landing-mobile-menu");
+    if (menu) {
+        menu.classList.toggle("hidden");
+        menu.classList.toggle("active");
+    }
+};
+
 window.enterEntrance = async function () {
     let accessId = document.getElementById('access-id').value.trim();
 
@@ -346,10 +385,12 @@ window.enterEntrance = async function () {
     localStorage.setItem("savedAccessId", accessId);
     currentRouteKey = accessId;
 
-    const btn = document.querySelector("#view-selector .btn-primary");
-    const originalText = btn.textContent;
-    btn.textContent = "Зареждане...";
-    btn.disabled = true;
+    const btn = document.getElementById("submitAccessIdBtn") || document.querySelector("#view-selector .btn-primary");
+    const originalText = btn ? btn.textContent : "Вход";
+    if (btn) {
+        btn.textContent = "Зареждане...";
+        btn.disabled = true;
+    }
 
 
 
@@ -376,13 +417,17 @@ window.enterEntrance = async function () {
                 // Фалбак ако няма специален елемент
                 showToast(`⚠️ Достъпът е напълно спрян поради над 3 месеца неплатен абонамент. (При превод задължително посочете ID: ${currentRouteKey})`, "error");
             }
-            btn.textContent = originalText;
-            btn.disabled = false;
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
             return false;
         }
 
-        btn.textContent = originalText;
-        btn.disabled = false;
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
 
         if (info.pricePerApt !== undefined) {
             sessionStorage.setItem("pricePerApt_" + currentRouteKey, info.pricePerApt);
@@ -523,6 +568,10 @@ window.enterEntrance = async function () {
         loadDashboardData();
         return true;
     } else {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
         const errStr = result && result.error ? result.error.toString() : "";
         if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
             showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");

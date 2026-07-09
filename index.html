@@ -958,88 +958,195 @@
         <div id="view-selector" class="view-panel active">
             <!-- Entrance Notice Banner -->
             <div id="userEntranceNotice"
-                style="display:none; max-width: 500px; margin: 0 auto 20px; background: #e7f5ff; border: 1px solid #74c0fc; color: #1971c2; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; animation: fadeInDown 0.5s ease;">
+                style="display:none; max-width: 500px; margin: 20px auto 0; background: #e7f5ff; border: 1px solid #74c0fc; color: #1971c2; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 10; animation: fadeInDown 0.5s ease;">
                 <div style="display: flex; align-items: flex-start; gap: 12px;">
                     <span style="font-size: 24px;">📢</span>
                     <div>
-                        <strong style="display: block; margin-bottom: 4px; font-size: 14px;">Съобщение от
-                            Домоуправителя:</strong>
-                        <div id="userEntranceNoticeText"
-                            style="font-size: 14px; line-height: 1.5; white-space: pre-wrap;"></div>
+                        <strong style="display: block; margin-bottom: 4px; font-size: 14px;">Съобщение от Домоуправителя:</strong>
+                        <div id="userEntranceNoticeText" style="font-size: 14px; line-height: 1.5; white-space: pre-wrap;"></div>
                     </div>
                 </div>
             </div>
 
-            <div style="position:absolute; top: 15px; right: 15px; display: flex; gap: 10px;">
+            <!-- Landing Page Container -->
+            <div class="landing-page">
+                <!-- HEADER -->
+                <header class="landing-header">
+                    <div class="landing-logo-container">
+                        <img src="logo.png" alt="Лого" class="landing-logo" onclick="openSuperAdmin()" title="Вход за създатели" onerror="this.onerror=null; this.outerHTML='<div class=\'brand-logo\' onclick=\'openSuperAdmin()\' style=\'width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #2563eb, #8B5CF6); font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:white; cursor:pointer;\' title=\'Вход за създатели\'>Е</div>'">
+                        <span class="landing-brand-name">Онлайн Домоуправител</span>
+                    </div>
+                    
+                    <nav class="landing-nav">
+                        <a href="#features" class="landing-nav-link">Възможности</a>
+                        <a href="#pricing" class="landing-nav-link" onclick="toggleRegistrationForm(); return false;">Инфо цена</a>
+                        <a href="#register" class="landing-nav-link" onclick="toggleRegistrationForm(); return false;">Регистрация</a>
+                        <a href="#contact" class="landing-nav-link" onclick="toggleContactForm(); return false;">Контакт</a>
+                    </nav>
+                    
+                    <button class="landing-login-btn" onclick="openLoginPrompt()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                        Вход
+                    </button>
+                    
+                    <!-- Mobile Menu Toggle -->
+                    <button class="landing-mobile-toggle" onclick="toggleMobileMenu()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                </header>
+                
+                <!-- Mobile Dropdown Menu -->
+                <div id="landing-mobile-menu" class="landing-mobile-menu hidden">
+                    <a href="#features" class="landing-mobile-link" onclick="toggleMobileMenu()">Възможности</a>
+                    <a href="#pricing" class="landing-mobile-link" onclick="toggleMobileMenu(); toggleRegistrationForm(); return false;">Инфо цена</a>
+                    <a href="#register" class="landing-mobile-link" onclick="toggleMobileMenu(); toggleRegistrationForm(); return false;">Регистрация</a>
+                    <a href="#contact" class="landing-mobile-link" onclick="toggleMobileMenu(); toggleContactForm(); return false;">Контакт</a>
+                    <button class="landing-login-btn-mobile" onclick="toggleMobileMenu(); openLoginPrompt();">Вход</button>
+                </div>
 
+                <!-- HERO SECTION -->
+                <section class="landing-hero">
+                    <div class="landing-hero-content">
+                        <h1 class="landing-hero-title">Онлайн <span class="text-blue">Домоуправител</span></h1>
+                        <p class="landing-hero-subtitle">Автоматизирано управление на етажната собственост лесно, прозрачно и сигурно.</p>
+                        
+                        <div class="landing-hero-actions">
+                            <button class="landing-btn-blue" onclick="openLoginPrompt()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                                Вход
+                            </button>
+                            <button class="landing-btn-outline" onclick="toggleRegistrationForm()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Регистрация
+                            </button>
+                        </div>
+                        
+                        <button class="landing-btn-more" onclick="document.getElementById('landing-features-anchor').scrollIntoView({behavior:'smooth'})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="6 9 12 15 18 9"/></svg>
+                            Научи повече
+                        </button>
+                    </div>
+                    
+                    <!-- Hero Building Graphic Container -->
+                    <div class="landing-hero-graphic">
+                        <div class="building-card">
+                            <img src="building_night.png" alt="Сграда" class="building-img">
+                            
+                            <!-- Vertical Labels overlaid on building windows -->
+                            <div class="building-labels">
+                                <div class="building-label-item item-1">
+                                    <span class="label-icon">📊</span>
+                                    <span class="label-text">Разходи</span>
+                                </div>
+                                <div class="building-label-item item-2">
+                                    <span class="label-icon">💳</span>
+                                    <span class="label-text">Плащания</span>
+                                </div>
+                                <div class="building-label-item item-3">
+                                    <span class="label-icon">📁</span>
+                                    <span class="label-text">Документи</span>
+                                </div>
+                                <div class="building-label-item item-4">
+                                    <span class="label-icon">🔔</span>
+                                    <span class="label-text">Известия</span>
+                                </div>
+                                <div class="building-label-item item-5">
+                                    <span class="label-icon">👥</span>
+                                    <span class="label-text">Събрания</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Mailbox -->
+                            <div class="building-mailbox" onclick="toggleContactForm()" title="Поща до нас">
+                                <div class="mailbox-icon">✉️</div>
+                                <div class="mailbox-text">Поща<br>до нас</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                <!-- Contact Shortcut (Always visible) -->
-                <button onclick="toggleContactForm()" class="btn"
-                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                    title="Форма за контакт" onmouseover="this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.transform='translateY(0)';">✉️ Контакт</button>
+                <!-- FEATURES SECTION -->
+                <span id="landing-features-anchor" style="display:block; height: 1px; margin-top: -20px;"></span>
+                <section id="features" class="landing-features">
+                    <h2 class="section-title">Всичко необходимо на едно място</h2>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon bg-blue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            </div>
+                            <h3>Разходи</h3>
+                            <p>Следете общите разходи в реално време и история по месеци.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon bg-green">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            </div>
+                            <h3>Плащания</h3>
+                            <p>Удобно плащайте таксите си онлайн и получавайте известия.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon bg-purple">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
+                            <h3>Документи</h3>
+                            <p>Достъп до важни документи и протоколи по всяко време.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon bg-orange">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            </div>
+                            <h3>Известия</h3>
+                            <p>Бъдете информирани за важни събития и съобщения.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon bg-teal">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <h3>Събрания</h3>
+                            <p>Организирайте и проследявайте решенията от общите събрания.</p>
+                        </div>
 
-                <!-- Register Shortcut (Controlled by Super Admin) -->
-                <button id="regButtonLink" onclick="toggleRegistrationForm()" class="btn"
-                    style="background: #ffffff; padding: 8px 14px; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: none; align-items: center; gap: 6px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;"
-                    title="Регистрация" onmouseover="this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.transform='translateY(0)';">Инфо / Регистрация</button>
-                <span id="regCustomText" style="display: none; align-items: center; font-size: 14px; font-weight: 600; color: #555; background: #ffffff; padding: 8px 14px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"></span>
+                        <!-- ЗУЕС Помощник (без линк) -->
+                        <div class="feature-card">
+                            <div class="feature-icon bg-orange" style="background-color:#0284c7;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                            </div>
+                            <h3>ЗУЕС Помощник</h3>
+                            <p>Специално разработен справочник за лесно ориентиране в разпоредбите на ЗУЕС.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ZUES BANNER -->
+                    <div class="zues-banner">
+                        <div class="zues-logo">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div class="zues-content">
+                            <h4>Съобразено със ЗУЕС</h4>
+                            <p>Приложението е съобразено със Закона за управление на етажната собственост (ЗУЕС) и гарантира прозрачност, сигурност и ефективност в управлението.</p>
+                        </div>
+                        <button class="zues-btn" onclick="window.open('./guide/', '_blank')">Научи повече</button>
+                    </div>
+                </section>
             </div>
 
-
-            <div class="selector-card glass-panel" style="margin-top: 60px;">
-                <div class="brand">
-                    <div style="display: flex; align-items: flex-start; justify-content: center; gap: 4px;">
-                        <img src="logo.png" alt="Лого Етажна Собственост" onclick="openSuperAdmin()" 
-                            style="width: 56px; height: 56px; border-radius: 14px; cursor: pointer; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" 
-                            title="Вход за създатели" 
-                            onerror="this.onerror=null; this.outerHTML='<div class=\'brand-logo\' onclick=\'openSuperAdmin()\' style=\'cursor: pointer;\' title=\'Вход за създатели\'>Е</div>'">
-                        <span class="version-tag">v0.1.6</span>
-                    </div>
-                    <h1 class="brand-name">Етажна собственост</h1>
+            <!-- Entrance ID Access Modal -->
+            <div id="accessIdModal" class="admin-overlay" style="display:none;" onclick="if(event.target===this)closeAccessIdModal()">
+                <div class="admin-card">
+                    <button class="admin-close" onclick="closeAccessIdModal()">✕</button>
+                    <div class="admin-icon" style="background:#eef2ff; color:#3b82f6; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:20px;">🔑</div>
+                    <div class="admin-title" style="font-family:var(--font-head); font-size:1.3rem; font-weight:700; margin-bottom:5px;">Вход за живущи</div>
+                    <div class="admin-subtitle" style="font-size:0.85rem; color:#666; margin-bottom:20px; line-height:1.4;">Въведете кода на Вашия вход (ID), за да достъпите таблото</div>
+                    
+                    <input type="text" id="access-id" class="admin-input" placeholder="напр. 123456Град32А" onkeydown="if(event.key==='Enter')submitAccessIdModal()">
+                    <div id="accessIdError" class="admin-error" style="color:#d32f2f; font-size:12px; margin-top:5px; text-align:left;"></div>
+                    <button class="btn btn-primary" id="submitAccessIdBtn" style="background:#2563eb; color:white; width: 100%; margin-top: 15px; justify-content: center; padding: 12px; border-radius:8px; font-weight:bold;" onclick="submitAccessIdModal()">Влез</button>
                 </div>
-                <!-- Requested subtitles -->
-                <p class="subtitle"
-                    style="margin-top: 8px; font-size: 15px; color: var(--text-muted-light); line-height: 1.5;">
-                    Забравете за скъпите професионални домоуправители.<br>
-                    Автоматизирайте и управлявайте сами разходите в етажната си собственост. Всичко в един поглед,
-                    един
-                    клик.
-                </p>
-
-                <div class="form-group" style="margin-top: 24px;">
-                    <label class="admin-label" style="text-align: left; font-size: 14px;">Моля, въведете вашето ID
-                        за
-                        достъп до входа си</label>
-                    <input type="text" id="access-id" class="admin-input"
-                        onkeydown="if(event.key==='Enter')enterEntrance()">
-                </div>
-
-                <button class="btn btn-primary"
-                    style="width: 100%; justify-content: center; margin-top: 20px; font-size: 16px; padding: 14px;"
-                    onclick="enterEntrance()">Вход в системата</button>
-
-                <!-- Information features below the button -->
-                <div
-                    style="margin-top: 30px; text-align: left; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
-                    <h4 style="margin-bottom: 2px; font-size: 15px; font-weight: 600;">
-                        <a href="description.html" target="_blank" id="fullDescriptionLink"
-                            style="display: inline-block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 4px 0;">
-                            Пълни възможности на приложението ➔
-                        </a>
-                    </h4>
-                    <ul
-                        style="padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted-light); margin-top: 10px;">
-                        <li style="margin-bottom: 8px;"><b>За Потребители:</b> Лесна проверка на задължения, онлайн
-                            преглед на платени суми, получаване на прозрачни отчети и инструкции за плащане.</li>
-                        <li><b>За Домоуправители:</b> Автоматично засичане и разпределянето им по апартаменти, на
-                            нови
-                            задължения на етажната собственост, и пълен контрол
-                            върху начисленията (обитатели, чипове, асансьор), мастър админ панел без нужда от Excel
-                            умения.</li>
-                </div>
-
             </div>
 
             <!-- Integrated Contact Section (Mobile Responsive) -->
@@ -1380,10 +1487,6 @@
             </div>
         </div>
     </div>
-
-
-</div>
-</div>
 </body>
 
 </html>
