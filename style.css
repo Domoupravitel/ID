@@ -922,14 +922,31 @@ body {
   width: 100%;
 }
 
-.landing-hero {
+.landing-main {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1.25fr 0.75fr;
   align-items: center;
-  padding: 60px 80px 80px;
-  gap: 60px;
+  padding: 30px 60px 40px;
+  gap: 40px;
   flex: 1;
-  min-height: 70vh;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.landing-left-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+}
+
+.landing-right-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .landing-hero-content {
@@ -941,10 +958,10 @@ body {
 
 .landing-hero-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 20px;
+  line-height: 1.1;
+  margin-bottom: 12px;
   color: #ffffff;
   letter-spacing: -1px;
 }
@@ -957,55 +974,11 @@ body {
 }
 
 .landing-hero-subtitle {
-  font-size: 1.15rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.5;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 35px;
-  max-width: 500px;
-}
-
-.landing-hero-actions {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-  margin-bottom: 40px;
-}
-
-.landing-btn-blue {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 14px 28px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.landing-btn-blue:hover {
-  background-color: #1d4ed8;
-}
-
-.landing-btn-outline {
-  background: transparent;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
-  padding: 14px 28px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.landing-btn-outline:hover {
-  border-color: white;
-  background-color: rgba(255, 255, 255, 0.05);
+  margin-bottom: 0px;
+  max-width: 600px;
 }
 
 .landing-btn-more {
@@ -1019,6 +992,7 @@ body {
   align-items: center;
   padding: 5px 0;
   transition: color 0.2s;
+  margin-top: 10px;
 }
 
 .landing-btn-more:hover {
@@ -1029,6 +1003,7 @@ body {
   display: flex;
   justify-content: center;
   position: relative;
+  width: 100%;
 }
 
 .building-card {
@@ -1036,13 +1011,17 @@ body {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  max-width: 380px;
+  width: 100%;
+  max-width: 290px;
+  aspect-ratio: 3 / 4;
+  background: #030a1c linear-gradient(to bottom, #051330, #020714);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .building-img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
@@ -1053,19 +1032,19 @@ body {
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 60%;
+  gap: 12px;
+  width: 65%;
 }
 
 .building-label-item {
   background-color: rgba(255, 255, 255, 0.95);
   color: #1a1a2e;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s, background-color 0.2s;
@@ -1073,23 +1052,23 @@ body {
 }
 
 .building-label-item:hover {
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px scale(1.03));
   background-color: #ffffff;
 }
 
 .building-label-item .label-icon {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .building-mailbox {
   position: absolute;
-  bottom: 12%;
-  right: 10%;
+  bottom: 8%;
+  right: 8%;
   background-color: rgba(15, 23, 42, 0.9);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1105,62 +1084,51 @@ body {
 }
 
 .building-mailbox .mailbox-icon {
-  font-size: 1.5rem;
-  margin-bottom: 2px;
+  font-size: 1.25rem;
+  margin-bottom: 1px;
 }
 
 .building-mailbox .mailbox-text {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
-/* Features list section */
-.landing-features {
-  background-color: #ffffff;
-  color: #0f172a;
-  padding: 80px 80px 60px;
-  text-align: center;
-}
-
-.landing-features .section-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 2.25rem;
-  font-weight: 800;
-  margin-bottom: 50px;
-  color: #0f172a;
-}
-
+/* Features list section (Desktop Grid) */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 60px;
+  gap: 15px;
+  width: 100%;
 }
 
 .feature-card {
-  background-color: #f8fafc;
-  border-radius: 16px;
-  padding: 24px 20px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 15px;
   text-align: left;
-  border: 1px solid #e2e8f0;
-  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
 .feature-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .feature-icon.bg-blue { background-color: #2563eb; }
@@ -1169,37 +1137,39 @@ body {
 .feature-icon.bg-orange { background-color: #f97316; }
 .feature-icon.bg-teal { background-color: #14b8a6; }
 
-.feature-card h3 {
+.feature-info h3 {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin-bottom: 10px;
-  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 4px;
+  color: #ffffff;
 }
 
-.feature-card p {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #64748b;
+.feature-info p {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
 }
 
 .zues-banner {
-  background-color: #030a1c;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: white;
-  border-radius: 20px;
-  padding: 30px 40px;
+  border-radius: 12px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
   text-align: left;
-  gap: 24px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  gap: 15px;
+  width: 100%;
 }
 
 .zues-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   background-color: rgba(37, 99, 235, 0.15);
   color: #3b82f6;
   display: flex;
@@ -1214,62 +1184,43 @@ body {
 
 .zues-content h4 {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.25rem;
+  font-size: 0.9rem;
   font-weight: 700;
   margin-top: 0;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   color: white;
 }
 
 .zues-content p {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
-}
-
-.zues-btn {
-  background-color: transparent;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.zues-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: white;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  .landing-hero {
+  .landing-main {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: 40px;
+    padding: 30px 20px;
     gap: 30px;
-    min-height: auto;
+  }
+  .landing-left-col {
+    align-items: center;
   }
   .landing-hero-content {
     align-items: center;
     text-align: center;
   }
   .landing-hero-title {
-    font-size: 2.75rem;
-  }
-  .landing-hero-actions {
-    justify-content: center;
+    font-size: 2.4rem;
   }
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .building-card {
-    max-width: 320px;
+    max-width: 280px;
   }
 }
 
@@ -1292,56 +1243,34 @@ body {
   .landing-mobile-menu.active {
     display: flex;
   }
-  .landing-hero {
-    padding: 30px 20px;
-    gap: 30px;
-    min-height: auto;
+  .landing-main {
+    padding: 20px 15px;
+    gap: 25px;
   }
   .landing-hero-title {
     font-size: 2rem;
   }
   .landing-hero-subtitle {
-    font-size: 1rem;
-  }
-  .landing-hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  .landing-btn-blue, .landing-btn-outline {
-    width: 100%;
-    justify-content: center;
-  }
-  .landing-hero-graphic {
-    width: 100%;
-  }
-  .building-card {
-    max-width: 280px;
-    margin: 0 auto;
-  }
-  .building-labels {
-    width: 70%;
-    gap: 10px;
-  }
-  .building-label-item {
-    padding: 5px 10px;
-    font-size: 0.75rem;
-  }
-  .landing-features {
-    padding: 50px 20px;
-  }
-  .landing-features .section-title {
-    font-size: 1.75rem;
+    font-size: 0.95rem;
   }
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .building-card {
+    max-width: 250px;
+  }
+  .building-labels {
+    width: 70%;
+    gap: 8px;
+  }
+  .building-label-item {
+    padding: 4px 8px;
+    font-size: 0.72rem;
   }
   .zues-banner {
     flex-direction: column;
     text-align: center;
-    padding: 24px 16px;
-  }
-  .zues-btn {
-    width: 100%;
+    padding: 15px 12px;
   }
 }
-
