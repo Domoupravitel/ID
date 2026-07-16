@@ -966,6 +966,14 @@ body {
   max-width: 500px;
 }
 
+.hero-key-sentence {
+  display: inline-block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
 .landing-hero-actions {
   display: flex;
   gap: 15px;
@@ -1174,10 +1182,34 @@ body {
 
 .feature-card-link {
   cursor: pointer;
+  position: relative;
+  background-color: #fffbeb;
+  border: 2px dashed #eab308;
+  overflow: hidden;
 }
 
 .feature-card-link:hover {
+  border-style: solid;
   border-color: #b45309;
+  transform: translateY(-6px);
+  box-shadow: 0 14px 26px rgba(180, 83, 9, 0.18);
+}
+
+.feature-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #eab308;
+  color: #1a1a2e;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .pulse-link-text {
@@ -1273,6 +1305,85 @@ body {
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
+}
+
+/* LEARN MORE / SEO CONTENT SECTION */
+.learn-more-section {
+  max-width: 860px;
+  margin: 70px auto 0;
+  text-align: left;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.learn-more-section h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 40px;
+  margin-bottom: 14px;
+}
+
+.learn-more-section h3:first-child {
+  margin-top: 0;
+}
+
+.learn-more-section p {
+  font-size: 0.98rem;
+  color: #475569;
+  margin-bottom: 14px;
+}
+
+.learn-more-section ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  color: #475569;
+}
+
+.learn-more-section ul li {
+  font-size: 0.98rem;
+  margin-bottom: 8px;
+}
+
+.learn-more-section ul li strong {
+  color: #0f172a;
+}
+
+.faq-item {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.98rem;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  float: right;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.faq-item[open] summary::after {
+  content: '−';
+}
+
+.faq-item p {
+  margin: 10px 0 0;
+  color: #64748b;
 }
 
 /* RESPONSIVE DESIGN */
@@ -1382,5 +1493,13 @@ body {
     flex-direction: column;
     text-align: center;
     padding: 24px;
+  }
+  .learn-more-section {
+    margin-top: 40px;
+    padding: 0 4px;
+  }
+  .learn-more-section h3 {
+    font-size: 1.2rem;
+    margin-top: 30px;
   }
 }
