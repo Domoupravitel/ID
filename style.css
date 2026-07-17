@@ -985,6 +985,10 @@ body {
   display: none;
 }
 
+.scroll-hint {
+  display: none;
+}
+
 .landing-btn-blue {
   background-color: #2563eb;
   color: white;
@@ -1221,8 +1225,16 @@ body {
   50% { opacity: 0.55; }
 }
 
+@keyframes scroll-hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-link-text {
+    animation: none;
+  }
+  .scroll-hint {
     animation: none;
   }
 }
@@ -1444,6 +1456,24 @@ body {
   .landing-btn-blue, .landing-btn-outline {
     width: 100%;
     justify-content: center;
+  }
+  .scroll-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 36px auto 4px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    animation: scroll-hint-bounce 1.8s ease-in-out infinite;
+  }
+  .scroll-hint svg {
+    opacity: 0.8;
   }
   .building-card {
     max-width: 280px;
