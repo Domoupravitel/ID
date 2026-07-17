@@ -1033,31 +1033,13 @@ function showAdminContent() {
     document.getElementById("loginCard").style.display = "none";
     document.getElementById("adminCard").style.display = "block";
 
-    // V2 Incomes Admin Nav Injection
-    const isV2 = localStorage.getItem('enableV2Incomes_' + currentRouteKey) === 'true';
+    // V2 Incomes Admin Nav Injection - forced to true for all users
+    const isV2 = true;
     const v2AdminNav = document.getElementById('v2-admin-nav');
-    const masterV2 = document.getElementById('masterEnableV2Incomes');
-    if (masterV2) masterV2.checked = isV2;
-    if (v2AdminNav) v2AdminNav.style.display = isV2 ? 'block' : 'none';
+    if (v2AdminNav) v2AdminNav.style.display = 'block';
     
-    if (isV2) {
-        // V2 mode: use tab switching
-        if (window.switchAdminTab) switchAdminTab('expenses');
-    } else {
-        // V1 mode: show everything normally
-        const viewExpenses = document.getElementById('admin-view-expenses');
-        const viewIncomes = document.getElementById('admin-view-incomes');
-        const viewDist = document.getElementById('admin-view-distribution');
-        if (viewExpenses) {
-            viewExpenses.style.display = 'block';
-            const allSections = viewExpenses.querySelectorAll('.admin-section');
-            allSections.forEach(s => s.style.display = 'block');
-            const qn = viewExpenses.querySelector('.admin-quick-nav');
-            if (qn) qn.style.display = 'block';
-        }
-        if (viewIncomes) viewIncomes.style.display = 'none';
-        if (viewDist) viewDist.style.display = 'none';
-    }
+    // V2 mode: use tab switching
+    if (window.switchAdminTab) switchAdminTab('expenses');
 
 
     // Първоначална подкана за MASTER настройки
@@ -1544,15 +1526,6 @@ window.submitMaster = async function (sheetName) {
         fromP = document.getElementById('masterLogikaFrom').value.trim();
         toP = "12.2050"; 
         apt = "";
-
-        const masterV2 = document.getElementById('masterEnableV2Incomes');
-        if (masterV2) {
-            localStorage.setItem('enableV2Incomes_' + currentRouteKey, masterV2.checked ? 'true' : 'false');
-            const navContainer = document.getElementById('v2-admin-nav');
-            if (navContainer) {
-                navContainer.style.display = masterV2.checked ? 'block' : 'none';
-            }
-        }
     } else if (sheetName === 'УЧАСТИЕ_АСАНСЬОР') {
         apt = document.getElementById('masterUchApt').value;
         val = document.getElementById('masterUchVal').value;
