@@ -985,6 +985,13 @@ body {
   display: none;
 }
 
+.hero-scroll-track {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+}
+
 .scroll-hint {
   display: none;
 }
@@ -1225,9 +1232,12 @@ body {
   50% { opacity: 0.55; }
 }
 
-@keyframes scroll-hint-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
+@keyframes scroll-hint-travel {
+  0%   { top: 6px; opacity: 0.35; }
+  15%  { opacity: 1; }
+  50%  { top: calc(100% - 32px); opacity: 1; }
+  65%  { opacity: 0.35; }
+  100% { top: 6px; opacity: 0.35; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1457,23 +1467,24 @@ body {
     width: 100%;
     justify-content: center;
   }
+  .hero-scroll-track {
+    flex-direction: column;
+    width: 100%;
+  }
   .scroll-hint {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    margin: 36px auto 4px;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    animation: scroll-hint-bounce 1.8s ease-in-out infinite;
-  }
-  .scroll-hint svg {
-    opacity: 0.8;
+    justify-content: center;
+    position: absolute;
+    right: 6px;
+    top: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.9);
+    color: #ffffff;
+    pointer-events: none;
+    animation: scroll-hint-travel 2.4s ease-in-out infinite;
   }
   .building-card {
     max-width: 280px;
