@@ -208,6 +208,153 @@
     }
     </script>
 
+    <!-- Тема и цветова схема -->
+    <meta name="theme-color" content="#3b6edc">
+    <meta name="color-scheme" content="light">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <!-- DNS Prefetch (допълнително към съществуващия preconnect) -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+
+    <!-- Schema.org: SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Онлайн Домоуправител",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web, Android, iOS",
+      "description": "Онлайн домоуправител за управление на етажна собственост. Автоматизирайте месечни такси, разходи, плащания и фонд ремонт по изискванията на ЗУЕС.",
+      "url": "https://domoupravitel.github.io/ID",
+      "image": "https://raw.githubusercontent.com/Domoupravitel/ID/main/logo.png",
+      "inLanguage": "bg",
+      "offers": {
+        "@type": "Offer",
+        "description": "Абонаментен план за управление на вход",
+        "priceCurrency": "BGN",
+        "category": "Subscription"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Онлайн Домоуправител",
+        "url": "https://domoupravitel.github.io/ID"
+      }
+    }
+    </script>
+
+    <!-- Schema.org: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Онлайн Домоуправител",
+      "url": "https://domoupravitel.github.io/ID",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://raw.githubusercontent.com/Domoupravitel/ID/main/logo.png"
+      },
+      "sameAs": [
+        "https://github.com/Domoupravitel"
+      ]
+    }
+    </script>
+
+    <!-- Schema.org: WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Онлайн Домоуправител",
+      "url": "https://domoupravitel.github.io/ID",
+      "inLanguage": "bg"
+    }
+    </script>
+
+    <!-- Schema.org: FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Трябва ли да инсталирам приложение?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Не. Онлайн Домоуправител работи директно в браузъра — на компютър, таблет или телефон, без инсталация."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как влизам без парола?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Всеки вход получава уникален ID код или линк за достъп, а всеки апартамент — свой код за собствения профил в таблото."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как се разпределят разходите между апартаментите?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Според зададена от домоуправителя логика — поравно между апартаментите, по брой обитатели или по идеални части, в зависимост от вида разход."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Мога ли да видя история на плащанията си?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, всеки апартамент вижда пълна история на начисленията и плащанията си по периоди назад във времето."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Съответства ли платформата на ЗУЕС?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, модулите за книга на етажната собственост, общо събрание, кворум и месечен отчет са изградени според изискванията на закона."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как да получа достъп като домоуправител на вход?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "През административния панел на входа — оттам управлявате начисления, приходи, съобщения и настройки на цялата етажна собственост."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Какво се случва, ако абонаментът на входа изтече?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Живущите продължават да виждат основна информация, но пълният достъп до всички данни се възобновява след подновяване на абонамента от домоуправителя."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Може ли да се ползва от няколко входа в един блок едновременно?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, всеки вход има собствен ID и собствено табло, независимо от останалите входове в сградата, така че данните на отделните входове не се смесват."
+          }
+        }
+      ]
+    }
+    </script>
+
 </head>
 
 <body class="light-theme">
@@ -1156,19 +1303,24 @@
                 <!-- HERO SECTION -->
                 <section class="landing-hero">
                     <div class="landing-hero-content">
-                        <h1 class="landing-hero-title">Онлайн <span class="text-blue">Домоуправител</span> за управление на етажна собственост</h1>
+                        <h1 class="landing-hero-title">Онлайн <span class="text-blue">Домоуправител</span></h1>
                         <p class="landing-hero-subtitle"><strong class="hero-key-sentence">Минималистичен дигитален домоуправител.</strong><br>
                             Автоматизирайте и управлявайте сами разходите и приходите в етажната си собственост. Всичко в един поглед, един клик.</p>
                         
                         <div class="landing-hero-actions">
-                            <button class="landing-btn-outline hero-mobile-only-btn" onclick="toggleRegistrationForm()">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Регистрация
-                            </button>
-                            <button class="landing-btn-outline" onclick="document.getElementById('learn-more').scrollIntoView({behavior:'smooth'})">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                                Научи повече
-                            </button>
+                            <div class="hero-scroll-track">
+                                <button class="landing-btn-outline hero-mobile-only-btn" onclick="toggleRegistrationForm()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Регистрация
+                                </button>
+                                <button class="landing-btn-outline" onclick="document.getElementById('learn-more').scrollIntoView({behavior:'smooth'})">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                                    Научи повече
+                                </button>
+                                <span class="scroll-hint" aria-hidden="true">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </div>
                             <button class="landing-btn-outline" onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/><circle cx="12" cy="12" r="10"/></svg>
                                 Чести въпроси
