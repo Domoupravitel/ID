@@ -558,6 +558,12 @@ body {
   z-index: 300;
   transition: bottom 0.35s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  max-width: calc(100vw - 32px);
+  width: max-content;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .toast.show {
@@ -576,6 +582,14 @@ body {
   background: #ffffff;
   color: #1a1a2e;
   border: 1px solid #e2e8f0;
+}
+
+@media (max-width: 480px) {
+  .toast {
+    max-width: calc(100vw - 24px);
+    padding: 10px 16px;
+    font-size: 13px;
+  }
 }
 
 @keyframes fadeIn {

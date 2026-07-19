@@ -1190,24 +1190,16 @@
             <div class="admin-section">
                 <h3>💎 Индивидуални цени / Грантове</h3>
                 <p class="subtitle" style="margin-bottom: 15px; font-size: 12px;">Специфична цена или безплатно ползване
-                    за вход или апартамент.</p>
+                    за вход.</p>
 
                 <div
                     style="background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px;">
                     <label class="admin-label">Избери Вход</label>
                     <select id="superExceptionRegistry" class="admin-input"></select>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px;">
-                        <div>
-                            <label class="admin-label">Апт. (празно за всички)</label>
-                            <input type="text" id="superExceptionApt" class="admin-input" placeholder="Напр. A1">
-                        </div>
-                        <div>
-                            <label class="admin-label">Цена (EUR/мес)</label>
-                            <input type="number" id="superExceptionPrice" class="admin-input" step="0.01"
-                                placeholder="0.00">
-                        </div>
-                    </div>
+                    <label class="admin-label">Цена (EUR/мес)</label>
+                    <input type="number" id="superExceptionPrice" class="admin-input" step="0.01"
+                        placeholder="0.00">
 
                     <label class="admin-label">Валидно до</label>
                     <input type="date" id="superExceptionDate" class="admin-input">
@@ -1221,7 +1213,6 @@
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(0,0,0,0.1); background:#f2f2f2;">
                                 <th style="padding: 6px;">ID</th>
-                                <th style="padding: 6px;">Апт.</th>
                                 <th style="padding: 6px;">Цена</th>
                                 <th style="padding: 6px;">До кога</th>
                                 <th style="padding: 6px;"></th>

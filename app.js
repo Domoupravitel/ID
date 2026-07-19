@@ -685,6 +685,11 @@ window.enterEntrance = async function () {
         if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} EUR`;
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
+        // Кешираме ВЕЧЕ изчислената (съобразена с индивидуални изключения) обща
+        // месечна цена, за да не се налага показването ѝ в самия админ панел на
+        // входа (showAdminContent) да я преизчислява наново без изключенията.
+        sessionStorage.setItem("totalMonthly_" + currentRouteKey, totalMonthly.toFixed(2));
+
         if (totalMonthly === 0 && aptCount > 0) {
             if (subMonthlyEl) subMonthlyEl.innerHTML = '<span style="color:green;">🎁 БЕЗПЛАТНО</span>';
         }
@@ -1273,10 +1278,15 @@ function showAdminContent() {
     const p1 = sessionStorage.getItem("pricePerApt_" + currentRouteKey);
     const p2 = sessionStorage.getItem("lifetimePrice_" + currentRouteKey);
     const curr = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+    const cachedTotal = sessionStorage.getItem("totalMonthly_" + currentRouteKey);
 
     if (p1 && p2) {
         const aptCount = apartmentList ? apartmentList.length : 0;
-        const totalMonthly = (parseFloat(p1) * aptCount).toFixed(2);
+        // Ползваме кешираната стойност от enterEntrance() (съобразена с
+        // индивидуални изключения от Супер Админ), а не преизчисляваме наново
+        // само с базовата цена — иначе зададена индивидуална цена никога не
+        // се вижда тук.
+        const totalMonthly = cachedTotal !== null ? parseFloat(cachedTotal).toFixed(2) : (parseFloat(p1) * aptCount).toFixed(2);
 
         const mPriceEl = document.getElementById("subMonthlyPrice");
         const lPriceEl = document.getElementById("subLifetimePrice");
@@ -2305,7 +2315,7 @@ window.runSystemBackup = async function () {
 async function loadSuperExceptions() {
     const list = document.getElementById("superAdminExceptionsList");
     if (!list) return;
-    list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Зареждане...</td></tr>';
+    list.innerHTML = '<tr><td colspan="4" style="text-align:center;">Зареждане...</td></tr>';
 
     const result = await apiCall('getSuperExceptions', {
         superPin: sessionStorage.getItem("superAdminAuth")
@@ -2317,7 +2327,6 @@ async function loadSuperExceptions() {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="padding:6px;">${ex.targetId}</td>
-                <td style="padding:6px;">${ex.apartment === 'ALL' ? 'Всички' : ex.apartment}</td>
                 <td style="padding:6px;">${ex.price} EUR</td>
                 <td style="padding:6px;">${ex.validUntil}</td>
                 <td style="padding:6px;"><button onclick="deleteSuperException(${ex.rowIdx})" style="color:red; background:none; border:none; cursor:pointer; font-size:14px;">✕</button></td>
@@ -2325,13 +2334,12 @@ async function loadSuperExceptions() {
             list.appendChild(tr);
         });
     } else {
-        list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:10px; color:#999;">Няма активни изключения.</td></tr>';
+        list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:10px; color:#999;">Няма активни изключения.</td></tr>';
     }
 }
 
 window.addSuperException = async function () {
     const targetId = document.getElementById("superExceptionRegistry").value;
-    const apartment = document.getElementById("superExceptionApt").value.trim();
     const price = document.getElementById("superExceptionPrice").value.trim();
     const validUntil = document.getElementById("superExceptionDate").value;
 
@@ -2343,14 +2351,13 @@ window.addSuperException = async function () {
     const res = await apiCall('addSuperException', {
         superPin: sessionStorage.getItem("superAdminAuth"),
         targetId: targetId,
-        apartment: apartment || "ALL",
+        apartment: "ALL", // изключенията вече важат само за целия вход, не за отделен апартамент
         price: price,
         validUntil: validUntil || "2099-12-31"
     });
 
     if (res && res.success) {
         showToast("Специалната цена е добавена!", "success");
-        document.getElementById("superExceptionApt").value = "";
         document.getElementById("superExceptionPrice").value = "";
         loadSuperExceptions();
     } else {
@@ -3394,7 +3401,9 @@ window.submitIncomeV2 = async function() {
                         period: period,
                         amount: amount.toFixed(2) // Може да е отрицателно за корекции
                     });
-                    showToast("✅ Отразено в салдото на апартамента.", "success");
+                    // Без отделен тост тук нарочно — щеше веднага да презапише
+                    // горното съобщение "Записано! Ще се отрази реално до
+                    // минута" преди то да се покаже пълните 3 секунди.
                     bgApiCall('forceSync', { pin: getStoredPin() }).then(() => {
                         refreshCurrentView();
                         if (typeof v2LoadPaymentDue === 'function') v2LoadPaymentDue();
