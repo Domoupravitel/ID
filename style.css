@@ -572,6 +572,12 @@ body {
   background: #d32f2f;
 }
 
+.toast.neutral {
+  background: #ffffff;
+  color: #1a1a2e;
+  border: 1px solid #e2e8f0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

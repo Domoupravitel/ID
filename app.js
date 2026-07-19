@@ -19,7 +19,8 @@ const TEST_ADMIN_EMAIL = "test1A@gmail.com";
 const TEST_SESSION_MS = 30 * 60 * 1000;      // 30 минути максимална сесия
 const TEST_HEARTBEAT_MS = 20 * 1000;         // heartbeat на всеки 20 сек, докато тестващият е вътре
 const TEST_STALE_MS = 50 * 1000;             // ако няма heartbeat >50 сек -> приемаме, че е затворил таба/браузъра
-const TEST_NOTICE_TEXT = "👋 Добре дошли в ТЕСТ версията на Онлайн Домоуправител! Всички въведени данни тук се пазят до изтичане на 30 мин. сесия — можете свободно да разглеждате и тествате.";
+const TEST_NOTICE_TEXT = `👋 Добре дошли в ТЕСТ версията на Онлайн Домоуправител! Всички въведени данни тук се пазят до изтичане на 30 мин. сесия — можете свободно да разглеждате и тествате.
+<span style="color:#e67e22; font-weight:800;">Посетете "Настройки" (зъбното колело) за да разгледате възможностите и изпробвате опциите.</span>`;
 
 function isTestRoute(key) {
     return (key || "").toString().trim().toUpperCase() === TEST_ID;
@@ -33,7 +34,7 @@ let _testHeartbeatTick = 0;
 // { granted:true, startedAt } ако е успешно, или { granted:false, message } ако
 // в момента го ползва друг (и still-fresh heartbeat, т.е. вероятно е активен).
 async function acquireTestLock() {
-    if (!window.fb || !window.db) return { granted: true, startedAt: Date.now() }; // ако Firebase не е зареден, не блокираме локално тестване
+    if (!window.fb || !window.db) return { granted: true, startedAt: Date.now() }; // Firebase изобщо не е зареден -> цялото приложение не работи, не е специфично за ключалката
     try {
         const { collection, doc, getDoc, setDoc } = window.fb;
         const db = window.db;
@@ -48,7 +49,7 @@ async function acquireTestLock() {
             const isOccupied = data.active && sessionAge < TEST_SESSION_MS && heartbeatAge < TEST_STALE_MS;
 
             if (isOccupied) {
-                return { granted: false, message: "🔒 В момента тестовият вход се ползва от друг потребител. Моля, опитайте отново след няколко минути." };
+                return { granted: false, message: "🔒 В момента тестовият вход се ползва от друг потребител. Моля, опитайте отново след 30 мин." };
             }
         }
 
@@ -58,8 +59,13 @@ async function acquireTestLock() {
         await setDoc(ref, { active: true, startedAt: startedAt, lastHeartbeat: startedAt });
         return { granted: true, startedAt: startedAt };
     } catch (e) {
-        console.warn("acquireTestLock error:", e);
-        return { granted: true, startedAt: Date.now() };
+        // ВАЖНО: fail-CLOSED тук нарочно. Ако заявката към Firestore гръмне
+        // (напр. заради security rules, които не позволяват четене/запис в
+        // колекцията "testSession"), НЕ бива да пускаме всички вътре
+        // безусловно — това би направило ключалката безполезна (точно
+        // симптомът, който видяхме: неограничен брой едновременни тестващи).
+        console.error("acquireTestLock error (достъпът е отказан по подразбиране):", e);
+        return { granted: false, message: "⚠️ Неуспешна проверка на достъпа до тестовия вход (техническа грешка). Моля, опитайте отново след малко." };
     }
 }
 
@@ -110,8 +116,8 @@ function stopTestSessionWatcher() {
     if (_testSessionTimer) { clearInterval(_testSessionTimer); _testSessionTimer = null; }
     _testSessionExpiresAt = null;
     _testHeartbeatTick = 0;
-    const badge = document.getElementById("testSessionBadge");
-    if (badge) badge.style.display = "none";
+    const badgeRow = document.getElementById("testSessionBadgeRow");
+    if (badgeRow) badgeRow.style.display = "none";
 }
 
 function startTestSessionWatcher(startedAt) {
@@ -123,14 +129,15 @@ function startTestSessionWatcher(startedAt) {
         const remainingMs = _testSessionExpiresAt - Date.now();
 
         const badge = document.getElementById("testSessionBadge");
-        if (badge) {
+        const badgeRow = document.getElementById("testSessionBadgeRow");
+        if (badge && badgeRow) {
             if (remainingMs > 0) {
                 const mins = Math.floor(remainingMs / 60000);
                 const secs = Math.floor((remainingMs % 60000) / 1000);
-                badge.style.display = "inline-flex";
+                badgeRow.style.display = "flex";
                 badge.textContent = "⏱️ ТЕСТ сесия: " + mins + ":" + String(secs).padStart(2, "0");
             } else {
-                badge.style.display = "none";
+                badgeRow.style.display = "none";
             }
         }
 
@@ -377,14 +384,21 @@ function resetApartmentData() {
 
 // --- TOAST ---
 let toastTimeout;
-window.showToast = function (msg, type) {
+window.showToast = function (msg, type, durationMs) {
     const t = document.getElementById("toast");
-    t.textContent = msg;
+    // innerHTML вместо textContent, за да могат съобщения с частично оцветен
+    // текст (напр. "Записано!" в зелено + обяснение в червено) да се показват.
+    // Обикновените текстови съобщения (без HTML тагове) изглеждат идентично.
+    t.innerHTML = msg;
     t.className = "toast " + type;
     clearTimeout(toastTimeout);
     requestAnimationFrame(() => { t.classList.add("show"); });
-    toastTimeout = setTimeout(() => { t.classList.remove("show"); }, 3500);
+    toastTimeout = setTimeout(() => { t.classList.remove("show"); }, durationMs || 3500);
 }
+
+// Общо съобщение за "записано локално, ще се отрази реално скоро" —
+// ползва се при Начисления, Разпределение и Приходи в админ панела.
+const SAVED_SYNC_TOAST_MSG = '<strong style="color:#2e9e4f; font-weight:800;">Записано!</strong> <span style="color:#d32f2f; font-weight:400;">Ще се отрази реално до минута</span>';
 
 // --- SAVING STATE (Задача 8: визуална индикация при запис) ---
 window.showSaving = function (btn, text = "⏳ Записване...") {
@@ -461,7 +475,14 @@ window.exitEntrance = function () {
     window.location.hash = "";
     document.getElementById('access-id').value = "";
     resetApartmentData();
-    
+
+    // Скриваме банера със съобщение от домоуправителя (напр. приветственото
+    // ТЕСТ съобщение не бива да остане видимо на началната страница)
+    const noticeBanner = document.getElementById('userEntranceNotice');
+    if (noticeBanner) noticeBanner.style.display = 'none';
+    const noticeBannerHome = document.getElementById('userEntranceNoticeHome');
+    if (noticeBannerHome) noticeBannerHome.style.display = 'none';
+
     // Switch views
     document.getElementById('view-entrance-home').classList.remove('active');
     document.getElementById('view-entrance-home').classList.add('hidden');
@@ -1625,7 +1646,7 @@ window.submitCharges = async function () {
     hideSaving(btn, "Запиши начисления");
 
     if (result && result.success) {
-        showToast("✅ Успешно записани начисления. Данните се синхронизират...", "success");
+        showToast(SAVED_SYNC_TOAST_MSG, "neutral", 3000);
         document.getElementById("chargesElevator").value = "";
         document.getElementById("chargesSubscription").value = "";
         document.getElementById("chargesLight").value = "";
@@ -3362,7 +3383,7 @@ window.submitIncomeV2 = async function() {
             v2CancelEdit();
         } else {
             await addDoc(collection(db, "incomesV2"), recordData);
-            showToast("Успешно записан приход!", "success");
+            showToast(SAVED_SYNC_TOAST_MSG, "neutral", 3000);
             
             // Връзка с V1: Ако е от апартамент, запиши го и като плащане във V1
             if (apt !== "EXTERNAL" && category === "Управление и поддръжка") {
@@ -3941,7 +3962,7 @@ window.submitDistributionV2 = async function() {
             localStorage.setItem('distributionsV2_' + currentRouteKey, JSON.stringify(local));
         }
 
-        showToast("Успешно разпределение!", "success");
+        showToast(SAVED_SYNC_TOAST_MSG, "neutral", 3000);
         
         document.getElementById("v2DistAmount").value = "";
         document.getElementById("v2DistNote").value = "";
