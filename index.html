@@ -44,7 +44,7 @@
         <script src="app.js?v=1780585496892" defer></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, query, where, deleteDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, where, deleteDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "XXX",
@@ -56,7 +56,7 @@
         const db = getFirestore(app);
 
         window.db = db;
-        window.fb = { collection, getDocs, doc, getDoc, query, where, deleteDoc, addDoc, updateDoc };
+        window.fb = { collection, getDocs, doc, getDoc, setDoc, query, where, deleteDoc, addDoc, updateDoc };
     </script>
 
 <style>.value-red { color: #d32f2f; font-weight: bold; } .value-green { color: #2e7d32; font-weight: bold; }</style>
@@ -1305,7 +1305,7 @@
                     <div class="landing-hero-content">
                         <h1 class="landing-hero-title">Онлайн <span class="text-blue">Домоуправител</span></h1>
                         <p class="landing-hero-subtitle"><strong class="hero-key-sentence">Минималистичен дигитален домоуправител.</strong><br>
-                            Автоматизирайте и управлявайте сами разходите и приходите в етажната си собственост. Всичко в един поглед, един клик.</p>
+                            Автоматизирайте и управлявайте сами разходите и приходите в ЕС. Всичко в един поглед, един клик. <a href="https://domoupravitel.github.io/ID/?id=702112ТЕСТ1А" onclick="document.getElementById('access-id').value='702112ТЕСТ1А'; enterEntrance(); return false;" class="hero-test-link">Тествайте</a>.</p>
                         
                         <div class="landing-hero-actions">
                             <div class="hero-scroll-track">
@@ -1566,6 +1566,7 @@
             <div class="header-row">
                 <button class="header-icon-btn" onclick="exitEntrance()" title="Към началото" style="margin-right: 12px; font-size: 16px;">🏠</button>
                 <h2 id="entrance-title" style="flex-grow: 1;">Етажна собственост</h2>
+                <span id="testSessionBadge" title="Времето до автоматично нулиране на тестовите данни" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); color:white; border-radius:8px; padding:0 12px; height:36px; font-size:12px; font-weight:700; white-space:nowrap; margin-right:10px;"></span>
                 <div class="header-icons">
                     <button class="header-icon-btn" onclick="openMonthlyReport()" title="Месечен отчет">📄</button>
                     <button class="header-icon-btn" onclick="openAdmin()" title="Админ панел">⚙️</button>

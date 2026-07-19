@@ -10,6 +10,153 @@ let apartmentList = [];
 let _currentIdealParts = {};
 
 // ==============================================
+// ТЕСТ РЕЖИМ — реален вход с ID "702112ТЕСТ1А", авт. имейл/PIN за админ панела,
+// достъпен само от ЕДИН тестващ едновременно, с 30-мин. сесия.
+// ==============================================
+const TEST_ID = "702112ТЕСТ1А";
+const TEST_PIN = "Test1A";
+const TEST_ADMIN_EMAIL = "test1A@gmail.com";
+const TEST_SESSION_MS = 30 * 60 * 1000;      // 30 минути максимална сесия
+const TEST_HEARTBEAT_MS = 20 * 1000;         // heartbeat на всеки 20 сек, докато тестващият е вътре
+const TEST_STALE_MS = 50 * 1000;             // ако няма heartbeat >50 сек -> приемаме, че е затворил таба/браузъра
+const TEST_NOTICE_TEXT = "👋 Добре дошли в ТЕСТ версията на Онлайн Домоуправител! Всички въведени данни тук се пазят до изтичане на 30 мин. сесия — можете свободно да разглеждате и тествате.";
+
+function isTestRoute(key) {
+    return (key || "").toString().trim().toUpperCase() === TEST_ID;
+}
+
+let _testSessionTimer = null;
+let _testSessionExpiresAt = null;
+let _testHeartbeatTick = 0;
+
+// Опитва се да "заключи" ТЕСТ входа за текущия посетител. Връща
+// { granted:true, startedAt } ако е успешно, или { granted:false, message } ако
+// в момента го ползва друг (и still-fresh heartbeat, т.е. вероятно е активен).
+async function acquireTestLock() {
+    if (!window.fb || !window.db) return { granted: true, startedAt: Date.now() }; // ако Firebase не е зареден, не блокираме локално тестване
+    try {
+        const { collection, doc, getDoc, setDoc } = window.fb;
+        const db = window.db;
+        const ref = doc(collection(db, "testSession"), TEST_ID);
+        const snap = await getDoc(ref);
+        const now = Date.now();
+
+        if (snap.exists()) {
+            const data = snap.data();
+            const sessionAge = now - (data.startedAt || 0);
+            const heartbeatAge = now - (data.lastHeartbeat || data.startedAt || 0);
+            const isOccupied = data.active && sessionAge < TEST_SESSION_MS && heartbeatAge < TEST_STALE_MS;
+
+            if (isOccupied) {
+                return { granted: false, message: "🔒 В момента тестовият вход се ползва от друг потребител. Моля, опитайте отново след няколко минути." };
+            }
+        }
+
+        // Свободно е (или изоставена/изтекла сесия) -> нулираме тестовите данни и заключваме за себе си
+        await resetTestFirestoreCache();
+        const startedAt = now;
+        await setDoc(ref, { active: true, startedAt: startedAt, lastHeartbeat: startedAt });
+        return { granted: true, startedAt: startedAt };
+    } catch (e) {
+        console.warn("acquireTestLock error:", e);
+        return { granted: true, startedAt: Date.now() };
+    }
+}
+
+async function releaseTestLock() {
+    if (!window.fb || !window.db) return;
+    try {
+        const { collection, doc, setDoc } = window.fb;
+        await setDoc(doc(collection(window.db, "testSession"), TEST_ID), { active: false }, { merge: true });
+    } catch (e) { /* best effort */ }
+}
+
+async function sendTestHeartbeat() {
+    if (!window.fb || !window.db) return;
+    try {
+        const { collection, doc, updateDoc } = window.fb;
+        await updateDoc(doc(collection(window.db, "testSession"), TEST_ID), { lastHeartbeat: Date.now() });
+    } catch (e) { /* best effort */ }
+}
+
+// Изчиства Firestore-кеша на ТЕСТ входа (apartments/monthlyReports/buildingCharges
+// + Firestore-родните колекции incomesV2/distributionsV2/externalPayers).
+// ВАЖНО: това чисти само локалния Firestore огледален кеш. Реалните данни в
+// Google Sheets за MASTER регистрите (обитатели, идеални части, книга, имейли,
+// начисления, плащания, съобщения) остават непроменени, докато не се добави
+// reset действие в бекенда (.gs) — виж бележката, обсъдена с потребителя.
+async function resetTestFirestoreCache() {
+    if (!window.fb || !window.db) return;
+    try {
+        const { collection, getDocs, deleteDoc, doc } = window.fb;
+        const db = window.db;
+        const collections = ["apartments", "monthlyReports", "buildingCharges", "incomesV2", "distributionsV2", "externalPayers"];
+        for (const colName of collections) {
+            const snapshot = await getDocs(collection(db, colName));
+            for (const d of snapshot.docs) {
+                const idMatches = d.id.indexOf(TEST_ID + "_") === 0;
+                const dataMatches = d.data && (d.data().buildingId === TEST_ID || d.data().routeKey === TEST_ID);
+                if (idMatches || dataMatches) {
+                    try { await deleteDoc(doc(db, colName, d.id)); } catch (e) { /* ignore single doc errors */ }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("resetTestFirestoreCache error:", e);
+    }
+}
+
+function stopTestSessionWatcher() {
+    if (_testSessionTimer) { clearInterval(_testSessionTimer); _testSessionTimer = null; }
+    _testSessionExpiresAt = null;
+    _testHeartbeatTick = 0;
+    const badge = document.getElementById("testSessionBadge");
+    if (badge) badge.style.display = "none";
+}
+
+function startTestSessionWatcher(startedAt) {
+    stopTestSessionWatcher();
+    _testSessionExpiresAt = startedAt + TEST_SESSION_MS;
+
+    const tick = () => {
+        if (!isTestRoute(currentRouteKey)) { stopTestSessionWatcher(); return; }
+        const remainingMs = _testSessionExpiresAt - Date.now();
+
+        const badge = document.getElementById("testSessionBadge");
+        if (badge) {
+            if (remainingMs > 0) {
+                const mins = Math.floor(remainingMs / 60000);
+                const secs = Math.floor((remainingMs % 60000) / 1000);
+                badge.style.display = "inline-flex";
+                badge.textContent = "⏱️ ТЕСТ сесия: " + mins + ":" + String(secs).padStart(2, "0");
+            } else {
+                badge.style.display = "none";
+            }
+        }
+
+        _testHeartbeatTick++;
+        if (_testHeartbeatTick % Math.round(TEST_HEARTBEAT_MS / 1000) === 0) {
+            sendTestHeartbeat();
+        }
+
+        if (remainingMs <= 0) {
+            stopTestSessionWatcher();
+            handleTestSessionExpired();
+        }
+    };
+
+    tick();
+    _testSessionTimer = setInterval(tick, 1000);
+}
+
+async function handleTestSessionExpired() {
+    showToast("⏱️ Тестовата сесия (30 мин.) приключи. Въведените данни бяха нулирани.", "success");
+    await releaseTestLock();
+    await resetTestFirestoreCache();
+    setTimeout(() => { if (typeof exitEntrance === 'function') exitEntrance(); }, 400);
+}
+
+// ==============================================
 // INITIALIZATION
 // ==============================================
 
@@ -303,6 +450,10 @@ window.toggleRegistrationForm = function() {
 
 window.exitEntrance = function () {
     // Reset state
+    if (isTestRoute(currentRouteKey)) {
+        releaseTestLock();
+    }
+    stopTestSessionWatcher();
     currentRouteKey = "";
     apartmentList = [];
     
@@ -382,6 +533,12 @@ window.enterEntrance = async function () {
         return false;
     }
 
+    // Каноничен вид на ТЕСТ ID-то, независимо как е въведено (регистър)
+    if (isTestRoute(accessId)) {
+        accessId = TEST_ID;
+        document.getElementById('access-id').value = accessId;
+    }
+
     localStorage.setItem("savedAccessId", accessId);
     currentRouteKey = accessId;
 
@@ -392,7 +549,18 @@ window.enterEntrance = async function () {
         btn.disabled = true;
     }
 
-
+    // За ТЕСТ входа: първо проверяваме дали в момента е свободен (само 1 тестващ едновременно)
+    let testLockStartedAt = null;
+    if (isTestRoute(currentRouteKey)) {
+        const lock = await acquireTestLock();
+        if (!lock.granted) {
+            currentRouteKey = "";
+            if (btn) { btn.textContent = originalText; btn.disabled = false; }
+            showToast(lock.message, "error");
+            return false;
+        }
+        testLockStartedAt = lock.startedAt;
+    }
 
     const [result, configResult] = await Promise.all([
         apiCall('list', { list: 'apartments' }),
@@ -403,6 +571,10 @@ window.enterEntrance = async function () {
         const info = configResult.info;
 
         if (info.isHardBlocked) {
+            if (isTestRoute(currentRouteKey) && testLockStartedAt) {
+                releaseTestLock();
+                stopTestSessionWatcher();
+            }
             hideLoading();
             // Показваме заключен екран вместо на екрана за избор на вход
             document.getElementById('view-selector').classList.remove('active');
@@ -510,15 +682,19 @@ window.enterEntrance = async function () {
         const userNoticeBannerHome = document.getElementById("userEntranceNoticeHome");
         const userNoticeTextHome = document.getElementById("userEntranceNoticeTextHome");
 
-        if (info.entranceNotice && info.entranceNotice.trim() !== "") {
-            const formatted = info.entranceNotice.replace(/\n/g, '<br>');
+        // За ТЕСТ входа винаги показваме фиксирания текст, независимо какво
+        // реално е записано в бекенда за entranceNotice.
+        const effectiveNotice = isTestRoute(currentRouteKey) ? TEST_NOTICE_TEXT : info.entranceNotice;
+
+        if (effectiveNotice && effectiveNotice.trim() !== "") {
+            const formatted = effectiveNotice.replace(/\n/g, '<br>');
             userNoticeText.innerHTML = formatted;
             userNoticeBanner.style.display = "block";
             if (userNoticeTextHome) userNoticeTextHome.innerHTML = formatted;
             if (userNoticeBannerHome) userNoticeBannerHome.style.display = "block";
 
             const adminNoticeInput = document.getElementById("masterEntranceNotice");
-            if (adminNoticeInput) adminNoticeInput.value = info.entranceNotice;
+            if (adminNoticeInput) adminNoticeInput.value = isTestRoute(currentRouteKey) ? info.entranceNotice : effectiveNotice;
         } else {
             userNoticeBanner.style.display = "none";
             if (userNoticeBannerHome) userNoticeBannerHome.style.display = "none";
@@ -547,6 +723,12 @@ window.enterEntrance = async function () {
             document.getElementById('entrance-title').textContent = `Етажна собственост - ID ${currentRouteKey}`;
         }
 
+        if (isTestRoute(currentRouteKey) && testLockStartedAt) {
+            startTestSessionWatcher(testLockStartedAt);
+        } else {
+            stopTestSessionWatcher();
+        }
+
         document.getElementById('view-selector').classList.remove('active');
         document.getElementById('view-selector').classList.add('hidden');
         document.getElementById('view-entrance-home').classList.remove('hidden');
@@ -568,6 +750,10 @@ window.enterEntrance = async function () {
         loadDashboardData();
         return true;
     } else {
+        if (isTestRoute(currentRouteKey) && testLockStartedAt) {
+            releaseTestLock();
+            stopTestSessionWatcher();
+        }
         if (btn) {
             btn.textContent = originalText;
             btn.disabled = false;
@@ -1000,6 +1186,12 @@ window.openAdmin = function () {
         document.getElementById("loginCard").style.display = "block";
         document.getElementById("adminCard").style.display = "none";
         document.getElementById("pinInput").value = "";
+
+        if (isTestRoute(currentRouteKey)) {
+            const emailInput = document.getElementById("adminEmailInput");
+            if (emailInput) emailInput.value = TEST_ADMIN_EMAIL;
+            document.getElementById("pinInput").value = TEST_PIN;
+        }
     }
 }
 
