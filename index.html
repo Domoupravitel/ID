@@ -992,9 +992,9 @@
 
                 <!-- Payment Info Tab Content -->
                 <div id="master-tab-payment" class="master-panel" style="display:none;">
-                    <label class="admin-label">Инструкции за плащане (Глобални)</label>
+                    <label class="admin-label">Инструкции за плащане към ЕС</label>
                     <textarea id="masterPaymentText" class="admin-input" style="min-height: 120px; font-size: 14px;"
-                        placeholder="Въведете IBAN, Easypay код и друга информация за плащане..."></textarea>
+                        placeholder="Въведете ePay КИН, IBAN, REVTAG или друг способ за получаване на плащания към ЕС"></textarea>
 
 
 
@@ -1053,6 +1053,11 @@
                         <div id="subscriptionCodeDisplay"
                             style="font-size: 18px; font-weight: 700; color: var(--primary); font-family: monospace;">
                             Зарежда се...</div>
+                    </div>
+
+                    <div id="platformPaymentInfoBox" style="display:none; margin-top: 12px; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid rgba(0,122,255,0.15); text-align: left;">
+                        <p style="font-size: 11px; font-weight: 700; text-transform: uppercase; margin: 0 0 6px 0; color: var(--primary);">💳 Начини на плащане към Супер Админа:</p>
+                        <div id="platformPaymentInfoText" style="font-size: 13px; white-space: pre-line; line-height: 1.6; color: #333;"></div>
                     </div>
                 </div>
             </div>

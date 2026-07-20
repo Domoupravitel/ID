@@ -685,6 +685,21 @@ window.enterEntrance = async function () {
         if (subLifetimeEl) subLifetimeEl.textContent = `${parseFloat(info.lifetimePrice || 0).toFixed(2)} EUR`;
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
+        // Инструкции за плащане към Супер Админа (платформено ниво) — идват
+        // от Супер Админ настройките. Изисква бекендът да ги връща в
+        // getEntranceInfo (напр. като info.platformPaymentInfo). Ако полето
+        // липсва/е празно, боксът просто остава скрит.
+        const platformPayBox = document.getElementById('platformPaymentInfoBox');
+        const platformPayText = document.getElementById('platformPaymentInfoText');
+        if (platformPayBox && platformPayText) {
+            if (info.platformPaymentInfo && info.platformPaymentInfo.trim() !== "") {
+                platformPayText.textContent = info.platformPaymentInfo;
+                platformPayBox.style.display = 'block';
+            } else {
+                platformPayBox.style.display = 'none';
+            }
+        }
+
         // Кешираме ВЕЧЕ изчислената (съобразена с индивидуални изключения) обща
         // месечна цена, за да не се налага показването ѝ в самия админ панел на
         // входа (showAdminContent) да я преизчислява наново без изключенията.
