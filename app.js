@@ -298,10 +298,23 @@ async function loadPublicSettings() {
 // ==============================================
 
 
+// Лек, чисто локален "fingerprint" — само за "меко" дневно ограничение на
+// тестовия вход (не претендира за сигурност; лесно заобиколим чрез
+// изчистване на localStorage/инкогнито, съзнателно решение).
+function getClientFingerprint() {
+    let fp = localStorage.getItem('clientFingerprint');
+    if (!fp) {
+        fp = 'fp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        try { localStorage.setItem('clientFingerprint', fp); } catch (e) { /* ignore */ }
+    }
+    return fp;
+}
+
 async function bgApiCall(action, params = {}) {
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) return { error: 'No Script URL configured' };
     params.action = action;
     params.routeKey = currentRouteKey;
+    params.fingerprint = getClientFingerprint();
     const queryParams = new URLSearchParams(params).toString();
     try {
         const response = await fetch(`${SCRIPT_URL}?${queryParams}`);
@@ -324,6 +337,7 @@ async function apiCall(action, params = {}) {
 
     params.action = action;
     params.routeKey = currentRouteKey;
+    params.fingerprint = getClientFingerprint();
 
     const queryParams = new URLSearchParams(params).toString();
 
@@ -799,7 +813,9 @@ window.enterEntrance = async function () {
             btn.disabled = false;
         }
         const errStr = result && result.error ? result.error.toString() : "";
-        if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
+        if (result && result.testAccessDenied) {
+            showToast(errStr || "Тестовият вход не е достъпен в момента.", "error");
+        } else if (errStr.includes("fetch") || errStr.includes("NetworkError")) {
             showToast("Грешка при връзка (Failed to fetch). Проверете интернет връзката си.", "error");
         } else {
             showToast(`Грешен вход: ${currentRouteKey} не е намерен в базата.`, "error");
