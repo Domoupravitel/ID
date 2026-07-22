@@ -686,14 +686,13 @@ window.enterEntrance = async function () {
         if (subCodeEl) subCodeEl.textContent = currentRouteKey;
 
         // Инструкции за плащане към Супер Админа (платформено ниво) — идват
-        // от Супер Админ настройките. Изисква бекендът да ги връща в
-        // getEntranceInfo (напр. като info.platformPaymentInfo). Ако полето
-        // липсва/е празно, боксът просто остава скрит.
+        // от Супер Админ настройките. Бекендът вече ги връща в
+        // getEntranceInfo като info.superPaymentOptions (потвърдено в Code.gs).
         const platformPayBox = document.getElementById('platformPaymentInfoBox');
         const platformPayText = document.getElementById('platformPaymentInfoText');
         if (platformPayBox && platformPayText) {
-            if (info.platformPaymentInfo && info.platformPaymentInfo.trim() !== "") {
-                platformPayText.textContent = info.platformPaymentInfo;
+            if (info.superPaymentOptions && info.superPaymentOptions.trim() !== "") {
+                platformPayText.textContent = info.superPaymentOptions;
                 platformPayBox.style.display = 'block';
             } else {
                 platformPayBox.style.display = 'none';
