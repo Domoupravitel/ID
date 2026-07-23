@@ -5,15 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ръководство за Домоуправителя | ID Платформа</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap"
         rel="stylesheet">
     <style>
         :root {
             --primary: #007aff;
+            --primary-light: #eefbff;
             --secondary: #5856d6;
             --success: #34c759;
+            --success-light: #eafaf1;
             --warning: #ff9500;
+            --warning-light: #fff9db;
             --danger: #ff3b30;
+            --danger-light: #fff5f5;
             --bg: #f5f7fa;
             --card: #ffffff;
             --text: #1d1d1f;
@@ -28,81 +32,136 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            scroll-behavior: smooth;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 20px 20px;
+            padding: 40px 20px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
 
         h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
             color: var(--primary);
+            font-weight: 800;
         }
 
-        .guide-nav {
-            background: var(--card);
-            padding: 5px 12px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 10px;
-            position: sticky;
-            top: 0px;
-            z-index: 100;
-            border: 1px solid var(--border);
-        }
-
-        .guide-nav h2 {
-            font-size: 1rem;
-            margin-top: 0;
+        .header-subtitle {
+            font-size: 1.1rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .guide-nav ul {
+        /* Modern Floating Navigation Menu */
+        .guide-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            border: 1px solid rgba(229, 229, 234, 0.6);
+        }
+
+        .guide-nav ul.main-menu {
             list-style: none;
             padding: 0;
+            margin: 0;
             display: flex;
-            flex-wrap: wrap;
+            justify-content: space-around;
             gap: 10px;
         }
 
-        .guide-nav a {
-            text-decoration: none;
-            color: var(--text);
-            font-size: 0.9rem;
-            padding: 6px 12px;
-            background: var(--bg);
-            border-radius: 8px;
-            transition: all 0.2s;
+        .guide-nav li.menu-item {
+            position: relative;
         }
 
-        .guide-nav a:hover {
+        .guide-nav li.menu-item > a {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-nav li.menu-item:hover > a {
             background: var(--primary);
             color: white;
         }
 
+        /* Dropdowns */
+        .guide-nav ul.submenu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            padding: 8px 0;
+            list-style: none;
+            min-width: 240px;
+            display: none;
+            z-index: 1001;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .guide-nav li.menu-item:hover ul.submenu {
+            display: block;
+            opacity: 1;
+            transform: translateX(-50%) translateY(5px);
+        }
+
+        .guide-nav ul.submenu li a {
+            display: block;
+            padding: 10px 16px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .guide-nav ul.submenu li a:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding-left: 20px;
+        }
+
+        /* Sections and Content Layout */
         .section {
             background: var(--card);
             padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            margin-bottom: 40px;
             border: 1px solid var(--border);
+            scroll-margin-top: 100px;
         }
 
         h2.section-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-top: 0;
             display: flex;
             align-items: center;
@@ -110,18 +169,32 @@
             border-bottom: 2px solid var(--bg);
             padding-bottom: 15px;
             margin-bottom: 25px;
+            color: var(--text);
         }
 
-        h3 {
+        .subsection {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+            scroll-margin-top: 100px;
+        }
+
+        h3.subsection-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
             color: var(--secondary);
-            margin-top: 30px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .pro-tip {
-            background: #eefbff;
+            background: var(--primary-light);
             border-left: 4px solid var(--primary);
             padding: 15px 20px;
-            border-radius: 0 8px 8px 0;
+            border-radius: 0 12px 12px 0;
             margin: 20px 0;
             font-size: 0.95rem;
         }
@@ -131,10 +204,10 @@
         }
 
         .warning-box {
-            background: #fff5f5;
+            background: var(--danger-light);
             border-left: 4px solid var(--danger);
             padding: 15px 20px;
-            border-radius: 0 8px 8px 0;
+            border-radius: 0 12px 12px 0;
             margin: 20px 0;
             font-size: 0.95rem;
         }
@@ -143,8 +216,22 @@
             color: var(--danger);
         }
 
+        .info-box {
+            background: var(--warning-light);
+            border-left: 4px solid var(--warning);
+            padding: 15px 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .info-box strong {
+            color: var(--warning);
+        }
+
         ul.features {
             padding-left: 20px;
+            margin: 15px 0;
         }
 
         ul.features li {
@@ -152,48 +239,90 @@
         }
 
         code {
-            background: #f0f0f0;
+            background: #f0f2f5;
             padding: 2px 6px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-family: monospace;
             font-size: 0.95rem;
+            color: #d63384;
         }
 
         .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 25px;
             text-decoration: none;
             color: var(--primary);
             font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
         }
 
         footer {
             text-align: center;
-            margin-top: 60px;
+            margin-top: 80px;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
         }
 
-        img.tutorial-img {
-            max-width: 100%;
-            border-radius: 12px;
-            margin: 20px 0;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        .step-guide {
+            background: #f8fafc;
             border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
         }
 
-        @media (max-width: 600px) {
-            .section {
-                padding: 25px;
-            }
+        .step-guide ol {
+            padding-left: 20px;
+            margin: 0;
+        }
 
-            h1 {
-                font-size: 2rem;
-            }
+        .step-guide li {
+            margin-bottom: 12px;
+        }
 
+        @media (max-width: 820px) {
             .guide-nav {
                 position: relative;
                 top: 0;
+                padding: 10px;
+            }
+
+            .guide-nav ul.main-menu {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .guide-nav li.menu-item {
+                width: 100%;
+            }
+
+            .guide-nav li.menu-item > a {
+                justify-content: space-between;
+                padding: 10px;
+            }
+
+            .guide-nav ul.submenu {
+                position: static;
+                transform: none;
+                box-shadow: none;
+                border: none;
+                background: #f8fafc;
+                margin-top: 5px;
+                display: none;
+                width: 100%;
+            }
+
+            .guide-nav li.menu-item:hover ul.submenu {
+                display: block;
+                transform: none;
             }
         }
     </style>
@@ -202,261 +331,284 @@
 <body>
 
     <div class="container">
-        <a href="index.html" class="back-link" onclick="const h = sessionStorage.getItem('originalHash') || ''; location.href='index.html'+h; return false;">← Към приложението</a>
+        <a href="index.html" class="back-link" onclick="const h = sessionStorage.getItem('originalHash') || ''; location.href='index.html'+h; return false;">
+            ← Към приложението
+        </a>
 
         <header>
             <h1>📚 Ръководство за Домоуправителя</h1>
-            <p>Всичко, което трябва да знаете за ефективното управление на Вашия вход през ID Платформа.</p>
+            <p class="header-subtitle">Всичко необходимо за ефективното и професионално управление на Вашия вход през административния панел на ID Платформа.</p>
         </header>
 
+        <!-- Floating Navigation Menu -->
         <nav class="guide-nav">
-            <ul>
-                <li><a href="#logic">📐 Логика</a></li>
-                <li><a href="#master">📊 MASTER Настройки</a></li>
-                <li><a href="#charges">📋 Начисления</a></li>
-                <li><a href="#payments">💰 Плащания</a></li>
-                <li><a href="#zues">⚖️ ЗУЕС Мениджър</a></li>
-                <li><a href="#subscription">⭐ Абонамент</a></li>
+            <ul class="main-menu">
+                <li class="menu-item">
+                    <a href="#section-settings">⚙️ Настройки</a>
+                    <ul class="submenu">
+                        <li><a href="#sub-emails">✉️ Имейл на апартамент</a></li>
+                        <li><a href="#sub-master">📊 MASTER Настройки</a></li>
+                        <li><a href="#sub-subscription">⭐ Абонамент</a></li>
+                        <li><a href="#sub-automation">🤖 Автоматизация</a></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    <a href="#section-distribution">💸 Разпределяне</a>
+                    <ul class="submenu">
+                        <li><a href="#sub-dist-income">💸 Разпределяне на приходи</a></li>
+                        <li><a href="#sub-dist-registry">📋 Регистър разпределения</a></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    <a href="#section-incomes">💰 Приходи</a>
+                    <ul class="submenu">
+                        <li><a href="#sub-inc-add">💰 Добавяне на приход</a></li>
+                        <li><a href="#sub-inc-payers">👥 Външни платци</a></li>
+                        <li><a href="#sub-inc-registry">📋 Регистър приходи</a></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    <a href="#section-expenses">📊 Разходи</a>
+                    <ul class="submenu">
+                        <li><a href="#sub-exp-charges">📋 Начисления</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
 
-        <div id="logic" class="section">
-            <h2 class="section-title">📐 Логика на разпределение</h2>
-            <p>Тази настройка определя как се разпределя всяко едно от 7-те пера на разходите (Асансьор, Ток, Чистене и др.). Тя се намира в първия таб на MASTER секцията.</p>
-            
-            <ul class="features">
-                <li><strong>Равно:</strong> Общата сума се дели на броя апартаменти. Подходящо за такси като „Почистване“.</li>
-                <li><strong>Идеални части:</strong> Общата сума се разпределя според процента идеални части на всеки апартамент.</li>
-                <li><strong>Обитатели:</strong> Общата сума се разпределя според броя обитатели на всеки апартамент.</li>
-            </ul>
+        <!-- SECTION 1: SETTINGS -->
+        <div id="section-settings" class="section">
+            <h2 class="section-title">⚙️ Раздел 1: Настройки</h2>
+            <p>В този основен раздел управлявате глобалните данни на етажната собственост, настройките за разпределение на разходите, комуникацията по имейл и абонамента.</p>
 
-        </div>
-
-
-        <div id="master" class="section">
-            <h2 class="section-title">📊 MASTER Настройки (Тънкости)</h2>
-            <p>В секцията <strong>MASTER</strong> управлявате глобалните настройки на всеки апартамент. Всяка промяна тук се записва от избран начален месец <strong>напред</strong>.</p>
-            
-            <div class="pro-tip">
-                <strong>💡 КАК РАБОТИ:</strong> Когато изберете „Начален месец“, системата автоматично прилага новата стойност за този месец и за всички следващи месеци, докато не бъде променена от определен мес,. Не е необходимо да въвеждате крайна дата.
+            <div id="sub-emails" class="subsection">
+                <h3 class="subsection-title">✉️ Имейл на апартамент</h3>
+                <p>За да получават съседите Ви автоматични месечни отчети и покани по имейл, е необходимо да ги регистрирате:</p>
+                <ul class="features">
+                    <li>Изберете конкретния апартамент от падащото меню.</li>
+                    <li>Въведете коректния имейл адрес в полето „Нов имейл“.</li>
+                    <li>Натиснете <strong>„Запази имейл“</strong>. Системата автоматично показва текущия записан имейл, за да се избегне дублиране.</li>
+                </ul>
             </div>
 
-            <h3>🏠 Участие Асансьор (Специално)</h3>
-            <ul class="features">
-                <li><strong>Как работи:</strong> Ако апартаментът е на 1-ви етаж и е гласувано да не плаща асансьор, изберете „Не“.</li>
-                <li><strong>Резултат:</strong> Когато въвеждате общи разходи за Асансьор и Абонамент, системата автоматично ще <strong>пропусне</strong> този апартамент при деленето на сметката.</li>
-                <li><strong>Важно:</strong> Ако всички са „Не“, разходът ще се раздели на 0 (грешка). Поне един трябва да е „Да“.</li>
-            </ul>
+            <div id="sub-master" class="subsection">
+                <h3 class="subsection-title">📊 MASTER – Настройки (Тънкости)</h3>
+                <p>Секцията MASTER съдържа ключови конфигурации за всеки апартамент. Всяка промяна тук се записва от избран начален месец <strong>напред</strong>.</p>
+                
+                <div class="pro-tip">
+                    <strong>💡 ПРАВИЛО НА ВРЕМЕВАТА ЛЕНТА:</strong> Когато въведете нова стойност и изберете начален месец, системата я прилага автоматично за него и за всички следващи месеци, докато не въведете нова промяна за по-късен етап. Не е нужно да въвеждате крайна дата.
+                </div>
 
-            <h3>👥 Обитатели (Брой хора)</h3>
-            <ul class="features">
-                <li><strong>Логика:</strong> Използва се само ако изберете „Логика: Обитатели“.</li>
-                <li><strong>Минимум:</strong> Системата изисква минимум <strong>1 обитател</strong> дори за необитаеми апартаменти (според ЗУЕС), освен ако нямате друго решение на Общото събрание.</li>
-            </ul>
+                <h4>📐 Логика</h4>
+                <p>Определя метода за разпределяне на сметките на входа (задава се глобално за даден начален месец напред):</p>
+                <ul class="features">
+                    <li><strong>Равно:</strong> Общата сума се разделя поравно на броя апартаменти (подходящо за чистене, домофон и др.).</li>
+                    <li><strong>Обитатели:</strong> Сумата се разпределя пропорционално според броя обитатели на всеки апартамент.</li>
+                    <li><strong>Идеални части:</strong> Разходите се разпределят според процента идеални части на апартамента (законоустановеният метод за Фонд Ремонт).</li>
+                </ul>
 
-            <h3>🎫 Чипове (Опция)</h3>
-            <ul class="features">
-                <li><strong>За какво служи:</strong> при разпределяне на разходите за асансьор според броя чипове за асансьор на апартамент. Може да се ползва и при наличие на система отчитаща по брой возения за чип. <strong>Когато въведете бр. чипове за апарт. (дори само за един), за даден период, системата автоматично ще разпределя разходите за асансьор по тази логика.</strong></li>
-            </ul>
+                <h4>🛗 Участие Асансьор</h4>
+                <p>Позволява изключване на определени апартаменти (например на 1-вия етаж) от разходите за асансьор:</p>
+                <ul class="features">
+                    <li>Ако апартамент не трябва да плаща за асансьор, изберете „Не“ за съответния период.</li>
+                    <li><strong>Резултат:</strong> При въвеждане на общи разходи за „Асансьор ел.“ или „Абонамент асансьор“, системата автоматично ще изключи този апартамент при разпределението.</li>
+                    <li><strong>Важно:</strong> Поне един апартамент трябва да участва с „Да“, в противен случай ще се получи грешка (деление на 0).</li>
+                </ul>
 
-            <h3>🏗️ Идеални части (%)</h3>
-            <ul class="features">
-                <li><strong>Задължително:</strong> Използва се за „Фонд Ремонт“ и за кворума при събрания.</li>
-                <li><strong>Сума:</strong> Сборът на всички апартаменти трябва да е точно <strong>100%</strong>.</li>
-            </ul>
-        </div>
+                <h4>👥 Обитатели (Брой хора)</h4>
+                <ul class="features">
+                    <li>Задава броя обитатели на апартамента за съответния период.</li>
+                    <li>Съгласно ЗУЕС, системата изисква минимум <strong>1 обитател</strong> дори за необитаеми апартаменти, освен ако няма изрично решение на Общото събрание за освобождаване.</li>
+                </ul>
 
-        <div id="emails" class="section">
-            <h2 class="section-title">✉️ Имейл на апартамент</h2>
-            <p>За да получават съседите Ви автоматични месечни отчети и съобщения, трябва да регистрирате техните имейл
-                адреси.</p>
-            <ul class="features">
-                <li>Изберете апартамент -> Въведете имейл -> Натиснете „Запази“.</li>
-                <li>Системата показва текущия имейл (ако има такъв), за да не го дублирате.</li>
-            </ul>
-        </div>
+                <h4>🔑 Чипове</h4>
+                <ul class="features">
+                    <li>Служи за разпределяне на разходите за асансьор на база брой чипове или брой ползвания.</li>
+                    <li><strong>Важно:</strong> Ако въведете брой чипове дори само за един апартамент за даден период, системата автоматично променя логиката за разпределение на перо асансьор към разпределение спрямо чиповете.</li>
+                </ul>
 
-        <div id="notice" class="section">
-            <h2 class="section-title">📢 Съобщения до живущите</h2>
-            <p>Това е основният Ви инструмент за масова комуникация. Достъпен е през таб <strong>📢 Съобщения</strong> в
-                секция MASTER.</p>
+                <h4>📊 Идеални части (%)</h4>
+                <ul class="features">
+                    <li>Въвежда се процентът на идеалните части на всеки апартамент от общите части на сградата.</li>
+                    <li>Задължително за разпределение на „Фонд Ремонт“ и за автоматичното изчисляване на кворума.</li>
+                    <li><strong>Важно:</strong> Общият сбор на идеалните части за всички апартаменти трябва да бъде точно <strong>100%</strong>.</li>
+                </ul>
 
-            <h3>Как да публикувам съобщение?</h3>
-            <ul class="features">
-                <li>Въведете текста в голямото поле (напр. информация за ремонт или предстоящо събрание).</li>
-                <li>Натиснете <strong>„Запази и изпрати до всички“</strong>.</li>
-                <li><strong>Резултат 1:</strong> Съобщението веднага се появява в синьо каре на началната страница на
-                    всеки съсед при влизане.</li>
-                <li><strong>Резултат 2:</strong> Системата автоматично изпраща имейл с този текст до всички апартаменти,
-                    които имат регистриран имейл адрес.</li>
-            </ul>
+                <h4>🏠 Инфо апарт. (Лични съобщения)</h4>
+                <ul class="features">
+                    <li>Позволява изпращане на лично текстово съобщение до конкретен апартамент (напр. „Моля, свържете се с касиера“).</li>
+                    <li>Това съобщение се показва единствено на собственика на този апартамент под неговия баланс.</li>
+                    <li>За изтриване - просто премахнете текста в полето и го запазете празно.</li>
+                </ul>
 
-            <div class="warning-box">
-                <strong>🗑️ КАК СЕ ИЗТРИВА СЪОБЩЕНИЕ?</strong>
-                За да премахнете съобщението от началната страница на входа, просто <strong>изтрийте целия
-                    текст</strong>
-                от полето в админ панела и натиснете бутона за запис. Системата ще отчете празното поле и ще скрие
-                банера
-                за живущите.
-            </div>
-        </div>
+                <h4>💳 Данни за плащане:</h4>
+                <ul class="features">
+                    <li><strong>Банкови детайли:</strong> Въвеждане на ePay (КИН), IBAN, REVTAG или друг способ за плащане към ЕС, които ще се вижда от всички живущи.</li>
+                    <li><strong>Google Drive Линк:</strong> Позволява добавяне на споделен линк към папка с фактури. Живущите ще виждат бутон за директен достъп до документите.</li>
+                </ul>
 
-        <div id="personal-notice" class="section">
-            <h2 class="section-title">🏠 Индивидуални съобщения</h2>
-            <p>Понякога трябва да кажете нещо само на един апартамент (напр. „Моля, свържете се с касиера“).</p>
+                <h4>📢 Съобщения до живущите (Масови съобщения)</h4>
+                <ul class="features">
+                    <li><strong>Как работи:</strong> Напишете текст в полето и натиснете „Запази и изпрати до всички“.</li>
+                    <li><strong>Резултати:</strong> Съобщението веднага се появява като важен син банер на началната страница на всички съседи и автоматично се разпраща като имейл уведомление до всички регистрирани адреси.</li>
+                    <li><strong>Изтриване:</strong> За да премахнете съобщението от началната страница, изтрийте целия текст от полето и запишете празен банер.</li>
+                </ul>
 
-            <ul class="features">
-                <li>Отидете в таб <strong>🏠 Инфо апарт.</strong></li>
-                <li>Изберете конкретния апартамент.</li>
-                <li>Ще видите поле <strong>„Лично съобщение до този апартамент“</strong>.</li>
-                <li>Натиснете <strong>„Запази съобщението“</strong>. Това съобщение ще се вижда САМО от този апартамент
-                    под неговия баланс.</li>
-            </ul>
-            <p><em>За да го изтриете – изтрийте текста и запишете отново.</em></p>
-        </div>
+                <h4>✉️ Имейл до апартамент</h4>
+                <ul class="features">
+                    <li>Използва се за изпращане на индивидуални официални писма, напомняния или покани със собствена тема и съдържание до избран апартамент.</li>
+                </ul>
 
-        <div id="emails-detail" class="section">
-            <h2 class="section-title">✉️ Комуникация по имейл</h2>
-            <p>Системата предлага два вида имейл услуги:</p>
-
-            <ul class="features">
-                <li><strong>Автоматични отчети:</strong> При запис на „Начисления“ системата може да разпрати отчети
-                    автоматично.</li>
-                <li><strong>Индивидуален имейл (Таб ✉️ Имейл до апт.):</strong> Използвайте това за официални покани или
-                    напомняния. Тук можете да зададете собствена "Тема" и "Текст" на писмото.</li>
-            </ul>
-        </div>
-
-        <div id="charges" class="section">
-            <h2 class="section-title">📋 Начисления (Общи разходи)</h2>
-            <p>Тук въвеждате общите сметки на входа за месеца. Системата сама ще ги разпредели между апартаментите
-                според Вашата логика.</p>
-
-            <ul class="features">
-                <li><strong>Асансьор, Абонамент, Осветление и др.:</strong> Въведете общата сума от фактурата.</li>
-                <li><strong>Фонд Ремонт:</strong> Обикновено тук се въвежда фиксирана сума или сума по решение на Общото
-                    събрание.</li>
-            </ul>
-
-            <div class="warning-box">
-                <strong>ВНИМАНИЕ:</strong> Ако оставите поле празно, системата ще счете, че за този месец няма разход по
-                това перо.
+                <h4>⚖️ ЗУЕС Мениджър</h4>
+                <ul class="features">
+                    <li><strong>Провеждане на събрания:</strong> Въведете дневен ред и маркирайте присъстващите. Кворумът се изчислява автоматично на база идеалните части.</li>
+                    <li><strong>Документи:</strong> Възможност за генериране на готов „Списък за подписи“ на място и „Чернова на Протокол“ от събранието.</li>
+                    <li><strong>Декларации:</strong> Генериране на готова бланка по Чл. 7, ал. 3 от ЗУЕС за вписване на нови обитатели.</li>
+                </ul>
             </div>
 
-            
-            <h2>🤖 АВТОМАТИЗАЦИЯ НА ПРОЦЕСА</h2>
-            <div class="important-box">
-                <h4>⚠️ ВАЖНО! За да бъде напълно автоматизиран процеса:</h4>
-                <p>
-                    − <strong>Домоуправителят трябва да се регистрира с имейл</strong>, който е регистриран да получава
-                    уведомления за постъпления по плащания в етажната собственост и за възникнали задължения.
-                </p>
-                <p>
-                    <strong>Примерно:</strong> за регистрация за известие по имейл на задължение за битови сметки в
-                    <code>ePay.bg</code>: <i>Плащане на битови сметки → Промяна → +Нова регистрация на сметка</i>.
-                    За автоматично разпределяне на разходите, използвайте следните ключови думи при наименуване:
-                    <ul style="margin-top: 10px;">
+            <div id="sub-subscription" class="subsection">
+                <h3 class="subsection-title">⭐ Абонамент към Платформата</h3>
+                <p>За да бъде системата активна и достъпна за Вашите съседи, е необходимо заплащане на такса.</p>
+                <div class="pro-tip">
+                    <strong>💳 ПЛАЩАНЕ С АВТОМАТИЧНО ОТЧИТАНЕ:</strong><br>
+                    За да може платформата веднага да разпознае Вашето плащане, при банков превод или плащане през ePay е задължително да посочите точния <strong>ID код на Вашия вход</strong> като основание за плащане (напр. <code>АСФ426288</code>).
+                </div>
+            </div>
+
+            <div id="sub-automation" class="subsection">
+                <h3 class="subsection-title">🤖 АВТОМАТИЗАЦИЯ НА ПРОЦЕСА</h3>
+                <div class="important-box">
+                    <h4>⚠️ ВАЖНО! За да бъде напълно автоматизиран процесът:</h4>
+    
+                    <p><strong>1. Домоуправителят трябва да се регистрира с имейл</strong>, който е регистриран да получава уведомления за постъпления по плащания в етажната собственост и за възникнали задължения.</p>
+    
+                    <p>
+                        <strong>Примерно:</strong> за регистрация за известие по имейл на задължение за битови сметки в <code>ePay.bg</code>: <i>Плащане на битови сметки → Промяна → +Нова регистрация на сметка</i>.
+                        За автоматично разпределяне на разходите, използвайте следните ключови думи при наименуване:
+                    </p>
+                    <ul style="margin-top: 10px; margin-bottom: 10px;">
                         <li><strong>асансьор</strong> – за ел. енергия на асансьора (ток).</li>
                         <li><strong>етажно</strong> – за осветление и общ ток.</li>
-                        <li><strong>абонаментно обслужване асансьор</strong> – за сервизната такса/абонамент.</li>
-                        <li><strong>почистване, охрана, ремонт</strong> – за съответните пера.</li>
+                        <li><strong>абонаментно асансьор</strong> – за сервизната такса/абонамент.</li>
+                        <li><strong>почистване, охрана или ремонт</strong> – за съответните пера.</li>
                     </ul>
-                </p>
-                <p>
-                    − <strong>Имейлът на домоуправителя</strong> трябва да има настройка за пренасочване към този на
-                    платформата. Препоръчваме имейл на Google. Gmail може да прави точно това чрез филтри + препращане.
-                </p>
-
-                <div class="step-guide">
-                    <strong>Как да настроите пренасочване в Gmail:</strong>
-                    <ol>
-                        <li>Отидете в <strong>Settings</strong> (иконката със зъбчето) → <strong>Преглед на всички настройки</strong></li>
-                        <li><strong>Препращане и POP/IMAP достъп</strong> → Добавяне на имейл за препращане<br>
-                            <span style="font-size: 0.9rem; color: #555; display: block; margin-top: 4px;"><i>Следвайте стъпките. Ще бъде изпратена връзка за потвърждение на получателя. Системата ни проверява автоматично и одобрява на всеки 15 мин.</i></span>
-                        </li>
-                        <li>Отидете в таб на <strong>Филтри и блокирани адреси</strong> или в горното меню</li>
-                        <li>Кликнете <strong>Създаване на нов филтър</strong></li>
-                        <li>В полето <strong>От</strong> въведете имейл адреса на подателя, чиито писма искате да препращате. Изберете ключовите думи по-горе за филтриране в полето <strong>„Съдържа думите“</strong>.</li>
-                        <li>Кликнете <strong>Създаване на филтър</strong></li>
-                        <li>Постави отметка на <strong>Препращане до:</strong> и избери адреса от падащото меню, към който да се препращат</li>
-                        <li>Кликнете <strong>Създай филтър</strong></li>
-                    </ol>
-                    <p style="margin-top:15px; font-size: 0.9rem;">
-                        <strong>Какво още можете да филтрираш (освен подател):</strong><br>
-                        • <code>Subject</code> – само писма с определена тема<br>
-                        • <code>To</code> – писма изпратени до определен твой адрес<br>
-                        • Комбинации от горните
-                    </p>
+    
+                    <p>В имейла, който ще получите от <code>ePay.bg</code> за ново задължение за битови сметки, ще съдържа текста, примерно:</p>
+    
+                    <img src="gmail_filter_example.png" alt="Пример за имейл от ePay" class="zoomable" onclick="openLightbox(this.src)" style="width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; display: block; margin: 12px 0 20px;">
+    
+                    <p><strong>2. Имейлът на домоуправителя</strong> трябва да има настройка за пренасочване към този на платформата. Препоръчваме имейл на Google. Gmail може да прави точно това чрез филтри + препращане.</p>
+    
+                    <div class="step-guide">
+                        <strong>Как да настроите пренасочване в Gmail:</strong>
+                        <ol>
+                            <li>Отидете в <strong>Settings</strong> (иконката със зъбчето) → <strong>Преглед на всички настройки</strong></li>
+                            <li><strong>Препращане и POP/IMAP достъп</strong> → Добавяне на имейл за препращане<br>
+                                <span style="font-size: 0.9rem; color: #555; display: block; margin-top: 4px;"><i>Следвайте стъпките. Ще бъде изпратена връзка за потвърждение на получателя. Системата ни проверява автоматично и одобрява на всеки 15 мин.</i></span>
+                            </li>
+                            <li>Отидете в таб на <strong>Филтри и блокирани адреси</strong> или в горното меню</li>
+                            <li>Кликнете <strong>Създаване на нов филтър</strong></li>
+                            <li>В полето <strong>От</strong> въведете имейл адреса на подателя, чиито писма искате да препращате. Изберете ключовите думи по-горе за филтриране в полето <strong>„Съдържа думите"</strong>, примерно <code>асансьор OR етажно</code>.</li>
+                            <li>Кликнете <strong>Създаване на филтър</strong></li>
+                            <li>Постави отметка на <strong>Препращане до:</strong> и избери адреса от падащото меню, към който да се препращат</li>
+                            <li>Кликнете <strong>Създай филтър</strong></li>
+                        </ol>
+                        <p style="margin-top: 12px; margin-bottom: 8px; font-size: 0.9rem;">В Gmail / Настройки / Филтри и блокирани адреси, филтърът трябва да изглежда така:</p>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+                            <p style="margin: 0 0 6px; font-family: monospace; font-size: 0.85rem; color: #374151;"><strong>Съответства на:</strong> from:(ntf@epay.bg) (асансьор OR етажно)</p>
+                            <p style="margin: 0; font-family: monospace; font-size: 0.85rem; color: #374151;"><strong>Направете следното:</strong> Означаване като прочетени, Да се препрати до <code>info.domoupravitel@gmail.com</code>, Да не се изпраща никога в „Спам"</p>
+                        </div>
+                        <p style="margin-top:15px; font-size: 0.9rem;">
+                            <strong>Какво още можете да филтрирате (освен подател):</strong><br>
+                            • <code>Subject</code> – само писма с определена тема<br>
+                            • <code>To</code> – писма изпратени до определен твой адрес<br>
+                            • Комбинации от горните
+                        </p>
+                    </div>
                 </div>
-            
-        </div>
-
-        <div id="payments" class="section">
-            <h2 class="section-title">💰 Добавяне на плащане</h2>
-            <p>Тази секция се използва за отразяване на получени суми от живущите. Тя е „сърцето“ на финансовата
-                отчетност.</p>
-
-            <h3>Как да добавя плащане?</h3>
-            <ul class="features">
-                <li><strong>Апартамент:</strong> Изберете конкретния апартамент от падащото меню.</li>
-                <li><strong>Период (MM.YYYY):</strong> Въведете месеца и годината, за които се отнася плащането (напр.
-                    <code>03.2026</code>).
-                    <br><em>Важно: Винаги използвайте точка между месеца и годината.</em>
-                </li>
-                <li><strong>Сума:</strong> Въведете платената сума. Можете да ползвате точка за стотинки.</li>
-            </ul>
-
-            <div class="pro-tip">
-                <strong>PRO TIP:</strong> Когато запишете плащане, балансът на апартамента се актуализира автоматично в
-                реално време за потребителя.
             </div>
         </div>
 
-        <div id="payment-config" class="section">
-            <h2 class="section-title">💳 Данни за плащане и Фактури</h2>
-            <p>В таб <strong>💳 Плащ.инфо</strong> управлявате това, което виждат живущите като инструкции:</p>
-            <ul class="features">
-                <li><strong>IBAN и инструкции:</strong> Въведете как и къде се плащат таксите.</li>
-                <li><strong>Линкове към Фактури/Документи:</strong> Ако качвате фактурите в Google Drive, сложете линка тук.
-                    Живущите ще имат бутон за директен достъп до документите.</li>
-            </ul>
-        </div>
+        <!-- SECTION 2: DISTRIBUTION -->
+        <div id="section-distribution" class="section">
+            <h2 class="section-title">💸 Раздел 2: Разпределяне</h2>
+            <p>Този раздел се използва за разпределяне на допълнителни общи приходи на етажната собственост (например наеми на общи части, рекламни площи, дарения или кредити) пропорционално към апартаментите.</p>
 
-        <div id="zues" class="section">
-            <h2 class="section-title">⚖️ ЗУЕС Мениджър</h2>
-            <p>Юридическа подготовка и документация.</p>
-
-            <h3>🤝 Провеждане на събрание</h3>
-            <ol>
-                <li>Въведете дневния ред.</li>
-                <li>Маркирайте присъстващите. Кворумът се смята автоматично на база секция „Идеални ч.“.</li>
-                <li>Натиснете <strong>„Списък за подписи“</strong> – генерира списък за подписи на място.</li>
-                <li>Натиснете <strong>„Чернова на Протокол“</strong> – системата ще създаде готов текст с резултатите,
-                    който да довършите.</li>
-            </ol>
-
-            <h3>📄 Декларации</h3>
-            <p>В подсекция „Декларации“ можете да генерирате готова бланка (Чл. 7, ал. 3), която новите собственици да
-                попълнят
-                при нанасяне.</p>
-        </div>
-
-        <div id="subscription" class="section">
-            <h2 class="section-title">⭐ Абонамент към Платформата</h2>
-            <p>ID Платформата е професионален инструмент. За да е винаги онлайн за Вашите съседи, е необходимо заплащане
-                на годишен или месечен абонамент.</p>
-
-            <div class="pro-tip">
-                <strong>💳 Как да плащате правилно:</strong><br>
-                За да може системата автоматично да разпознае Вашето плащане и да го отрази в салдото Ви веднага, е необходимо при плащане през ePay да посочвате правилното <strong>Основание</strong>.<br><br>
-                <strong>Формат:</strong> <code>[Вашият Вход ID]</code><br>
-                <strong>Пример:</strong> Ако ID на Вашия вход е <code>АСФ426288</code>, основанието трябва да бъде: <code>АСФ426288</code>
+            <div id="sub-dist-income" class="subsection">
+                <h3 class="subsection-title">💸 Разпределяне на приходи</h3>
+                <p>Когато входът получи страничен приход, той може да бъде разпределен автоматично според идеалните части на живущите:</p>
+                <ul class="features">
+                    <li><strong>Апартаменти за разпределение:</strong> Изберете кои апартаменти ще участват (по подразбиране всички).</li>
+                    <li><strong>Начин на разпределение:</strong> 
+                        <br>- <i>На каса:</i> Сумата директно се начислява като виртуално постъпление на каса.
+                        <br>- <i>На салдо:</i> Сумата се добавя към баланса на апартамента, намалявайки дължимите от него бъдещие плащания.
+                    </li>
+                    <li><strong>Период и Категория по ЗУЕС:</strong> Задайте месеца на разпределение и източника (наем на общи части, кредит, дарения, фонд ремонт и др.).</li>
+                    <li><strong>Сума и бележка:</strong> Въведете общата сума и добавете кратко пояснение.</li>
+                    <li>Натиснете <strong>„Разпредели сумата“</strong> за автоматично калкулиране.</li>
+                </ul>
             </div>
 
-            <ul class="features">
-                <li>Плащанията се отчитат автоматично от Супер Админа.</li>
-                <li>Ако забавите плащане над 3 месеца, достъпът до системата се блокира автоматично.</li>
-            </ul>
+            <div id="sub-dist-registry" class="subsection">
+                <h3 class="subsection-title">📋 Регистър Разпределения</h3>
+                <p>Хронологична таблица, която показва всички извършени разпределения до момента с информация за дата, категория, тип (каса/салдо), обща сума и бележка.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 3: INCOMES -->
+        <div id="section-incomes" class="section">
+            <h2 class="section-title">💰 Раздел 3: Приходи</h2>
+            <p>Управление на всички постъпления от собственици или външни лица.</p>
+
+            <div id="sub-inc-add" class="subsection">
+                <h3 class="subsection-title">💰 Добавяне на Приход</h3>
+                <p>Регистриране на плащания и корекции на салдо по апартаменти:</p>
+                <ul class="features">
+                    <li><strong>Период:</strong> Изберете месеца, за който се отнася плащането.</li>
+                    <li><strong>Апартамент/Платец:</strong> Изберете апартамента или изберете „Външен източник“ (ако сумата е от външно лице).</li>
+                    <li><strong>Категория по ЗУЕС:</strong> Изберете перото (Управление и поддръжка, Наем, Кредит, Дарения, Други).</li>
+                    <li><strong>Сума:</strong> Въведете платената стойност. 
+                        <div class="warning-box" style="margin: 10px 0;">
+                            <strong>💡 КОРЕКЦИЯ НА САЛДО:</strong> За да коригирате грешка или да извадите сума, въведете стойността със знак минус (напр. <code>-20.00</code>).
+                        </div>
+                    </li>
+                    <li><strong>Документ и Бележка:</strong> Добавете номер на разписка или допълнително пояснение и натиснете „Добави приход“.</li>
+                </ul>
+            </div>
+
+            <div id="sub-inc-payers" class="subsection">
+                <h3 class="subsection-title">👥 Регистър Външни платци</h3>
+                <p>Използва се за автоматично свързване на наредителите на ePay плащания с конкретна категория или наименование на платеца за лесна отчетност.</p>
+            </div>
+
+            <div id="sub-inc-registry" class="subsection">
+                <h3 class="subsection-title">📋 Регистър Приходи</h3>
+                <p>Пълен преглед в реално време на всички постъпили приходи на входа с детайли за платеца, сумата, категорията по ЗУЕС и номера на документа.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 4: EXPENSES -->
+        <div id="section-expenses" class="section">
+            <h2 class="section-title">📊 Раздел 4: Разходи</h2>
+            <p>Въвеждане на текущите разходи и начисления за месеца.</p>
+
+            <div id="sub-exp-charges" class="subsection">
+                <h3 class="subsection-title">📋 Начисления (Общи разходи за разпределяне)</h3>
+                <p>Тук се въвеждат фактурите и разходите на етажната собственост за текущия месец. Системата сама разпределя сумите по апартаменти на база избраната от Вас MASTER логика:</p>
+                <ul class="features">
+                    <li>Изберете периода (месец и година).</li>
+                    <li>Въведете сумите в съответните полета:
+                        <br>- <strong>Асансьор ток:</strong> Разходи за консумирана ел. енергия на асансьора.
+                        <br>- <strong>Асансьор абонамент:</strong> Сервизни такси и ремонти по асансьорната уредба.
+                        <br>- <strong>Осветление:</strong> Общ ток за стълбище и общи части.
+                        <br>- <strong>Охрана / Почистване / Поддръжка / Ремонт:</strong> Разходи за съответните услуги.
+                    </li>
+                </ul>
+                <div class="warning-box">
+                    <strong>⚠️ ВАЖНО:</strong> Всяко въвеждане на нова сума в тази секция изтрива и замества текущата стойност за периода! Ако оставите полето празно, системата ще приеме, че няма разход за съответното перо.
+                </div>
+            </div>
         </div>
 
         <footer>
