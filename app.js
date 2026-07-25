@@ -310,6 +310,19 @@ function getClientFingerprint() {
     return fp;
 }
 
+// Форматира timestamp (ms epoch) като дд.мм.гг — ползва се САМО за
+// визуално показване в регистрите (Приходи/Разходи/Разпределение), не
+// засяга периодите (мм.гг), с които работят таблиците/изчисленията.
+function formatRegisterDate(ts) {
+    if (!ts) return "";
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return "";
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}.${mm}.${yy}`;
+}
+
 async function bgApiCall(action, params = {}) {
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) return { error: 'No Script URL configured' };
     params.action = action;
@@ -3255,16 +3268,16 @@ function switchAdminTab(tab) {
     
     if (tab === 'expenses') {
         viewExpensesWrapper.style.display = 'block';
-        adminSections.forEach((sec, idx) => {
-            // idx 0 = Добавяне на плащане. idx 1 = Начисления.
-            // В режим V2 "Добавяне на плащане" е скрито, защото имаме "Приходи".
-            sec.style.display = (idx === 1) ? 'block' : 'none';
+        // Показваме секциите, изрично маркирани data-tab="expenses".
+        // "Добавяне на плащане" (data-tab="payment") остава скрито в V2 режим.
+        adminSections.forEach(sec => {
+            sec.style.display = (sec.getAttribute('data-tab') === 'expenses') ? 'block' : 'none';
         });
-        if (quickNav) quickNav.style.display = 'none'; // Няма нужда от бързи бутони, защото има само 1 секция
+        if (quickNav) quickNav.style.display = 'none'; // Няма нужда от бързи бутони, защото има само 1-2 секции
     } else if (tab === 'settings') {
         viewExpensesWrapper.style.display = 'block';
-        adminSections.forEach((sec, idx) => {
-            sec.style.display = (idx >= 2) ? 'block' : 'none';
+        adminSections.forEach(sec => {
+            sec.style.display = (sec.getAttribute('data-tab') === 'settings') ? 'block' : 'none';
         });
         if (quickNav) {
             quickNav.style.display = 'block';
@@ -3296,6 +3309,9 @@ function switchAdminTab(tab) {
     if (tab === 'distribution') {
         if (typeof loadDistributionsV2 === 'function') loadDistributionsV2();
         if (typeof updateV2DistAvailableSum === 'function') updateV2DistAvailableSum();
+    }
+    if (tab === 'expenses') {
+        if (typeof loadChargesV2Register === 'function') loadChargesV2Register();
     }
 }
 window.switchAdminTab = switchAdminTab;
@@ -3534,6 +3550,65 @@ window.deleteIncomeV2 = async function(id) {
     }
 };
 
+// ==============================================
+// РЕГИСТЪР РАЗХОДИ (chargesV2) — само за история/одит на начисленията.
+// Източник на истина за реалните суми си остава MASTER (Sheets), тук
+// просто пазим "лог" на всяко +/- въвеждане, за да се вижда историята.
+// ==============================================
+window.loadChargesV2Register = async function() {
+    const tbody = document.getElementById("chargesV2TableBody");
+    if (!tbody) return;
+
+    if (!window.fb || !window.fb.getDocs) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Грешка: Firebase не е зареден.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Зареждане...</td></tr>';
+
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+
+        const q = query(collection(db, "chargesV2"), where("routeKey", "==", currentRouteKey));
+        let records = [];
+        try {
+            const snap = await getDocs(q);
+            snap.forEach(d => records.push({ id: d.id, ...d.data() }));
+        } catch (fbErr) {
+            console.warn("Firebase Read Error for chargesV2", fbErr);
+            records = JSON.parse(localStorage.getItem('chargesV2_' + currentRouteKey) || '[]');
+        }
+
+        records.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 15px; color: #666;">Няма въведени начисления.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            const amountNum = parseFloat(r.amount) || 0;
+            const amountColor = amountNum < 0 ? '#dc2626' : '#b45309';
+            const amountStr = (amountNum >= 0 ? '+' : '') + amountNum.toFixed(2);
+            html += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatRegisterDate(r.timestamp)}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.period || ''}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.category || ''}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: ${amountColor};">${amountStr}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: red;">Грешка при зареждане: ${e.message}</td></tr>`;
+    }
+};
+
 window.loadIncomesV2 = async function() {
     const tbody = document.getElementById("v2IncomesTableBody");
     if (!tbody) return;
@@ -3580,7 +3655,7 @@ window.loadIncomesV2 = async function() {
 
             html += `
                 <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.period}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatRegisterDate(r.timestamp)}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${payer}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.category}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #16a34a;">${parseFloat(r.amount).toFixed(2)}</td>
@@ -3877,7 +3952,7 @@ window.loadDistributionsV2 = async function() {
 
         let html = "";
         records.forEach(r => {
-            const dateStr = new Date(r.timestamp).toLocaleDateString('bg-BG');
+            const dateStr = formatRegisterDate(r.timestamp);
             const safeNote = (r.note || "").replace(/'/g, "\\'");
 
             html += `

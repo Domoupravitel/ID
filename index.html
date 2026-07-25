@@ -563,7 +563,7 @@
                         <table class="status-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
                             <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
                                 <tr>
-                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Период</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Дата</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Платец</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Категория</th>
                                     <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: right;">Сума</th>
@@ -595,7 +595,7 @@
             </div>
 
             <!-- Payment Section -->
-            <div class="admin-section">
+            <div class="admin-section" data-tab="payment">
                 <h3 id="admin-section-payment">💰 Добавяне на плащане</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума, получена от апартамент за избран период. <span style="color: #d32f2f;">Може да се добавя или изважда (със знак -) сума за период.</span></p>
                 <label class="admin-label">Апартамент</label>
@@ -608,39 +608,58 @@
             </div>
 
             <!-- Charges Section -->
-            <div class="admin-section">
+            <div class="admin-section" data-tab="expenses">
                 <h3 id="admin-section-charges">📋 Начисления</h3>
-                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px; color: #d32f2f; font-weight: 600;">Въвеждане на стойност изтрива и замества текущата, а не я допълва!</p>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Регистрирайте сума за избран период и категория. <span style="color: #d32f2f;">Може да се добавя или изважда (със знак -) сума за период — сторно операция.</span></p>
                 <label class="admin-label">Период (MM.YYYY)</label>
                 <select id="chargesPeriod" class="admin-input" onchange="loadCurrentCharges()"></select>
                 <label class="admin-label" id="lbl-chargesElevator">Асансьор ел. <span class="charge-current"></span></label>
-                <input type="number" id="chargesElevator" class="admin-input" placeholder="оставете празно ако няма" step="0.01">
+                <input type="number" id="chargesElevator" class="admin-input" placeholder="+/- сума, оставете празно ако няма" step="0.01">
                 <label class="admin-label" id="lbl-chargesSubscription">Асансьор абон. и др. <span class="charge-current"></span></label>
-                <input type="number" id="chargesSubscription" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesSubscription" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesLight">Осветление <span class="charge-current"></span></label>
-                <input type="number" id="chargesLight" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesLight" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesSecurity">Охрана <span class="charge-current"></span></label>
-                <input type="number" id="chargesSecurity" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesSecurity" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesCleaning">Почистване <span class="charge-current"></span></label>
-                <input type="number" id="chargesCleaning" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesCleaning" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesPodrajka">Поддръжка <span class="charge-current"></span></label>
-                <input type="number" id="chargesPodrajka" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesPodrajka" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <label class="admin-label" id="lbl-chargesRemont">Фонд Ремонт <span class="charge-current"></span></label>
-                <input type="number" id="chargesRemont" class="admin-input" placeholder="оставете празно ако няма"
+                <input type="number" id="chargesRemont" class="admin-input" placeholder="+/- сума, оставете празно ако няма"
                     step="0.01">
                 <div id="remontWarning" style="color: #ff9800; font-size: 0.75rem; margin-top: 4px; display:none;">
                     ⚠️ За начисления към фонд ремонт първо въведете Ид. част (%) за всеки апартамент в MASTER.
                 </div>
-                <button class="admin-btn orange" id="chargesBtn" onclick="submitCharges()">Запиши начисления</button>
+                <button class="admin-btn orange" id="chargesBtn" onclick="submitCharges()">Запиши начисление (+/-)</button>
+            </div>
+
+            <div class="admin-section" data-tab="expenses" style="margin-top: 20px;">
+                <h3 style="color: #b45309;">📋 Регистър Разходи</h3>
+                <div class="table-responsive" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+                    <table class="status-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                            <tr>
+                                <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Дата</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Период</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: left;">Категория</th>
+                                <th style="padding: 8px; border-bottom: 2px solid #e2e8f0; text-align: right;">Сума</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chargesV2TableBody">
+                            <tr><td colspan="4" style="text-align: center; padding: 15px; color: #666;">Няма въведени начисления.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Email Section -->
-            <div class="admin-section">
+            <div class="admin-section" data-tab="settings">
                 <h3 id="admin-section-email">✉️ Имейл на апартамент</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Задайте имейл за получаване на
                     автоматични месечни отчети.</p>
@@ -656,7 +675,7 @@
             </div>
 
             <!-- MASTER Section -->
-            <div class="admin-section">
+            <div class="admin-section" data-tab="settings">
                 <h3 id="admin-section-master">📊 MASTER – Настройки</h3>
                 <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">Управлявайте статусите (Логика,
                     Обитатели, Чипове) за дълги периоди.</p>
@@ -1019,7 +1038,7 @@
                 <div class="admin-divider" style="margin-top: 20px;"></div>
 
                 <!-- Platform Subscription Section for Domoupraviteli -->
-                <div class="admin-section"
+                <div class="admin-section" data-tab="settings"
                     style="background: rgba(0, 122, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,122,255,0.2); margin-top: 15px;">
                     <h3 id="admin-section-subscription" style="color: var(--primary); margin-bottom: 8px;">⭐ Абонамент към Платформата</h3>
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
