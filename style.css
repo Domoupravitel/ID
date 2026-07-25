@@ -1000,11 +1000,24 @@ body {
   text-decoration: none;
   border-bottom: 2px solid rgba(59, 130, 246, 0.4);
   transition: color 0.2s, border-color 0.2s;
+  display: inline-block;
 }
 
 .hero-test-link:hover {
   color: #60a5fa;
   border-bottom-color: #60a5fa;
+}
+
+.hero-test-link.loading {
+  color: #93c5fd;
+  border-bottom-color: rgba(147, 197, 253, 0.4);
+  cursor: not-allowed;
+  animation: hero-test-link-pulse 1s ease-in-out infinite;
+}
+
+@keyframes hero-test-link-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .landing-hero-actions {

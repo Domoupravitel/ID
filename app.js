@@ -497,6 +497,15 @@ window.exitEntrance = function () {
     stopTestSessionWatcher();
     currentRouteKey = "";
     apartmentList = [];
+
+    // Нулираме hero линка "Тествайте", ако е останал в "Зареждане..." (напр.
+    // ако е бил кликнат преди успешно влизане и после потребителят излезе).
+    const heroTestLink = document.getElementById('heroTestLink');
+    if (heroTestLink) {
+        heroTestLink.classList.remove('loading');
+        heroTestLink.textContent = heroTestLink.dataset.originalText || 'Тествайте';
+        heroTestLink.style.pointerEvents = 'auto';
+    }
     
     // Clear hash and UI
     window.location.hash = "";
@@ -564,6 +573,38 @@ window.toggleMobileMenu = function() {
         menu.classList.toggle("hidden");
         menu.classList.toggle("active");
     }
+};
+
+// Предпазва от двоен клик върху "Тествайте" в hero-то, докато трае
+// зареждането (влизането минава през няколко асинхронни стъпки — заключване
+// на сесията + реалния бекенд — и отнема няколко секунди). Без това,
+// нетърпелив втори клик стигаше до бекенда и погрешно "консумираше"
+// дневния лимит за деня, показвайки "вече сте тествали днес".
+window.handleHeroTestClick = function () {
+    const link = document.getElementById('heroTestLink');
+    if (!link || link.classList.contains('loading')) return; // Вече е в процес — игнорираме допълнителни кликове
+
+    link.classList.add('loading');
+    link.dataset.originalText = link.textContent;
+    link.textContent = 'Зареждане...';
+    link.style.pointerEvents = 'none';
+
+    document.getElementById('access-id').value = '702112ТЕСТ1А';
+
+    Promise.resolve(enterEntrance()).then(success => {
+        if (!success) {
+            // Неуспешно влизане (грешка/дневен лимит/зает вход) — връщаме
+            // линка в нормално състояние, за да може потребителят да опита пак.
+            link.classList.remove('loading');
+            link.textContent = link.dataset.originalText || 'Тествайте';
+            link.style.pointerEvents = 'auto';
+        }
+        // При успех не връщаме нищо назад — страницата вече превключи изгледа.
+    }).catch(() => {
+        link.classList.remove('loading');
+        link.textContent = link.dataset.originalText || 'Тествайте';
+        link.style.pointerEvents = 'auto';
+    });
 };
 
 window.enterEntrance = async function () {
