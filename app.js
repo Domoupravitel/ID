@@ -1217,6 +1217,9 @@ async function loadApartmentData(apartment) {
 
     const result = await loadApartmentFromFirebase(currentRouteKey, apartment);
 
+    // Кредитно задължение (паралелен регистър, не влияе на Салдото по-горе)
+    if (typeof loadApartmentCreditLiability === 'function') loadApartmentCreditLiability(apartment);
+
     if (result && result.error && result.showMessage) {
         document.getElementById("saldo").textContent = "Скрит";
         showToast("Информацията за салдото Ви, не се показва поради неплатен абонамент", "error");
@@ -1904,6 +1907,9 @@ window.submitMaster = async function (sheetName) {
 
         if (result && result.success) {
             showToast(`Успешно обновен регистър: ${sheetName}. Данните се синхронизират...`, "success");
+            if (sheetName === 'ИДЕАЛНИ_ЧАСТИ') {
+                _creditIdealPartsOk = null; // инвалидираме кеша, за да прецени наново дали "Кредит" е достъпен
+            }
             if (sheetName === 'ОБИТАТЕЛИ') {
                 const valInput = document.getElementById('masterObVal');
                 if (valInput) valInput.value = "";
@@ -3346,6 +3352,8 @@ function switchAdminTab(tab) {
     if (tab === 'incomes') {
         if (typeof loadIncomesV2 === 'function') loadIncomesV2();
         if (typeof loadExternalPayers === 'function') loadExternalPayers();
+        if (typeof loadCreditLiabilitiesRegister === 'function') loadCreditLiabilitiesRegister();
+        if (typeof updateCreditCategoryAvailability === 'function') updateCreditCategoryAvailability();
     }
     if (tab === 'distribution') {
         if (typeof loadDistributionsV2 === 'function') loadDistributionsV2();
@@ -3361,16 +3369,70 @@ window.switchAdminTab = switchAdminTab;
 // V2 INCOMES LOGIC (BETA)
 // ==============================================
 
+// Изискване 2: опцията "Кредит" изисква ВСИЧКИ апартаменти да имат зададени
+// идеални части — но САМО когато се взима НОВ кредит (платец = Външен
+// източник), защото тогава се разпределя автоматично между всички. Когато
+// плаща КОНКРЕТЕН апартамент (погасяване), проверката не е нужна.
+let _creditIdealPartsOk = null; // кеш за текущата сесия, за да не спамим бекенда
+window.updateCreditCategoryAvailability = async function() {
+    const aptSel = document.getElementById("v2IncomeApt");
+    const catSel = document.getElementById("v2IncomeCategory");
+    if (!aptSel || !catSel) return;
+    const creditOption = Array.from(catSel.options).find(o => o.value === "Кредит");
+    if (!creditOption) return;
+
+    const apt = aptSel.value;
+    if (apt !== "EXTERNAL") {
+        // Погасяване от апартамент — винаги позволено, без проверка.
+        creditOption.disabled = false;
+        creditOption.title = "";
+        return;
+    }
+
+    if (_creditIdealPartsOk === null) {
+        try {
+            const res = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
+            const missing = res && res.success && apartmentList
+                ? apartmentList.filter(a => !res.parts || res.parts[a] === undefined || res.parts[a] === "" || parseFloat(res.parts[a]) <= 0)
+                : apartmentList;
+            _creditIdealPartsOk = missing.length === 0;
+        } catch (e) {
+            _creditIdealPartsOk = false;
+        }
+    }
+
+    creditOption.disabled = !_creditIdealPartsOk;
+    creditOption.title = _creditIdealPartsOk ? "" : "Изисква се да въведете идеални части за ВСИЧКИ апартаменти в MASTER – Настройки, преди да можете да въвеждате нов кредит.";
+
+    if (creditOption.disabled && catSel.value === "Кредит") {
+        catSel.value = "Управление и поддръжка";
+        showToast("⚠️ Не са въведени идеални части за всички апартаменти — попълнете ги в MASTER – Настройки, за да въвеждате нов кредит.", "error");
+    }
+};
+
 window.v2HandleAptChange = function() {
     const apt = document.getElementById("v2IncomeApt").value;
     const catSel = document.getElementById("v2IncomeCategory");
-    if (apt && apt !== "EXTERNAL") {
+    const isApartment = apt && apt !== "EXTERNAL";
+
+    // Когато платецът е конкретен апартамент, показваме само "Управление и
+    // поддръжка" и "Кредит" — останалите категории (наем на общи части,
+    // бюджетни средства, ВЕИ, дарения и т.н.) са само за Външен източник.
+    Array.from(catSel.options).forEach(opt => {
+        if (opt.value === "Управление и поддръжка" || opt.value === "Кредит" || opt.value === "") {
+            opt.style.display = "";
+        } else {
+            opt.style.display = isApartment ? "none" : "";
+        }
+    });
+
+    if (isApartment && catSel.value !== "Кредит" && catSel.value !== "Управление и поддръжка") {
         catSel.value = "Управление и поддръжка";
-        catSel.disabled = true;
-    } else {
-        catSel.disabled = false;
     }
+
+    catSel.disabled = false;
     v2LoadPaymentDue();
+    if (typeof updateCreditCategoryAvailability === 'function') updateCreditCategoryAvailability();
 };
 
 
@@ -3424,6 +3486,106 @@ window.v2LoadPaymentDue = async function() {
     } catch (e) {
         lbl.className = "charge-current";
         lbl.innerText = "";
+    }
+};
+
+// ==============================================
+// КРЕДИТНИ ЗАДЪЛЖЕНИЯ (creditLiabilitiesV2) — паралелен регистър, НЕ пипа
+// формулите/Салдото на апартаментите. Проследява отделно кой колко дължи
+// по взет кредит, независимо от обичайния оперативен баланс.
+// ==============================================
+async function addCreditLiabilityDelta_(apt, originalDelta, remainingDelta) {
+    if (!window.fb || !window.db) return;
+    const { collection, doc, getDoc, setDoc } = window.fb;
+    const db = window.db;
+    const docId = currentRouteKey + "_" + apt;
+    const ref = doc(collection(db, "creditLiabilitiesV2"), docId);
+
+    let current = { routeKey: currentRouteKey, apt: apt, original: 0, remaining: 0 };
+    try {
+        const snap = await getDoc(ref);
+        if (snap.exists()) current = { ...current, ...snap.data() };
+    } catch (e) { /* нов запис */ }
+
+    const newOriginal = (parseFloat(current.original) || 0) + originalDelta;
+    const newRemaining = Math.max(0, (parseFloat(current.remaining) || 0) + remainingDelta);
+
+    await setDoc(ref, {
+        routeKey: currentRouteKey,
+        apt: apt,
+        original: newOriginal,
+        remaining: newRemaining,
+        lastUpdated: new Date().getTime()
+    });
+}
+
+window.loadCreditLiabilitiesRegister = async function() {
+    const tbody = document.getElementById("creditLiabilitiesTableBody");
+    if (!tbody || !window.fb || !window.fb.getDocs) return;
+
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Зареждане...</td></tr>';
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+        const q = query(collection(db, "creditLiabilitiesV2"), where("routeKey", "==", currentRouteKey));
+        const snap = await getDocs(q);
+        let records = [];
+        snap.forEach(d => records.push(d.data()));
+        records = records.filter(r => (parseFloat(r.original) || 0) > 0);
+        records.sort((a, b) => (a.apt || "").localeCompare(b.apt || "", undefined, { numeric: true }));
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#666;">Няма кредитни задължения.</td></tr>';
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            const original = parseFloat(r.original) || 0;
+            const remaining = parseFloat(r.remaining) || 0;
+            const paid = original - remaining;
+            const statusColor = remaining <= 0 ? '#16a34a' : '#b45309';
+            html += `
+                <tr>
+                    <td style="padding:8px; border-bottom:1px solid #eee;">Ап. ${r.apt}</td>
+                    <td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">${original.toFixed(2)}</td>
+                    <td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">${paid.toFixed(2)}</td>
+                    <td style="padding:8px; border-bottom:1px solid #eee; text-align:right; font-weight:700; color:${statusColor};">${remaining.toFixed(2)}</td>
+                </tr>`;
+        });
+        tbody.innerHTML = html;
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Грешка: ${e.message}</td></tr>`;
+    }
+};
+
+// Показва "Дължимо по кредит" за КОНКРЕТЕН апартамент в личния му изглед
+// (отделно от Салдо-то по-горе, не влияе на изчисленията там).
+window.loadApartmentCreditLiability = async function(apartment) {
+    const box = document.getElementById("creditLiabilityBox");
+    const amountEl = document.getElementById("creditLiabilityAmount");
+    if (!box || !amountEl || !window.fb || !window.fb.getDoc) {
+        if (box) box.style.display = "none";
+        return;
+    }
+    try {
+        const { collection, doc, getDoc } = window.fb;
+        const db = window.db;
+        const ref = doc(collection(db, "creditLiabilitiesV2"), currentRouteKey + "_" + apartment);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const remaining = parseFloat(snap.data().remaining) || 0;
+            if (remaining > 0) {
+                const cur = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+                amountEl.textContent = remaining.toFixed(2) + " " + cur;
+                box.style.display = "block";
+                return;
+            }
+        }
+        box.style.display = "none";
+    } catch (e) {
+        box.style.display = "none";
     }
 };
 
@@ -3497,6 +3659,40 @@ window.submitIncomeV2 = async function() {
                     });
                 } catch (apiErr) {
                     showToast("Грешка при отразяване на плащането във V1.", "error");
+                }
+            }
+
+            // Специална логика за приходи от Кредит — паралелен регистър
+            // (creditLiabilitiesV2), НЕ пипа Салдото/формулите на апартаментите.
+            if (category === "Кредит") {
+                try {
+                    if (apt === "EXTERNAL") {
+                        // НОВ КРЕДИТ: разпределя се автоматично между ВСИЧКИ
+                        // апартаменти пропорционално на идеалните им части.
+                        const idealRes = await apiCall('getBuildingIdealParts', { pin: getStoredPin() });
+                        if (idealRes && idealRes.success && idealRes.parts && apartmentList) {
+                            const parts = idealRes.parts;
+                            const totalParts = apartmentList.reduce((sum, a) => sum + (parseFloat(parts[a]) || 0), 0);
+                            if (totalParts > 0) {
+                                for (const a of apartmentList) {
+                                    const share = (parseFloat(parts[a]) || 0) / totalParts * amount;
+                                    if (share > 0) {
+                                        await addCreditLiabilityDelta_(a, share, share);
+                                    }
+                                }
+                                showToast("📌 Новият кредит е разпределен автоматично между апартаментите по идеални части.", "success");
+                            } else {
+                                showToast("⚠️ Липсват идеални части — кредитът НЕ е разпределен автоматично между апартаментите.", "error");
+                            }
+                        }
+                    } else {
+                        // ПОГАСЯВАНЕ от конкретен апартамент — намалява остатъка му (не под 0)
+                        await addCreditLiabilityDelta_(apt, 0, -amount);
+                    }
+                    if (typeof loadCreditLiabilitiesRegister === 'function') loadCreditLiabilitiesRegister();
+                } catch (creditErr) {
+                    console.error("Credit liability error:", creditErr);
+                    showToast("Грешка при обновяване на кредитния регистър.", "error");
                 }
             }
 
@@ -3881,6 +4077,24 @@ window.updateV2DistAvailableSum = async function() {
     const category = document.getElementById("v2DistCategory").value;
     const lbl = document.getElementById("lbl-v2DistAmount");
     if (!lbl) return;
+
+    // Изискване 4: за категория "Кредит" разпределянето е само "На каса" —
+    // сумата вече е начислена по апартаментите като кредитно задължение
+    // (виж creditLiabilitiesV2), затова "На салдо" няма смисъл тук.
+    const balanceLabel = document.getElementById("v2DistTypeBalanceLabel");
+    const creditNote = document.getElementById("v2DistCreditNote");
+    const cashRadio = document.querySelector('input[name="v2DistType"][value="cash"]');
+    const balanceRadio = document.querySelector('input[name="v2DistType"][value="balance"]');
+    if (balanceLabel && cashRadio && balanceRadio) {
+        if (category === "Кредит") {
+            balanceLabel.style.display = "none";
+            if (creditNote) creditNote.style.display = "block";
+            cashRadio.checked = true;
+        } else {
+            balanceLabel.style.display = "";
+            if (creditNote) creditNote.style.display = "none";
+        }
+    }
 
     if (!category) {
         lbl.innerHTML = 'Сума за разпределяне';
