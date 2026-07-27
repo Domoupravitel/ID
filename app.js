@@ -3439,12 +3439,48 @@ window.v2HandleAptChange = function() {
 window.v2LoadPaymentDue = async function() {
     const apt = document.getElementById("v2IncomeApt").value;
     const period = document.getElementById("v2IncomePeriod").value;
+    const catSel = document.getElementById("v2IncomeCategory");
+    const category = catSel ? catSel.value : "";
     const lbl = document.getElementById("v2IncomeCurrentBal");
     
     if (!lbl) return;
     
     // Външен източник няма салдо/задължения към входа
-    if (!apt || apt === "EXTERNAL" || !period || !window.fb || !window.db) {
+    if (!apt || apt === "EXTERNAL" || !window.fb || !window.db) {
+        lbl.innerHTML = "";
+        lbl.className = "charge-current";
+        return;
+    }
+
+    const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "лв.";
+
+    // За категория "Кредит" показваме кредитния остатък на апартамента
+    // (отделен паралелен регистър), НЕ обичайния оперативен баланс.
+    if (category === "Кредит") {
+        lbl.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
+        lbl.className = "charge-current loading";
+        try {
+            const { collection, doc, getDoc } = window.fb;
+            const db = window.db;
+            const ref = doc(collection(db, "creditLiabilitiesV2"), currentRouteKey + "_" + apt);
+            const snap = await getDoc(ref);
+            let original = 0, remaining = 0;
+            if (snap.exists()) {
+                original = parseFloat(snap.data().original) || 0;
+                remaining = parseFloat(snap.data().remaining) || 0;
+            }
+            const paid = Math.max(0, original - remaining);
+            const colorClass = remaining > 0 ? "value-red" : "value-green";
+            lbl.className = "charge-current";
+            lbl.innerHTML = `(платено <span class="value-green">${paid.toFixed(2)} ${currency}</span>, салдо по кредит <span class="${colorClass}">${remaining.toFixed(2)} ${currency}</span>)`;
+        } catch (e) {
+            lbl.className = "charge-current";
+            lbl.innerText = "";
+        }
+        return;
+    }
+
+    if (!period) {
         lbl.innerHTML = "";
         lbl.className = "charge-current";
         return;
@@ -3464,7 +3500,6 @@ window.v2LoadPaymentDue = async function() {
         
         const [snap, aptSnap] = await Promise.all([getDoc(docRef), getDoc(aptDocRef)]);
         
-        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "лв.";
         let balanceStr = "";
         
         if (aptSnap.exists()) {
