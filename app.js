@@ -4153,6 +4153,19 @@ window.updateV2DistAvailableSum = async function() {
             snapApts.forEach(d => {
                 totalCollected += parseFloat(d.data().collectedTargetFund) || 0;
             });
+        } else if (category === "Кредит") {
+            // Само НОВ кредит (платец = Външен източник) е налична сума за
+            // разпределяне. Погасявания от апартаменти НЕ участват тук —
+            // те само намаляват личния им кредитен остатък (виж
+            // creditLiabilitiesV2), не са "нови" пари за разпределяне.
+            const qInc = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey), where("category", "==", category));
+            const snapInc = await getDocs(qInc);
+            snapInc.forEach(d => {
+                const rec = d.data();
+                if (rec.apt === "EXTERNAL") {
+                    totalCollected += parseFloat(rec.amount) || 0;
+                }
+            });
         } else {
             const qInc = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey), where("category", "==", category));
             const snapInc = await getDocs(qInc);
