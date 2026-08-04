@@ -323,6 +323,25 @@ function formatRegisterDate(ts) {
     return `${dd}.${mm}.${yy}`;
 }
 
+// Превръща период "ММ.ГГГГ" в сравнимо число ГГГГММ — огледално на
+// periodToSortable_ в Code.gs. НЕ сравнявай периоди като текст директно
+// (грешно около всяка годишна граница).
+function periodToSortableClient(period) {
+    if (!period) return 0;
+    const parts = period.toString().trim().split(".");
+    if (parts.length !== 2) return 0;
+    const mm = parseInt(parts[0], 10) || 0;
+    const yyyy = parseInt(parts[1], 10) || 0;
+    return yyyy * 100 + mm;
+}
+
+// Проверява дали период вече е докладван по имейл (заключен за редакция).
+function isPeriodLockedClient(period) {
+    const lastReported = sessionStorage.getItem("lastReportedPeriod_" + currentRouteKey);
+    if (!lastReported) return false;
+    return periodToSortableClient(period) <= periodToSortableClient(lastReported);
+}
+
 async function bgApiCall(action, params = {}) {
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) return { error: 'No Script URL configured' };
     params.action = action;
@@ -695,6 +714,9 @@ window.enterEntrance = async function () {
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
+
+        // Заключени периоди (вече докладвани по имейл) — за защита от редакция
+        sessionStorage.setItem("lastReportedPeriod_" + currentRouteKey, info.lastReportedPeriod || "");
 
         // Запазваме статуса на абонамента за проверка при зареждане на апартамент
         sessionStorage.setItem("isSoftBlocked_" + currentRouteKey, info.isSoftBlocked ? "true" : "false");
@@ -1219,6 +1241,7 @@ async function loadApartmentData(apartment) {
 
     // Кредитно задължение (паралелен регистър, не влияе на Салдото по-горе)
     if (typeof loadApartmentCreditLiability === 'function') loadApartmentCreditLiability(apartment);
+    if (typeof populateRangeReportSelects === 'function') populateRangeReportSelects('aptRangeFrom', 'aptRangeTo');
 
     if (result && result.error && result.showMessage) {
         document.getElementById("saldo").textContent = "Скрит";
@@ -1464,6 +1487,11 @@ window.submitPayment = async function () {
 
     if (!apt || !period || !amount) {
         showToast("Попълнете всички полета за плащане!", "error");
+        return;
+    }
+
+    if (isPeriodLockedClient(period)) {
+        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
@@ -1722,6 +1750,11 @@ window.submitCharges = async function () {
 
     if (!period) {
         showToast("Периодът е задължителен!", "error");
+        return;
+    }
+
+    if (isPeriodLockedClient(period)) {
+        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
@@ -3326,6 +3359,7 @@ function switchAdminTab(tab) {
         adminSections.forEach(sec => {
             sec.style.display = (sec.getAttribute('data-tab') === 'settings') ? 'block' : 'none';
         });
+        if (typeof populateRangeReportSelects === 'function') populateRangeReportSelects('adminRangeFrom', 'adminRangeTo');
         if (quickNav) {
             quickNav.style.display = 'block';
             // Скриване на бутона "Начисления" от quick nav
@@ -3597,6 +3631,162 @@ window.loadCreditLiabilitiesRegister = async function() {
 
 // Показва "Дължимо по кредит" за КОНКРЕТЕН апартамент в личния му изглед
 // (отделно от Салдо-то по-горе, не влияе на изчисленията там).
+// Попълва dropdown-и за диапазонна справка (последните 5 год. + текущата)
+function populateRangeReportSelects(fromId, toId) {
+    const fromEl = document.getElementById(fromId);
+    const toEl = document.getElementById(toId);
+    if (!fromEl || !toEl || fromEl.options.length > 0) return; // вече е попълнено
+
+    const now = new Date();
+    const monthNames = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"];
+    for (let y = now.getFullYear() - 5; y <= now.getFullYear(); y++) {
+        for (let m = 1; m <= 12; m++) {
+            const val = String(m).padStart(2, '0') + "." + y;
+            const label = monthNames[m - 1] + " " + y;
+            fromEl.appendChild(new Option(label, val));
+            toEl.appendChild(new Option(label, val));
+        }
+    }
+    const currentPeriod = String(now.getMonth() + 1).padStart(2, '0') + "." + now.getFullYear();
+    fromEl.value = currentPeriod;
+    toEl.value = currentPeriod;
+}
+
+// Справка от период до период за КОНКРЕТЕН апартамент (личен изглед)
+// Справка от период до период за ЦЕЛИЯ ВХОД (админ панел)
+window.calcEntranceRangeReport = async function() {
+    const fromPeriod = document.getElementById("adminRangeFrom").value;
+    const toPeriod = document.getElementById("adminRangeTo").value;
+    const resultEl = document.getElementById("adminRangeReportResult");
+
+    if (!fromPeriod || !toPeriod) {
+        resultEl.innerHTML = '<span style="color:red;">Моля, изберете двата периода.</span>';
+        return;
+    }
+    if (periodToSortableClient(fromPeriod) > periodToSortableClient(toPeriod)) {
+        resultEl.innerHTML = '<span style="color:red;">Началният период трябва да е преди крайния.</span>';
+        return;
+    }
+    if (!window.fb || !window.fb.getDocs) {
+        resultEl.innerHTML = '<span style="color:red;">Firebase не е зареден.</span>';
+        return;
+    }
+
+    resultEl.innerHTML = "Изчисляване...";
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+        const fromN = periodToSortableClient(fromPeriod);
+        const toN = periodToSortableClient(toPeriod);
+        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+
+        // 1. Начислени разходи (V1) от buildingCharges - по период
+        const qCharges = query(collection(db, "buildingCharges"), where("buildingId", "==", currentRouteKey));
+        const snapCharges = await getDocs(qCharges);
+        let totalChargesV1 = 0, periodsInRange = 0;
+        snapCharges.forEach(d => {
+            const r = d.data();
+            const pN = periodToSortableClient(r.period);
+            if (pN >= fromN && pN <= toN) {
+                periodsInRange++;
+                ["elevator", "subscription", "light", "security", "cleaning", "podrajka", "remont"].forEach(k => {
+                    totalChargesV1 += parseFloat(r[k]) || 0;
+                });
+            }
+        });
+
+        // 2. Общо събрано (V1) - от monthlyReports на всички апартаменти
+        const qReports = query(collection(db, "monthlyReports"), where("buildingId", "==", currentRouteKey));
+        const snapReports = await getDocs(qReports);
+        let totalPaidV1 = 0, totalDueV1 = 0;
+        snapReports.forEach(d => {
+            const r = d.data();
+            const pN = periodToSortableClient(r.periodId);
+            if (pN >= fromN && pN <= toN) {
+                totalPaidV1 += parseFloat(r.totalPaid) || 0;
+                totalDueV1 += parseFloat(r.totalDue) || 0;
+            }
+        });
+
+        // 3. Приходи V2 - по период
+        const qInc = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey));
+        const snapInc = await getDocs(qInc);
+        let totalIncomesV2 = 0;
+        snapInc.forEach(d => {
+            const r = d.data();
+            const pN = periodToSortableClient(r.period);
+            if (pN >= fromN && pN <= toN) totalIncomesV2 += parseFloat(r.amount) || 0;
+        });
+
+        resultEl.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:5px; background:#f8fafc; border-radius:8px; padding:12px 14px;">
+                <div>Периоди в диапазона: <strong>${periodsInRange}</strong></div>
+                <div>Общо начислени разходи (V1): <strong>${totalChargesV1.toFixed(2)} ${currency}</strong></div>
+                <div>Общо дължимо по апартаменти (V1): <strong>${totalDueV1.toFixed(2)} ${currency}</strong></div>
+                <div>Общо събрано от апартаменти (V1): <strong class="value-green">${totalPaidV1.toFixed(2)} ${currency}</strong></div>
+                <div>Общо приходи (Регистър Приходи V2): <strong class="value-green">${totalIncomesV2.toFixed(2)} ${currency}</strong></div>
+            </div>
+        `;
+    } catch (e) {
+        resultEl.innerHTML = `<span style="color:red;">Грешка: ${e.message}</span>`;
+    }
+};
+
+window.calcApartmentRangeReport = async function() {
+    const fromPeriod = document.getElementById("aptRangeFrom").value;
+    const toPeriod = document.getElementById("aptRangeTo").value;
+    const resultEl = document.getElementById("aptRangeReportResult");
+    const apt = document.getElementById("apartmentSelect") ? document.getElementById("apartmentSelect").value : null;
+
+    if (!fromPeriod || !toPeriod || !apt) {
+        resultEl.innerHTML = '<span style="color:red;">Моля, изберете апартамент и двата периода.</span>';
+        return;
+    }
+    if (periodToSortableClient(fromPeriod) > periodToSortableClient(toPeriod)) {
+        resultEl.innerHTML = '<span style="color:red;">Началният период трябва да е преди крайния.</span>';
+        return;
+    }
+    if (!window.fb || !window.fb.getDocs) {
+        resultEl.innerHTML = '<span style="color:red;">Firebase не е зареден.</span>';
+        return;
+    }
+
+    resultEl.innerHTML = "Изчисляване...";
+    try {
+        const { collection, getDocs, query, where } = window.fb;
+        const db = window.db;
+        const q = query(collection(db, "monthlyReports"), where("buildingId", "==", currentRouteKey), where("apartmentId", "==", apt));
+        const snap = await getDocs(q);
+
+        let totalDue = 0, totalPaid = 0, monthsCount = 0;
+        const fromN = periodToSortableClient(fromPeriod);
+        const toN = periodToSortableClient(toPeriod);
+        snap.forEach(d => {
+            const r = d.data();
+            const pN = periodToSortableClient(r.periodId);
+            if (pN >= fromN && pN <= toN) {
+                totalDue += parseFloat(r.totalDue) || 0;
+                totalPaid += parseFloat(r.totalPaid) || 0;
+                monthsCount++;
+            }
+        });
+
+        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
+        const diff = totalDue - totalPaid;
+        const diffColor = diff > 0.01 ? "value-red" : "value-green";
+        resultEl.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>Периоди в диапазона: <strong>${monthsCount}</strong></div>
+                <div>Общо начислено: <strong>${totalDue.toFixed(2)} ${currency}</strong></div>
+                <div>Общо платено: <strong class="value-green">${totalPaid.toFixed(2)} ${currency}</strong></div>
+                <div>Разлика за диапазона: <strong class="${diffColor}">${diff.toFixed(2)} ${currency}</strong></div>
+            </div>
+        `;
+    } catch (e) {
+        resultEl.innerHTML = `<span style="color:red;">Грешка: ${e.message}</span>`;
+    }
+};
+
 window.loadApartmentCreditLiability = async function(apartment) {
     const box = document.getElementById("creditLiabilityBox");
     const amountEl = document.getElementById("creditLiabilityAmount");
@@ -3635,6 +3825,11 @@ window.submitIncomeV2 = async function() {
 
     if (!period || !apt || !category || !amountStr) {
         showToast("Моля, попълнете Период, Платец, Категория и Сума.", "error");
+        return;
+    }
+
+    if (isPeriodLockedClient(period)) {
+        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
@@ -4286,6 +4481,11 @@ window.submitDistributionV2 = async function() {
 
     if (!period || !category || !amountStr) {
         showToast("Моля, попълнете Период, Категория и Сума.", "error");
+        return;
+    }
+
+    if (isPeriodLockedClient(period)) {
+        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
