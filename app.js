@@ -335,13 +335,6 @@ function periodToSortableClient(period) {
     return yyyy * 100 + mm;
 }
 
-// Проверява дали период вече е докладван по имейл (заключен за редакция).
-function isPeriodLockedClient(period) {
-    const lastReported = sessionStorage.getItem("lastReportedPeriod_" + currentRouteKey);
-    if (!lastReported) return false;
-    return periodToSortableClient(period) <= periodToSortableClient(lastReported);
-}
-
 async function bgApiCall(action, params = {}) {
     if (!SCRIPT_URL.startsWith("https://script.google.com/macros")) return { error: 'No Script URL configured' };
     params.action = action;
@@ -714,9 +707,6 @@ window.enterEntrance = async function () {
             sessionStorage.setItem("lifetimePrice_" + currentRouteKey, info.lifetimePrice);
             sessionStorage.setItem("currency_" + currentRouteKey, info.currency);
         }
-
-        // Заключени периоди (вече докладвани по имейл) — за защита от редакция
-        sessionStorage.setItem("lastReportedPeriod_" + currentRouteKey, info.lastReportedPeriod || "");
 
         // Запазваме статуса на абонамента за проверка при зареждане на апартамент
         sessionStorage.setItem("isSoftBlocked_" + currentRouteKey, info.isSoftBlocked ? "true" : "false");
@@ -1490,11 +1480,6 @@ window.submitPayment = async function () {
         return;
     }
 
-    if (isPeriodLockedClient(period)) {
-        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
-        return;
-    }
-
     const btn = document.getElementById("payBtn");
     showSaving(btn, "Записване...");
 
@@ -1750,11 +1735,6 @@ window.submitCharges = async function () {
 
     if (!period) {
         showToast("Периодът е задължителен!", "error");
-        return;
-    }
-
-    if (isPeriodLockedClient(period)) {
-        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
@@ -3384,6 +3364,11 @@ function switchAdminTab(tab) {
     if (navDist) { navDist.style.opacity = (tab === 'distribution') ? '1' : '0.5'; navDist.style.boxShadow = (tab === 'distribution') ? '0 0 0 2px #fff, 0 0 0 4px #3b82f6' : 'none'; }
     
     if (tab === 'incomes') {
+        const periodField = document.getElementById("v2IncomePeriod");
+        if (periodField) {
+            const now = new Date();
+            periodField.value = String(now.getMonth() + 1).padStart(2, '0') + "." + now.getFullYear();
+        }
         if (typeof loadIncomesV2 === 'function') loadIncomesV2();
         if (typeof loadExternalPayers === 'function') loadExternalPayers();
         if (typeof loadCreditLiabilitiesRegister === 'function') loadCreditLiabilitiesRegister();
@@ -3658,6 +3643,7 @@ window.calcEntranceRangeReport = async function() {
     const fromPeriod = document.getElementById("adminRangeFrom").value;
     const toPeriod = document.getElementById("adminRangeTo").value;
     const resultEl = document.getElementById("adminRangeReportResult");
+    const btn = document.getElementById("adminRangeReportBtn");
 
     if (!fromPeriod || !toPeriod) {
         resultEl.innerHTML = '<span style="color:red;">Моля, изберете двата периода.</span>';
@@ -3667,68 +3653,26 @@ window.calcEntranceRangeReport = async function() {
         resultEl.innerHTML = '<span style="color:red;">Началният период трябва да е преди крайния.</span>';
         return;
     }
-    if (!window.fb || !window.fb.getDocs) {
-        resultEl.innerHTML = '<span style="color:red;">Firebase не е зареден.</span>';
-        return;
-    }
 
-    resultEl.innerHTML = "Изчисляване...";
+    if (btn) { btn.disabled = true; btn.textContent = "Изпращане..."; }
+    resultEl.innerHTML = "Подготвяне на подробната справка и изпращане по имейл...";
+
     try {
-        const { collection, getDocs, query, where } = window.fb;
-        const db = window.db;
-        const fromN = periodToSortableClient(fromPeriod);
-        const toN = periodToSortableClient(toPeriod);
-        const currency = sessionStorage.getItem("currency_" + currentRouteKey) || "EUR";
-
-        // 1. Начислени разходи (V1) от buildingCharges - по период
-        const qCharges = query(collection(db, "buildingCharges"), where("buildingId", "==", currentRouteKey));
-        const snapCharges = await getDocs(qCharges);
-        let totalChargesV1 = 0, periodsInRange = 0;
-        snapCharges.forEach(d => {
-            const r = d.data();
-            const pN = periodToSortableClient(r.period);
-            if (pN >= fromN && pN <= toN) {
-                periodsInRange++;
-                ["elevator", "subscription", "light", "security", "cleaning", "podrajka", "remont"].forEach(k => {
-                    totalChargesV1 += parseFloat(r[k]) || 0;
-                });
-            }
+        const res = await apiCall('sendRangeReportEmail', {
+            pin: getStoredPin(),
+            fromPeriod: fromPeriod,
+            toPeriod: toPeriod
         });
 
-        // 2. Общо събрано (V1) - от monthlyReports на всички апартаменти
-        const qReports = query(collection(db, "monthlyReports"), where("buildingId", "==", currentRouteKey));
-        const snapReports = await getDocs(qReports);
-        let totalPaidV1 = 0, totalDueV1 = 0;
-        snapReports.forEach(d => {
-            const r = d.data();
-            const pN = periodToSortableClient(r.periodId);
-            if (pN >= fromN && pN <= toN) {
-                totalPaidV1 += parseFloat(r.totalPaid) || 0;
-                totalDueV1 += parseFloat(r.totalDue) || 0;
-            }
-        });
-
-        // 3. Приходи V2 - по период
-        const qInc = query(collection(db, "incomesV2"), where("routeKey", "==", currentRouteKey));
-        const snapInc = await getDocs(qInc);
-        let totalIncomesV2 = 0;
-        snapInc.forEach(d => {
-            const r = d.data();
-            const pN = periodToSortableClient(r.period);
-            if (pN >= fromN && pN <= toN) totalIncomesV2 += parseFloat(r.amount) || 0;
-        });
-
-        resultEl.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:5px; background:#f8fafc; border-radius:8px; padding:12px 14px;">
-                <div>Периоди в диапазона: <strong>${periodsInRange}</strong></div>
-                <div>Общо начислени разходи (V1): <strong>${totalChargesV1.toFixed(2)} ${currency}</strong></div>
-                <div>Общо дължимо по апартаменти (V1): <strong>${totalDueV1.toFixed(2)} ${currency}</strong></div>
-                <div>Общо събрано от апартаменти (V1): <strong class="value-green">${totalPaidV1.toFixed(2)} ${currency}</strong></div>
-                <div>Общо приходи (Регистър Приходи V2): <strong class="value-green">${totalIncomesV2.toFixed(2)} ${currency}</strong></div>
-            </div>
-        `;
+        if (res && res.success) {
+            resultEl.innerHTML = `<span style="color:#16a34a;">✅ ${res.message}</span>`;
+        } else {
+            resultEl.innerHTML = `<span style="color:red;">${(res && res.error) || 'Възникна грешка при изпращането.'}</span>`;
+        }
     } catch (e) {
         resultEl.innerHTML = `<span style="color:red;">Грешка: ${e.message}</span>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "Изпрати по имейл"; }
     }
 };
 
@@ -3825,11 +3769,6 @@ window.submitIncomeV2 = async function() {
 
     if (!period || !apt || !category || !amountStr) {
         showToast("Моля, попълнете Период, Платец, Категория и Сума.", "error");
-        return;
-    }
-
-    if (isPeriodLockedClient(period)) {
-        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
@@ -4481,11 +4420,6 @@ window.submitDistributionV2 = async function() {
 
     if (!period || !category || !amountStr) {
         showToast("Моля, попълнете Период, Категория и Сума.", "error");
-        return;
-    }
-
-    if (isPeriodLockedClient(period)) {
-        showToast("🔒 Периодът " + period + " вече е докладван по имейл и е заключен за редакция.", "error");
         return;
     }
 
