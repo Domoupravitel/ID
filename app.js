@@ -313,6 +313,23 @@ function getClientFingerprint() {
 // Форматира timestamp (ms epoch) като дд.мм.гг — ползва се САМО за
 // визуално показване в регистрите (Приходи/Разходи/Разпределение), не
 // засяга периодите (мм.гг), с които работят таблиците/изчисленията.
+// Превръща обикновен текст в HTML, при което URL адреси (http/https/www.)
+// стават кликаеми линкове. Първо escape-ва HTML за безопасност (текстът
+// идва от Супер Админ настройки, но пак не се доверяваме сляпо).
+function linkifyText(text) {
+    if (!text) return "";
+    const escaped = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    const urlRegex = /((https?:\/\/[^\s<]+)|(www\.[^\s<]+\.[^\s<]+))/gi;
+    return escaped.replace(urlRegex, (match) => {
+        const href = /^https?:\/\//i.test(match) ? match : "https://" + match;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#007aff; text-decoration:underline;">${match}</a>`;
+    });
+}
+
 function formatRegisterDate(ts) {
     if (!ts) return "";
     const d = new Date(ts);
@@ -777,7 +794,7 @@ window.enterEntrance = async function () {
         const platformPayText = document.getElementById('platformPaymentInfoText');
         if (platformPayBox && platformPayText) {
             if (info.superPaymentOptions && info.superPaymentOptions.trim() !== "") {
-                platformPayText.textContent = info.superPaymentOptions;
+                platformPayText.innerHTML = linkifyText(info.superPaymentOptions);
                 platformPayBox.style.display = 'block';
             } else {
                 platformPayBox.style.display = 'none';
