@@ -730,7 +730,7 @@ window.enterEntrance = async function () {
         sessionStorage.setItem("isHardBlocked_" + currentRouteKey, info.isHardBlocked ? "true" : "false");
 
         if (info.paymentInfo) {
-            document.getElementById('payment-instructions').textContent = info.paymentInfo;
+            document.getElementById('payment-instructions').innerHTML = linkifyText(info.paymentInfo);
             document.getElementById('masterPaymentText').value = info.paymentInfo;
             sessionStorage.setItem('paymentInfo_' + currentRouteKey, info.paymentInfo);
         } else {
@@ -1279,7 +1279,7 @@ async function loadApartmentData(apartment) {
         if (saldoVal > 0) {
             const storedPayInfo = sessionStorage.getItem('paymentInfo_' + currentRouteKey);
             if (storedPayInfo) {
-                document.getElementById('payment-instructions').textContent = storedPayInfo;
+                document.getElementById('payment-instructions').innerHTML = linkifyText(storedPayInfo);
                 payBox.style.display = 'block';
             }
         } else {
