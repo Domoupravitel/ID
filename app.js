@@ -731,6 +731,11 @@ window.enterEntrance = async function () {
             }
         }
 
+        // Предпопълваме полето за смяна на имейла на домоуправителя с текущия
+        sessionStorage.setItem("adminEmail_" + currentRouteKey, info.adminEmail || "");
+        const newAdminEmailInput = document.getElementById('newAdminEmailInput');
+        if (newAdminEmailInput) newAdminEmailInput.value = info.adminEmail || "";
+
         if (info.linkElectric) {
             document.getElementById('btn-electric-link').href = info.linkElectric;
             document.getElementById('btn-electric-link').style.display = 'inline-block';
@@ -1812,6 +1817,38 @@ window.submitEmail = async function () {
         showToast("Имейлът е обновен.", "success");
         document.getElementById("adminEmail").value = "";
         loadCurrentEmail(); // Refresh current email display
+    } else {
+        showToast(result?.error || "Възникна грешка", "error");
+    }
+}
+
+window.submitAdminEmail = async function () {
+    const email = document.getElementById("newAdminEmailInput").value.trim();
+
+    if (!email) {
+        showToast("Моля, въведете имейл адрес!", "error");
+        return;
+    }
+
+    if (!confirm("Сигурни ли сте, че искате да смените имейла на домоуправителя на \"" + email + "\"? Ако текущият имейл е настроен за автоматизация, тя ще спре, докато не я настроите наново към новия имейл.")) {
+        return;
+    }
+
+    const btn = document.getElementById("adminEmailBtn");
+    btn.textContent = "Записване...";
+    btn.disabled = true;
+
+    const result = await apiCall('updateAdminEmail', {
+        pin: getStoredPin(),
+        newEmail: email
+    });
+
+    btn.textContent = "Запази имейл";
+    btn.disabled = false;
+
+    if (result && result.success) {
+        showToast("✅ " + result.message, "success");
+        sessionStorage.setItem("adminEmail_" + currentRouteKey, email);
     } else {
         showToast(result?.error || "Възникна грешка", "error");
     }
@@ -3340,6 +3377,10 @@ function switchAdminTab(tab) {
             sec.style.display = (sec.getAttribute('data-tab') === 'settings') ? 'block' : 'none';
         });
         if (typeof populateRangeReportSelects === 'function') populateRangeReportSelects('adminRangeFrom', 'adminRangeTo');
+        const newAdminEmailInput = document.getElementById('newAdminEmailInput');
+        if (newAdminEmailInput && !newAdminEmailInput.value) {
+            newAdminEmailInput.value = sessionStorage.getItem("adminEmail_" + currentRouteKey) || "";
+        }
         if (quickNav) {
             quickNav.style.display = 'block';
             // Скриване на бутона "Начисления" от quick nav

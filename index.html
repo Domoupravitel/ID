@@ -705,6 +705,17 @@
                 <button class="admin-btn secondary" id="emailBtn" onclick="submitEmail()">Запази имейл</button>
             </div>
 
+            <div class="admin-section" data-tab="settings">
+                <h3>👤 Имейл на Домоуправителя</h3>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 15px;">
+                    Задайте нов имейл на домоуправителя на този вход.
+                    <strong style="color: #d32f2f;"> Имайте предвид, че смяната ще спре автоматичното разпознаване на разходи и приходи, ако текущият имейл е настроен за автоматизация към платформата. За да продължи автоматизацията, трябва да повторите настройката на препращане към новия имейл.</strong>
+                </p>
+                <label class="admin-label">Нов имейл</label>
+                <input type="email" id="newAdminEmailInput" class="admin-input" placeholder="email@example.com">
+                <button class="admin-btn secondary" id="adminEmailBtn" onclick="submitAdminEmail()">Запази имейл</button>
+            </div>
+
             <!-- MASTER Section -->
             <div class="admin-section" data-tab="settings">
                 <h3 id="admin-section-master">📊 MASTER – Настройки</h3>
